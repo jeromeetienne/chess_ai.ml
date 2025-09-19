@@ -14,19 +14,18 @@ source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 Then install the required packages:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
-
 ## How to use
 
 To train a new model, run:
 
 ```bash
-python train.py
+python ./src/train.py
 ```
 
 To predict with the trained model, run:
 
 ```bash
-python predict.py
+python ./src/predict.py
 ```

@@ -3,8 +3,7 @@ import torch
 import pickle
 import numpy as np
 import os
-import chess
-import chess.pgn    as pgn
+from chess import Board, pgn
 
 from libs.utils import board_to_matrix
 from libs.model import ChessModel
@@ -22,7 +21,7 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 # Convert the board state to a format suitable for the model:
 
 # 
-def prepare_input(board: chess.Board):
+def prepare_input(board: Board):
     matrix = board_to_matrix(board)
     X_tensor = torch.tensor(matrix, dtype=torch.float32).unsqueeze(0)
     return X_tensor
@@ -52,7 +51,7 @@ model.eval()  # Set the model to evaluation mode (it may be reductant)
 int_to_move = {v: k for k, v in move_to_int.items()}
 
 # Function to make predictions
-def predict_next_move(board: chess.Board):
+def predict_move(board: Board):
     X_tensor = prepare_input(board).to(device)
     
     with torch.no_grad():
@@ -73,31 +72,28 @@ def predict_next_move(board: chess.Board):
 
 ###############################################################################
 # 3. Use the ```predict_move``` function to get the best move and its probabilities for a given board state:
+
 # 
 # Initialize a chess board
-board = chess.Board()
+board = Board()
+
+# 
 print(board)
-print("\n")
 
+# 
+board.push_uci("e2e4")
+print(board)
 
-move_count = 20
-for _ in range(move_count):
-    # predict the best move
-    best_move = predict_next_move(board)
+# 
+# Predict and make a move
+best_move = predict_move(board)
+board.push_uci(best_move)
 
-    # Make the move on the board
-    board.push_uci(best_move)
-    
-    # show the board
-    print(f"Predicted Move: {best_move}")
-    print(board)
-    print("\n")
+print(f"Predicted Move: {best_move}")
+print(f"Board after move:")
+print(board)
 
-    # Wait for a key press to continue
-    input("Press Enter to continue...")
-
-# Optionally, print the PGN representation of the game
-print("PGN Representation of the game:")
-print(str(chess.pgn.Game.from_board(board)))
+# 
+print(str(pgn.Game.from_board(board)))
 
 
