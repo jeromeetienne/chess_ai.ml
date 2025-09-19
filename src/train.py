@@ -43,7 +43,7 @@ pgn_file_paths.sort(reverse=False)
 # truncate file_pgn_paths to max_files_count
 max_files_count = 28
 max_files_count = 13
-# max_files_count = 10
+max_files_count = 10
 pgn_file_paths = pgn_file_paths[:max_files_count]
 
 games: list[pgn.Game] = []
@@ -52,6 +52,14 @@ for file_index, pgn_file_path in enumerate(pgn_file_paths):
     new_games = load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
     games.extend(new_games)
 
+
+# Shuffle the games
+random_seed = 42
+torch.manual_seed(random_seed)
+games = torch.randperm(len(games)).tolist()
+games = [games[i] for i in range(len(games))]
+
+# keep only 
 #
 print(f"GAMES PARSED: {len(games)}")
 
@@ -106,8 +114,8 @@ optimizer = optim.Adam(chess_model.parameters(), lr=0.0001)
 # Training
 #
 
-num_epochs = 75
-# num_epochs = 10
+# num_epochs = 75
+num_epochs = 10
 for epoch in range(num_epochs):
     time_start = time.time()
     chess_model.train()
