@@ -25,11 +25,11 @@ from libs.utils import create_input_for_nn, encode_moves
 # Load PGN files and parse games
 #
 
-def load_games_from_pgn(file_path):
-    games = []
+def load_games_from_pgn(file_path: str) -> list[pgn.Game]:
+    games: list[pgn.Game] = []
     with open(file_path, 'r') as pgn_file:
         while True:
-            game = pgn.read_game(pgn_file)
+            game: pgn.Game = pgn.read_game(pgn_file)
             if game is None:
                 break
             games.append(game)
@@ -42,10 +42,11 @@ pgn_file_paths.sort(reverse=False)
 
 # truncate file_pgn_paths to max_files_count
 max_files_count = 28
-max_files_count = 10
+max_files_count = 13
+# max_files_count = 10
 pgn_file_paths = pgn_file_paths[:max_files_count]
 
-games = []
+games: list[pgn.Game] = []
 for file_index, pgn_file_path in enumerate(pgn_file_paths):
     print(f'processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})')
     new_games = load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
@@ -75,10 +76,6 @@ y, move_to_int = encode_moves(y)
 num_classes = len(move_to_int)
 print(f"NUMBER OF UNIQUE MOVES: {num_classes}")
 
-# save move_to_int mapping
-move_to_int_path = f"{__dirname__}/../output/move_to_int.pickle"
-with open(move_to_int_path, "wb") as pgn_file_path:
-    pickle.dump(move_to_int, pgn_file_path)
 
 # Convert to PyTorch tensors
 X = torch.tensor(X, dtype=torch.float32)
@@ -101,32 +98,32 @@ device = torch.accelerator.current_accelerator().type if torch.accelerator.is_av
 print(f'Using device: {device}')
 
 # Model Initialization
-model = ChessModel(num_classes=num_classes).to(device)
+chess_model = ChessModel(num_classes=num_classes).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
+optimizer = optim.Adam(chess_model.parameters(), lr=0.0001)
 
 ###############################################################################
 # Training
 #
 
-# num_epochs = 50
-num_epochs = 2
+num_epochs = 75
+# num_epochs = 10
 for epoch in range(num_epochs):
     time_start = time.time()
-    model.train()
+    chess_model.train()
     running_loss = 0.0
     for inputs, labels in dataloader:
         inputs, labels = inputs.to(device), labels.to(device)  # Move data to GPU
         optimizer.zero_grad()
 
-        outputs = model(inputs)  # Raw logits
+        outputs = chess_model(inputs)  # Raw logits
 
         # Compute loss
         loss = criterion(outputs, labels)
         loss.backward()
         
         # Gradient clipping
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        torch.nn.utils.clip_grad_norm_(chess_model.parameters(), max_norm=1.0)
         
         optimizer.step()
         running_loss += loss.item()
@@ -140,7 +137,22 @@ for epoch in range(num_epochs):
 
 # Save the model
 state_dict_path = f"{__dirname__}/../output/model.pth"
-torch.save(model.state_dict(), state_dict_path)
+torch.save(chess_model.state_dict(), state_dict_path)
 
 
+# save move_to_int mapping
+move_to_int_path = f"{__dirname__}/../output/move_to_int.pickle"
+with open(move_to_int_path, "wb") as pgn_file_path:
+    pickle.dump(move_to_int, pgn_file_path)
 
+# Write a README file with training details
+readme_md = f"""# Chess Model Training
+- Model trained on {len(games)} games from {len(pgn_file_paths)} PGN files.
+- Number of unique moves: {num_classes}
+- Number of samples: {len(y)}
+- Number of epochs: {num_epochs}
+"""
+
+README_path = f"{__dirname__}/../output/README.md"
+with open(README_path, "w") as readme_file:
+    readme_file.write(readme_md)

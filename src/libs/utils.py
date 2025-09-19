@@ -1,8 +1,9 @@
 import numpy as np
-from chess import Board
+import chess
+import chess.pgn as pgn
 
 
-def board_to_matrix(board: Board):
+def board_to_matrix(board: chess.Board) -> np.ndarray:
     # 8x8 is a size of the chess board.
     # 12 = number of unique pieces.
     # 13th board for legal moves (WHERE we can move)
@@ -26,8 +27,7 @@ def board_to_matrix(board: Board):
 
     return matrix
 
-
-def create_input_for_nn(games):
+def create_input_for_nn(games: list[pgn.Game]) -> tuple[np.ndarray, np.ndarray]:
     X = []
     y = []
     for game in games:
@@ -39,6 +39,6 @@ def create_input_for_nn(games):
     return np.array(X, dtype=np.float32), np.array(y)
 
 
-def encode_moves(moves):
+def encode_moves(moves: np.ndarray) -> tuple[np.ndarray, dict[str, int]]:
     move_to_int = {move: idx for idx, move in enumerate(set(moves))}
     return np.array([move_to_int[move] for move in moves], dtype=np.float32), move_to_int
