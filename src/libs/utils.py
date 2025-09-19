@@ -42,3 +42,13 @@ def create_input_for_nn(games: list[pgn.Game]) -> tuple[np.ndarray, np.ndarray]:
 def encode_moves(moves: np.ndarray) -> tuple[np.ndarray, dict[str, int]]:
     move_to_int = {move: idx for idx, move in enumerate(set(moves))}
     return np.array([move_to_int[move] for move in moves], dtype=np.float32), move_to_int
+
+def load_games_from_pgn(file_path: str) -> list[pgn.Game]:
+    games: list[pgn.Game] = []
+    with open(file_path, 'r') as pgn_file:
+        while True:
+            game: pgn.Game = pgn.read_game(pgn_file)
+            if game is None:
+                break
+            games.append(game)
+    return games

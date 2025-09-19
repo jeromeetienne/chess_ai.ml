@@ -17,24 +17,12 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 from libs.dataset import ChessDataset
 from libs.model import ChessModel
-from libs.utils import create_input_for_nn, encode_moves
+from libs.utils import create_input_for_nn, encode_moves, load_games_from_pgn
 
-# # Data preprocessing
 
 ###############################################################################
 # Load PGN files and parse games
 #
-
-def load_games_from_pgn(file_path: str) -> list[pgn.Game]:
-    games: list[pgn.Game] = []
-    with open(file_path, 'r') as pgn_file:
-        while True:
-            game: pgn.Game = pgn.read_game(pgn_file)
-            if game is None:
-                break
-            games.append(game)
-    return games
-
 pgn_folder_path = f"{__dirname__}/../data/pgn"
 pgn_file_paths = [file for file in os.listdir(pgn_folder_path) if file.endswith(".pgn")]
 # sort files alphabetically to ensure consistent order
@@ -42,7 +30,7 @@ pgn_file_paths.sort(reverse=False)
 
 # truncate file_pgn_paths to max_files_count
 max_files_count = 28
-max_files_count = 13
+# max_files_count = 18
 max_files_count = 10
 pgn_file_paths = pgn_file_paths[:max_files_count]
 
@@ -52,24 +40,26 @@ for file_index, pgn_file_path in enumerate(pgn_file_paths):
     new_games = load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
     games.extend(new_games)
 
+print(f"GAMES LOADED: {len(games)}")
 
 # Shuffle the games
-random_seed = 42
-torch.manual_seed(random_seed)
-games = torch.randperm(len(games)).tolist()
-games = [games[i] for i in range(len(games))]
+# random_seed = 42
+# torch.manual_seed(random_seed)
+# games_rnd_indexes = torch.randperm(len(games)).tolist()
+# games = [games[i] for i in games_rnd_indexes]
 
-# keep only 
+# keep only max_games_count games
+max_games_count = len(games)
+# max_games_count = 2_000
+# max_games_count = 1_000
+max_games_count = 500
+games = games[:max_games_count]
 #
 print(f"GAMES PARSED: {len(games)}")
 
 
 ###############################################################################
 # Convert data into tensors
-#
-
-#
-
 #
 X, y = create_input_for_nn(games)
 
@@ -93,46 +83,51 @@ y = torch.tensor(y, dtype=torch.long)
 # Preliminary actions
 #
 
-#
-
-#
 # Create Dataset and DataLoader
 dataset = ChessDataset(X, y)
 dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
 
 # Check for GPU
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
 print(f'Using device: {device}')
 
 # Model Initialization
-chess_model = ChessModel(num_classes=num_classes).to(device)
+model = ChessModel(num_classes=num_classes).to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(chess_model.parameters(), lr=0.0001)
+# optimizer = optim.Adam(chess_model.parameters(), lr=0.001, weight_decay=1e-5)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
+
+###############################################################################
+# Display model summary
+
+print(model)
+
+trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print(f"Trainable parameters: {trainable_params:_}")
 
 ###############################################################################
 # Training
 #
 
-# num_epochs = 75
-num_epochs = 10
+num_epochs = 20
+num_epochs = 2
 for epoch in range(num_epochs):
     time_start = time.time()
-    chess_model.train()
+    model.train()
     running_loss = 0.0
     for inputs, labels in dataloader:
         inputs, labels = inputs.to(device), labels.to(device)  # Move data to GPU
         optimizer.zero_grad()
 
-        outputs = chess_model(inputs)  # Raw logits
+        outputs = model(inputs)  # Raw logits
 
         # Compute loss
         loss = criterion(outputs, labels)
         loss.backward()
-        
+    
         # Gradient clipping
-        torch.nn.utils.clip_grad_norm_(chess_model.parameters(), max_norm=1.0)
-        
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
         optimizer.step()
         running_loss += loss.item()
     time_end = time.time()
@@ -145,7 +140,7 @@ for epoch in range(num_epochs):
 
 # Save the model
 state_dict_path = f"{__dirname__}/../output/model.pth"
-torch.save(chess_model.state_dict(), state_dict_path)
+torch.save(model.state_dict(), state_dict_path)
 
 
 # save move_to_int mapping
@@ -159,6 +154,8 @@ readme_md = f"""# Chess Model Training
 - Number of unique moves: {num_classes}
 - Number of samples: {len(y)}
 - Number of epochs: {num_epochs}
+- Final Loss: {running_loss / len(dataloader):.4f}
+- model: {model}
 """
 
 README_path = f"{__dirname__}/../output/README.md"

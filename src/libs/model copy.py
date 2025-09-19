@@ -26,24 +26,20 @@ class ChessModel(nn.Module):
         x = self.fc2(x)  # Output raw logits
         return x
 
-class ChessModelOld(nn.Module):
+class ChessModelNew(nn.Module):
     def __init__(self, num_classes):
-        super(ChessModelOld, self).__init__()
+        super(ChessModelNew, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
-        self.conv_1 = nn.Conv2d(13, 64, kernel_size=3, padding=1)
-        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
-        # self.dropout2d_1 = nn.Dropout2d(0.25)
+        self.conv1 = nn.Conv2d(13, 64, kernel_size=3, padding=1)
         # NOTE: no max pooling layers ??
         # NOTE: no dropout layers ??
-        self.conv_2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        # self.dropout2d_2 = nn.Dropout2d(0.25)
-
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         self.flatten = nn.Flatten()
 
-        self.fc1 = nn.Linear(4 * 4 * 128, num_classes)
-        self.fc2 = nn.Linear(num_classes, num_classes)
-        # self.fc1 = nn.Linear(8 * 8 * 128, 2048)
-        # self.fc2 = nn.Linear(2048, num_classes)
+        # self.fc1 = nn.Linear(8 * 8 * 128, 256)
+        # self.fc2 = nn.Linear(256, num_classes)
+        self.fc1 = nn.Linear(8 * 8 * 128, 2048)
+        self.fc2 = nn.Linear(2048, num_classes)
         self.relu = nn.ReLU()
 
         # Initialize weights
@@ -53,10 +49,8 @@ class ChessModelOld(nn.Module):
         # nn.init.xavier_uniform_(self.fc2.weight)
 
     def forward(self, x):
-        x = self.relu(self.conv_1(x))
-        # x = self.dropout2d_1(self.maxpool(x))
-        x = self.maxpool(self.relu(self.conv_2(x)))
-        # x = self.dropout2d_2(x)
+        x = self.relu(self.conv1(x))
+        x = self.relu(self.conv2(x))
         x = self.flatten(x)
         x = self.relu(self.fc1(x))
         x = self.fc2(x)  # Output raw logits
