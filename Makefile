@@ -12,3 +12,6 @@ train: ## train the model
 
 predict: ## predict a move
 	python src/predict.py
+
+play: ## play against the model
+	python src/play.py

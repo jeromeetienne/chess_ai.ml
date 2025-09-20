@@ -19,11 +19,11 @@ class PGNUtils:
         return games
 
     @staticmethod
-    def board_to_pgn(board: chess.Board) -> str:
+    def board_to_pgn(board: chess.Board, white_player: str = "Unknown", black_player: str = "Unknown") -> str:
         game = chess.pgn.Game.from_board(board)
         game.headers["Event"] = "AI vs AI"
-        game.headers["White"] = "chess_bot.ml 1"
-        game.headers["Black"] = "chess_bot.ml 2"
+        game.headers["White"] = white_player
+        game.headers["Black"] = black_player
         game.headers["Result"] = board.result()
 
         game.headers["Site"] = "My Computer"

@@ -1,13 +1,16 @@
 # stdlib imports
 import os
+import random
 
 # pip imports
 import torch
 import chess.pgn
+import numpy as np
 
 # local imports
 from libs.pgn_utils import PGNUtils
 from libs.encoding_utils import EncodingUtils
+from libs.model import ChessModel
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -30,9 +33,9 @@ class Utils:
         # truncate file_pgn_paths to max_files_count
         max_files_count = 28
         # max_files_count = 22
-        max_files_count = 25
+        max_files_count = 28
         # max_files_count = 18
-        # max_files_count = 10
+        max_files_count = 10
         pgn_file_paths = pgn_file_paths[:max_files_count]
 
         games: list[chess.pgn.Game] = []
@@ -84,3 +87,80 @@ class Utils:
 
         # print dataset stats
         return boards_tensor, best_move_tensor, uci_to_classindex
+
+    @staticmethod
+    def select_best_move(board: chess.Board, probabilities:np.ndarray, classindex_to_uci: dict[int, str], random_threshold: float = 1) -> str | None:
+        """
+        Select the best move based on the model's output probabilities.
+        Args:
+            board (chess.Board): The current state of the chess board.
+            probabilities (np.ndarray): The output probabilities from the model.
+            classindex_to_uci (dict[int, str]): Mapping from class indices to UCI move strings.
+            random_threshold (float): Threshold to introduce randomness in move selection.
+                                      If 1, selects the best move. If less than 1, allows for some
+                                      randomness among top moves.
+        Returns:
+            str | None: The selected move in UCI format, or None if no legal move is found.
+        """
+        legal_moves = list(board.legal_moves)
+        legal_moves_uci = [move.uci() for move in legal_moves]
+        sorted_indices = np.argsort(probabilities)[::-1]
+        sorted_probabilities = probabilities[sorted_indices]
+
+        # TODO make the possibility to return top N moves with their probabilities, not just the best one
+        # - thus allowing to implement some randomness in the move selection
+        proposed_top_n = 5
+        proposed_moves_uci_proba = []
+        for classindex in sorted_indices:
+            move_uci = classindex_to_uci[classindex]
+            # skip illegal moves
+            if move_uci not in legal_moves_uci:
+                continue
+
+            proposed_moves_uci_proba.append((move_uci, probabilities[classindex]))
+            if len(proposed_moves_uci_proba) >= proposed_top_n:  # Get top 5 legal moves
+                break
+
+        # if no legal move found (should not happen in a normal game)
+        if len(proposed_moves_uci_proba) == 0:
+            return None  # No legal moves found (should not happen in a normal game)
+
+        # keep only the proposed moves with a probability close to the best one
+        if len(proposed_moves_uci_proba) > 1:
+            best_proba = proposed_moves_uci_proba[0][1]
+            threshold = random_threshold * best_proba  # Keep moves with at least 80% of the best probability
+            proposed_moves_uci_proba = [(move, proba) for move, proba in proposed_moves_uci_proba if proba >= threshold]
+
+        # sanity check
+        if random_threshold == 1.0:
+            assert len(proposed_moves_uci_proba) <= 1, "should be at most 1 move after thresholding"
+
+        # return any of the proposed moves randomly
+        best_move_uci = random.choice(proposed_moves_uci_proba)[0]
+
+        return best_move_uci
+
+    @staticmethod
+    def predict_next_move(board: chess.Board, model: ChessModel, device: str, classindex_to_uci: dict[int, str]) -> str | None:
+        """
+        Predict the best move for the given board state.
+        Args:
+            board (chess.Board): The current state of the chess board.
+        Returns:
+            str | None: The predicted best move in UCI format, or None if no legal move is found.
+        """
+        boards_tensor = EncodingUtils.prepare_input(board).to(device)
+
+        # Set the model to evaluation mode (it may be reductant)
+        model.eval()  
+
+        # Disable gradient calculation for inference
+        with torch.no_grad():
+            logits = model(boards_tensor)
+
+        logits = logits.squeeze(0)  # Remove batch dimension
+
+        probabilities = torch.softmax(logits, dim=0).cpu().numpy()  # Convert to probabilities
+
+        best_move_uci = Utils.select_best_move(board, probabilities, classindex_to_uci)
+        return best_move_uci

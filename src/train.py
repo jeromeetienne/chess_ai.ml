@@ -10,7 +10,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-
 # local imports
 from libs.dataset import ChessDataset
 from libs.model import ChessModel
@@ -21,7 +20,7 @@ from libs.io_utils import IOUtils
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 ###############################################################################
-# Load/Create Dataset
+# Load Dataset
 #
 
 output_folder_path = f"{__dirname__}/../output/"
@@ -30,7 +29,6 @@ output_folder_path = f"{__dirname__}/../output/"
 if not IOUtils.has_dataset(output_folder_path):
     print("Dataset not found. Creating a new one.")
     sys.exit(1)
-
 
 dataset_creation_start_time = time.time()
 # Load the dataset
@@ -120,26 +118,22 @@ for epoch in range(num_epochs):
     epoch_elapsed_time = time.time() - epoch_start_time
     print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec")
 
-###############################################################################
-# Save the model
-#
+    # Save the model
+    IOUtils.save_model(model, folder_path=output_folder_path)
+    print(f"Model saved to {output_folder_path}")
 
-IOUtils.save_model(model, folder_path=output_folder_path)
-
-
-# Write a README file with training details
-readme_md = f"""# Chess Model Training
-- Model trained on {len(train_inputs)} game positions
-- Number of unique moves: {num_classes}
-- Number of epochs: {num_epochs}
-- Final Loss: {avg_loss}
-- trainable_params: {trainable_params:_}
-- model: {model}
-"""
-
-README_path = f"{output_folder_path}/README.md"
-with open(README_path, "w") as readme_file:
-    readme_file.write(readme_md)
+    # Write a README file with training details
+    readme_md = f"""# Chess Model Training
+    - Model trained on {len(train_inputs)} game positions
+    - Number of unique moves: {num_classes}
+    - Number of epochs: {num_epochs}
+    - Final Loss: {avg_loss}
+    - trainable_params: {trainable_params:_}
+    - model: {model}
+    """
+    README_path = f"{output_folder_path}/README.md"
+    with open(README_path, "w") as readme_file:
+        readme_file.write(readme_md)
 
 ##########################################################################################
 

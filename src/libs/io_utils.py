@@ -51,3 +51,9 @@ class IOUtils:
         dataset_exists = os.path.exists(boards_path) and os.path.exists(moves_path) and os.path.exists(uci_to_classindex_path)
         return dataset_exists
             
+    @staticmethod
+    def load_uci_to_classindex(folder_path: str) -> dict[str, int]:
+        uci_to_classindex_path = f"{folder_path}/uci_to_classindex.pickle"
+        with open(uci_to_classindex_path, "rb") as file:
+            uci_to_classindex = pickle.load(file)
+        return uci_to_classindex
