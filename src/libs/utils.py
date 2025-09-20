@@ -18,7 +18,7 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 class Utils:
     @staticmethod
-    def create_dataset() -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
+    def create_dataset(max_files_count: int = 15, max_games_count: int = 7000) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
         print("Creating dataset...")
 
         ###############################################################################
@@ -31,11 +31,6 @@ class Utils:
         pgn_file_paths.sort(reverse=False)
 
         # truncate file_pgn_paths to max_files_count
-        max_files_count = 28
-        # max_files_count = 22
-        max_files_count = 28
-        # max_files_count = 18
-        max_files_count = 10
         pgn_file_paths = pgn_file_paths[:max_files_count]
 
         games: list[chess.pgn.Game] = []
@@ -58,11 +53,8 @@ class Utils:
         # games = [games[i] for i in games_rnd_indexes]
 
         # keep only max_games_count games
-        max_games_count = len(games)
-        # max_games_count = 7_000
-        # max_games_count = 1_000
-        # max_games_count = 100
-        games = games[:max_games_count]
+        if max_games_count != 0:
+            games = games[:max_games_count]
         #
         print(f"GAMES PARSED: {len(games)}")
 

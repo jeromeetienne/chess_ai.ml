@@ -30,13 +30,13 @@ class ChessModelConv2d(nn.Module):
     def __init__(self, num_classes):
         super(ChessModelConv2d, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
-        self.conv_1 = nn.Conv2d(14, 64, kernel_size=3, padding=1)
+        self.conv_1 = nn.Conv2d(14, 64, kernel_size=5, padding=2)
         # self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
-        # self.dropout2d_1 = nn.Dropout2d(0.05)
+        self.dropout2d_1 = nn.Dropout2d(0.05)
         # NOTE: no max pooling layers ??
         # NOTE: no dropout layers ??
-        self.conv_2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-        # self.dropout2d_2 = nn.Dropout2d(0.05)
+        self.conv_2 = nn.Conv2d(64, 64, kernel_size=5, padding=2)
+        self.dropout2d_2 = nn.Dropout2d(0.05)
 
         self.flatten = nn.Flatten()
 
@@ -56,10 +56,10 @@ class ChessModelConv2d(nn.Module):
     def forward(self, x):
         x = self.relu(self.conv_1(x))
         # x = self.maxpool(x)
-        # x = self.dropout2d_1(x)
+        x = self.dropout2d_1(x)
         x = self.relu(self.conv_2(x))
         # x = self.maxpool(x)
-        # x = self.dropout2d_2(x)
+        x = self.dropout2d_2(x)
         x = self.flatten(x)
         # x = self.fc1(x)
         # x = self.dropout_1(x)

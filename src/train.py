@@ -44,6 +44,8 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
 
     num_classes = len(uci_to_classindex)
     print(f"Number of classes: {num_classes}")
+    print(f'boards_tensor shape: {boards_tensor.shape}')
+    print(f'best_move_tensor shape: {best_move_tensor.shape}')
 
     ###############################################################################
     # Prepare data loaders
@@ -74,6 +76,8 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
     # Display model summary
 
     print(model)
+
+    # TODO put that in a library function
 
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Trainable parameters: {trainable_params:_}")

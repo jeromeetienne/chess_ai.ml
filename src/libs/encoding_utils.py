@@ -36,16 +36,16 @@ class EncodingUtils:
 
     @staticmethod
     def create_input_for_nn(games: list[pgn.Game]) -> tuple[np.ndarray, np.ndarray]:
-        X = []
-        y = []
+        board_array = []
+        best_move_array = []
         for game in games:
             board = game.board()
             for move in game.mainline_moves():
-                X.append(EncodingUtils.board_to_matrix(board))
-                y.append(move.uci())
+                board_matrix = EncodingUtils.board_to_matrix(board)
+                board_array.append(board_matrix)
+                best_move_array.append(move.uci())
                 board.push(move)
-        return np.array(X, dtype=np.float32), np.array(y)
-
+        return np.array(board_array, dtype=np.float32), np.array(best_move_array)
 
     @staticmethod   
     def encode_moves(moves: np.ndarray) -> tuple[np.ndarray, dict[str, int]]:
