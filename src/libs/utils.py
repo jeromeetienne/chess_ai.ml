@@ -92,6 +92,7 @@ class Utils:
     def select_best_move(board: chess.Board, probabilities:np.ndarray, classindex_to_uci: dict[int, str], random_threshold: float = 1) -> str | None:
         """
         Select the best move based on the model's output probabilities.
+
         Args:
             board (chess.Board): The current state of the chess board.
             probabilities (np.ndarray): The output probabilities from the model.

@@ -18,7 +18,7 @@ output_folder_path = f"{__dirname__}/../output/"
 #
 
 # Load the mapping
-_, _, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
+uci_to_classindex = IOUtils.load_uci_to_classindex(folder_path=output_folder_path)
 num_classes = len(uci_to_classindex)
 
 # Load the model
@@ -67,9 +67,6 @@ while True:
     if board.is_game_over():
         print("Game Over!")
         break
-
-    # Wait for a key press to continue
-    # input("Press Enter to continue...")
 
 ###############################################################################
 # Optionally, print the PGN representation of the game
