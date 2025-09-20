@@ -21,8 +21,19 @@ output_folder_path = f"{__dirname__}/../output/"
 opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
 color_t = typing.Literal["white", "black"]
 
+###############################################################################
+###############################################################################
+# 	 Play a game of chess between ChessBotML and an opponent (human or Stockfish).
+###############################################################################
+###############################################################################
 
-def play_game(chatbotml_color: color_t = "white", opponent_tech: opponent_tech_t = "stockfish", stockfish_elo: int = 1350, stockfish_depth: int = 10):
+
+def play_game(
+    chatbotml_color: color_t = "white",
+    opponent_tech: opponent_tech_t = "stockfish",
+    stockfish_elo: int = 1350,
+    stockfish_depth: int = 10,
+):
     """
     Play a game of chess between ChessBotML and an opponent (human or Stockfish).
 
@@ -136,7 +147,8 @@ if __name__ == "__main__":
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
-        description="Play a game of chess between ChessBotML and an opponent (human or Stockfish)."
+        description="Play a game of chess between ChessBotML and an opponent (human or Stockfish).",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--color",
@@ -181,4 +193,9 @@ if __name__ == "__main__":
     else:
         chessbotml_color: color_t = args.color
     opponent_tech: opponent_tech_t = args.opponent
-    play_game(chatbotml_color=chessbotml_color, opponent_tech=opponent_tech, stockfish_elo=args.stockfish_elo, stockfish_depth=args.stockfish_depth)
+    play_game(
+        chatbotml_color=chessbotml_color,
+        opponent_tech=opponent_tech,
+        stockfish_elo=args.stockfish_elo,
+        stockfish_depth=args.stockfish_depth,
+    )

@@ -10,7 +10,7 @@ import numpy as np
 # local imports
 from libs.pgn_utils import PGNUtils
 from libs.encoding_utils import EncodingUtils
-from libs.model import ChessModel
+from libs.chess_model import ChessModel
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))

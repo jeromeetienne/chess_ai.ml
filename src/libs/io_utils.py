@@ -1,4 +1,4 @@
-from .model import ChessModel
+from .chess_model import ChessModel
 import torch
 import pickle
 import os

@@ -4,7 +4,6 @@
   - search for 'pytorch chess model'
   - search for 'pytorch chess neural network'
   - search for 'pytorch/tensorflow alpha zero github'
-- DONE in `./train.py`, save the model every N epochs
 - connect `./play.py` to lichess.org to play online
   - see lichess API documentation for integration details
   - add it in `Makefile`
@@ -15,6 +14,7 @@
 - add proper logs in `./train.py` and `./predict.py`
 
 # DONE
+- DONE in `./train.py`, save the model every N epochs
 - DONE do a `./play.py` able to play against a human and stockfish, with good cmdline args
   - cmdline options:
     - `--model-path` to load a model

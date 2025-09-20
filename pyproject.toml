@@ -24,4 +24,4 @@ requires-python = "~=3.10"
 
 # Configuration for the Black code formatter 
 [tool.black]
-line-length = 120   # to match the 79 character limit of PEP 8, but allow some extra space for longer lines
+line-length = 160   # to match the 79 character limit of PEP 8, but allow some extra space for longer lines
