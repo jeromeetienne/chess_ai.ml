@@ -97,7 +97,7 @@ def play_game(chatbotml_color: color_t = "white", opponent_tech: opponent_tech_t
             # Get the best move from Stockfish
             best_move = stockfish.get_best_move()
             if best_move is None:
-                raise ValueError("Stockfish could not find a move. Game over.")
+                raise ValueError("Stockfish could not find a move. BUG BUG.")
 
             print(f"Stockfish Move {board.fullmove_number} for {turn_color}: {best_move} ")
         else:
@@ -116,8 +116,11 @@ def play_game(chatbotml_color: color_t = "white", opponent_tech: opponent_tech_t
     # Optionally, print the PGN representation of the game
 
     print("PGN Representation of the game:")
-    white_player = "ChessBotML" if chessbotml_color == "white" else opponent_tech.capitalize()
-    black_player = "ChessBotML" if chessbotml_color == "black" else opponent_tech.capitalize()
+
+    opponent_name = "Human" if opponent_tech == "human" else f"Stockfish {stockfish_elo}"
+
+    white_player = "ChessBotML" if chessbotml_color == "white" else opponent_name
+    black_player = "ChessBotML" if chessbotml_color == "black" else opponent_name
 
     pgn_game = PGNUtils.board_to_pgn(board, white_player=white_player, black_player=black_player)
     print(pgn_game)
@@ -152,13 +155,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--stockfish-elo",
         type=int,
-        default=1350,
+        default=10,
         help="The ELO rating for Stockfish (if opponent is stockfish). Default is 1350.",
     )
     parser.add_argument(
         "--stockfish-depth",
         type=int,
-        default=10,
+        default=1,
         help="The search depth for Stockfish (if opponent is stockfish). Default is 10.",
     )
     parser.add_argument(
