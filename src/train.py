@@ -10,7 +10,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from chess import pgn
-import pickle
 
 import os
 
@@ -18,7 +17,8 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 from libs.dataset import ChessDataset
 from libs.model import ChessModel
-from libs.utils import create_input_for_nn, encode_moves, load_games_from_pgn
+from libs.pgn_utils import PGNUtils
+from libs.encoding_utils import EncodingUtils
 
 
 ###############################################################################
@@ -34,12 +34,14 @@ max_files_count = 28
 # max_files_count = 22
 # max_files_count = 25
 max_files_count = 18
+max_files_count = 10
 pgn_file_paths = pgn_file_paths[:max_files_count]
+
 
 games: list[pgn.Game] = []
 for file_index, pgn_file_path in enumerate(pgn_file_paths):
     print(f"processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})")
-    new_games = load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
+    new_games = PGNUtils.load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
     games.extend(new_games)
     print(f"GAMES LOADED: {len(games)}")
 
@@ -53,7 +55,7 @@ for file_index, pgn_file_path in enumerate(pgn_file_paths):
 max_games_count = len(games)
 # max_games_count = 7_000
 # max_games_count = 1_000
-# max_games_count = 100
+max_games_count = 100
 games = games[:max_games_count]
 #
 print(f"GAMES PARSED: {len(games)}")
@@ -62,7 +64,7 @@ print(f"GAMES PARSED: {len(games)}")
 ###############################################################################
 # Convert data into tensors
 #
-X, y = create_input_for_nn(games)
+X, y = EncodingUtils.create_input_for_nn(games)
 
 print(f"NUMBER OF SAMPLES: {len(y)}")
 
@@ -71,8 +73,8 @@ X = X[0:2500000]
 y = y[0:2500000]
 
 # Encode moves
-y, move_to_int = encode_moves(y)
-num_classes = len(move_to_int)
+y, uci_to_classindex = EncodingUtils.encode_moves(y)
+num_classes = len(uci_to_classindex)
 print(f"NUMBER OF UNIQUE MOVES: {num_classes}")
 
 
@@ -81,7 +83,7 @@ X = torch.tensor(X, dtype=torch.float32)
 y = torch.tensor(y, dtype=torch.long)
 
 ###############################################################################
-# Preliminary actions
+# Prepare data loaders
 #
 
 train_test_split_ratio = 0.7
@@ -125,8 +127,8 @@ for name, param in model.named_parameters():
 # Training
 #
 
-num_epochs = 50
-# num_epochs = 2
+# num_epochs = 50
+num_epochs = 2
 for epoch in range(num_epochs):
     time_start = time.time()
     model.train()
@@ -156,14 +158,9 @@ for epoch in range(num_epochs):
 # Save the model
 #
 
-# Save the model
-state_dict_path = f"{__dirname__}/../output/model.pth"
-torch.save(model.state_dict(), state_dict_path)
+from libs.model_io import ModelIO
+ModelIO.save_model(model, uci_to_classindex, folder_path=f"{__dirname__}/../output")
 
-# save move_to_int mapping
-move_to_int_path = f"{__dirname__}/../output/move_to_int.pickle"
-with open(move_to_int_path, "wb") as pgn_file_path:
-    pickle.dump(move_to_int, pgn_file_path)
 
 # Write a README file with training details
 readme_md = f"""# Chess Model Training

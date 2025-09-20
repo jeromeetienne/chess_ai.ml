@@ -5,6 +5,7 @@
   - search for 'pytorch chess neural network'
   - search for 'pytorch/tensorflow alpha zero github'
 - in `./train.py`, save the model every N epochs
+- in `./train.py`, cache the dataset in numpy format for faster loading
 - do a `./play.py` able to play against a human and stockfish, with good cmdline args
   - cmdline options:
     - `--model-path` to load a model
@@ -18,7 +19,6 @@
   - see lichess API documentation for integration details
   - add it in `Makefile`
 - organize `./libs`
-- rename `move_to_int` to `uci_to_classindex`
 - code a way to train on a special range of moves, not the whole game
   - select by move number (e.g. 10 to 30)
   - later by dynamically detecting opening, midgame, endgame
@@ -26,8 +26,10 @@
 - clean up `./train.py` and `./predict.py`
 - rename X to `board_tensor`, y to `move_tensor`
   - or `input_tensors`, `expected_target_tensors`
+- display chess board with unicode characters
 
 # DONE
+- DONE rename `move_to_int` to `uci_to_classindex`
 - DONE that a test dataset is separate from the training dataset
 
 # Ideas
