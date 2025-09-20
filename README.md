@@ -8,7 +8,7 @@ We recommend to use a virtual environment:
 
 ```bash
 python3.10 -m venv .venv
-source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+source .venv/bin/activate
 ```
 
 Then install the required packages:
@@ -16,7 +16,8 @@ Then install the required packages:
 ```bash
 pip install -e .
 ```
-## How to use
+
+The dataset is taken from here:https://database.nikonoel.fr/ and put it in `./data/pgn/`
 
 To train a new model, run:
 
