@@ -37,11 +37,7 @@ with open(move_to_int_path, "rb") as file:
     move_to_int = pickle.load(file)
 
 # Check for GPU
-device = (
-    torch.accelerator.current_accelerator().type
-    if torch.accelerator.is_available()
-    else "cpu"
-)
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
 print(f"Using device: {device}")
 
 # Load the model
@@ -55,6 +51,7 @@ int_to_move = {v: k for k, v in move_to_int.items()}
 
 
 # Function to make predictions
+# TODO move that in ./libs/utils.py
 def predict_next_move(board: chess.Board) -> str | None:
     """
     Predict the best move for the given board state.
@@ -70,9 +67,7 @@ def predict_next_move(board: chess.Board) -> str | None:
 
     logits = logits.squeeze(0)  # Remove batch dimension
 
-    probabilities = (
-        torch.softmax(logits, dim=0).cpu().numpy()
-    )  # Convert to probabilities
+    probabilities = torch.softmax(logits, dim=0).cpu().numpy()  # Convert to probabilities
     legal_moves = list(board.legal_moves)
     legal_moves_uci = [move.uci() for move in legal_moves]
     sorted_indices = np.argsort(probabilities)[::-1]
@@ -103,21 +98,16 @@ def predict_next_move(board: chess.Board) -> str | None:
     if len(proposed_moves_uci_proba) > 1:
         best_proba = proposed_moves_uci_proba[0][1]
         threshold = random_threshold * best_proba  # Keep moves with at least 80% of the best probability
-        proposed_moves_uci_proba = [
-            (move, proba)
-            for move, proba in proposed_moves_uci_proba
-            if proba >= threshold
-        ]
+        proposed_moves_uci_proba = [(move, proba) for move, proba in proposed_moves_uci_proba if proba >= threshold]
 
     # sanity check
     if random_threshold == 1.0:
-        assert len(proposed_moves_uci_proba) <= 1, 'should be at most 1 move after thresholding'
+        assert len(proposed_moves_uci_proba) <= 1, "should be at most 1 move after thresholding"
 
     # return any of the proposed moves randomly
     best_move_uci = random.choice(proposed_moves_uci_proba)[0]
 
     return best_move_uci
-
 
     # for move_index in sorted_indices:
     #     move_uci = int_to_move[move_index]
@@ -126,7 +116,6 @@ def predict_next_move(board: chess.Board) -> str | None:
     #         continue
 
     #     return move_uci  # Return the first legal move with the highest probability
-    
 
     # return None
 
@@ -146,11 +135,11 @@ for _ in range(move_count):
     best_move = predict_next_move(board)
 
     if best_move is None:
-        # raise an error if no legal moves are available... 
+        # raise an error if no legal moves are available...
         # as it a ML error, as chess module didnt declare the game over
         raise ValueError("No legal moves available. Game over.")
 
-    turn_color = 'white' if board.turn == chess.WHITE else 'black'
+    turn_color = "white" if board.turn == chess.WHITE else "black"
 
     # show the board
     print(f"Predicted Move {board.fullmove_number} for {turn_color}: {best_move} ")
@@ -173,15 +162,16 @@ print("PGN Representation of the game:")
 # print(str(pgn.Game.from_board(board)))
 
 game = pgn.Game.from_board(board)
-game.headers['Event'] = 'AI vs AI'
-game.headers['White'] = 'chess_bot.ml 1'
-game.headers['Black'] = 'chess_bot.ml 2'
-game.headers['Result'] = board.result()
+game.headers["Event"] = "AI vs AI"
+game.headers["White"] = "chess_bot.ml 1"
+game.headers["Black"] = "chess_bot.ml 2"
+game.headers["Result"] = board.result()
 
-game.headers['Site'] = 'My Computer'
-game.headers['Round'] = '1'
+game.headers["Site"] = "My Computer"
+game.headers["Round"] = "1"
 # set the date to today in YYYY.MM.DD format
 import datetime
+
 today = datetime.date.today()
-game.headers['Date'] = today.strftime("%Y.%m.%d")
+game.headers["Date"] = today.strftime("%Y.%m.%d")
 print(game)

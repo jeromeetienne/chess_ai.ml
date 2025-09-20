@@ -1,15 +1,11 @@
-help:
-	@echo "Available targets:"
-	@echo "  help     Show this help message"
-	@echo "  clear    Remove all files in ./output/"
-	@echo "  train    Run the training script"
-	@echo "  predict  Run the prediction script"
+help: ## show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-clear:
+clean: ## clean output directory
 	rm ./output/*
 
-train:
+train: ## train the model
 	python src/train.py
 
-predict:
+predict: ## predict a move
 	python src/predict.py

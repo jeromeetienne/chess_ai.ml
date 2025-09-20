@@ -2,7 +2,6 @@ from torch.utils.data import Dataset
 
 
 class ChessDataset(Dataset):
-
     def __init__(self, X, y):
         self.X = X
         self.y = y

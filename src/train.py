@@ -13,6 +13,7 @@ from chess import pgn
 import pickle
 
 import os
+
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 from libs.dataset import ChessDataset
@@ -31,12 +32,13 @@ pgn_file_paths.sort(reverse=False)
 # truncate file_pgn_paths to max_files_count
 max_files_count = 28
 # max_files_count = 22
-max_files_count = 25
+# max_files_count = 25
+max_files_count = 18
 pgn_file_paths = pgn_file_paths[:max_files_count]
 
 games: list[pgn.Game] = []
 for file_index, pgn_file_path in enumerate(pgn_file_paths):
-    print(f'processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})')
+    print(f"processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})")
     new_games = load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
     games.extend(new_games)
     print(f"GAMES LOADED: {len(games)}")
@@ -98,7 +100,7 @@ test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 # Check for GPU
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
-print(f'Using device: {device}')
+print(f"Using device: {device}")
 
 # Model Initialization
 model = ChessModel(num_classes=num_classes).to(device)
@@ -123,7 +125,7 @@ for name, param in model.named_parameters():
 # Training
 #
 
-num_epochs = 20
+num_epochs = 50
 # num_epochs = 2
 for epoch in range(num_epochs):
     time_start = time.time()
@@ -138,15 +140,17 @@ for epoch in range(num_epochs):
         # Compute loss
         loss = loss_fn(outputs, labels)
         loss.backward()
-    
+
         # Gradient clipping
-        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
         optimizer.step()
         running_loss += loss.item()
     time_end = time.time()
     time_elapsed = time_end - time_start
-    print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss / len(train_dataloader):.4f}, Time: {time_elapsed:.2f}-sec')
+    print(
+        f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss / len(train_dataloader):.4f}, Time: {time_elapsed:.2f}-sec"
+    )
 
 ###############################################################################
 # Save the model
@@ -192,4 +196,4 @@ with torch.no_grad():
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
-print(f'Accuracy on test set: {100 * correct / total:.2f}%')
+print(f"Accuracy on test set: {100 * correct / total:.2f}%")
