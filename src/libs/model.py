@@ -1,9 +1,9 @@
 import torch.nn as nn
 
 
-class ChessModel(nn.Module):
+class ChessModelOld(nn.Module):
     def __init__(self, num_classes):
-        super(ChessModel, self).__init__()
+        super(ChessModelOld, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
         self.conv1 = nn.Conv2d(13, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
@@ -26,25 +26,25 @@ class ChessModel(nn.Module):
         x = self.fc2(x)  # Output raw logits
         return x
 
-class ChessModelNew(nn.Module):
+class ChessModel(nn.Module):
     def __init__(self, num_classes):
-        super(ChessModelNew, self).__init__()
+        super(ChessModel, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
-        self.conv_1 = nn.Conv2d(13, 64, kernel_size=3, padding=1)
-        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv_1 = nn.Conv2d(13, 128, kernel_size=3, padding=1)
+        # self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
         # self.dropout2d_1 = nn.Dropout2d(0.05)
         # NOTE: no max pooling layers ??
         # NOTE: no dropout layers ??
-        self.conv_2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        # self.conv_2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         # self.dropout2d_2 = nn.Dropout2d(0.05)
 
         self.flatten = nn.Flatten()
 
-        self.fc1 = nn.Linear(4*4 * 128, num_classes)
+        # self.fc1 = nn.Linear(8*8 * 64, num_classes)
         # self.dropout_1 = nn.Dropout(0.01)
         # self.fc2 = nn.Linear(256, num_classes)
-        # self.fc1 = nn.Linear(8 * 8 * 128, 256)
-        # self.fc2 = nn.Linear(256, num_classes)
+        self.fc1 = nn.Linear(8 * 8 * 128, 256)
+        self.fc2 = nn.Linear(256, num_classes)
         self.relu = nn.ReLU()
 
         # Initialize weights
@@ -55,14 +55,14 @@ class ChessModelNew(nn.Module):
 
     def forward(self, x):
         x = self.relu(self.conv_1(x))
-        x = self.maxpool(x)
+        # x = self.maxpool(x)
         # x = self.dropout2d_1(x)
-        x = self.relu(self.conv_2(x))
+        # x = self.relu(self.conv_2(x))
         # x = self.maxpool(x)
         # x = self.dropout2d_2(x)
         x = self.flatten(x)
-        x = self.fc1(x)
+        # x = self.fc1(x)
         # x = self.dropout_1(x)
-        # x = self.relu(self.fc1(x))
-        # x = self.fc2(x)  # Output raw logits
+        x = self.relu(self.fc1(x))
+        x = self.fc2(x)  # Output raw logits
         return x

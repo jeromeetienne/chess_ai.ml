@@ -30,7 +30,7 @@ Current board encoding:
   - 6 because each color got 6 types of pieces (pawn, knight, bishop, rook, queen, king)
   - 1 if piece is present, 0 otherwise
 - 8x8x1 binary tensor for the destination of legal moves
-- nothing for the source of legal moves
+- nothing for the source of legal moves <- DO THIS - this is encoding the turn
 - nothing for castling rights
 - nothing for en-passant
 

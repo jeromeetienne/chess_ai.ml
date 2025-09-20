@@ -30,8 +30,8 @@ pgn_file_paths.sort(reverse=False)
 
 # truncate file_pgn_paths to max_files_count
 max_files_count = 28
-max_files_count = 18
-# max_files_count = 14
+# max_files_count = 22
+max_files_count = 14
 pgn_file_paths = pgn_file_paths[:max_files_count]
 
 games: list[pgn.Game] = []
@@ -50,7 +50,7 @@ games = [games[i] for i in games_rnd_indexes]
 
 # keep only max_games_count games
 max_games_count = len(games)
-max_games_count = 4_000
+max_games_count = 1_000
 # max_games_count = 1_000
 # max_games_count = 100
 games = games[:max_games_count]
@@ -141,7 +141,7 @@ for epoch in range(num_epochs):
         loss.backward()
     
         # Gradient clipping
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
         optimizer.step()
         running_loss += loss.item()
@@ -156,7 +156,6 @@ for epoch in range(num_epochs):
 # Save the model
 state_dict_path = f"{__dirname__}/../output/model.pth"
 torch.save(model.state_dict(), state_dict_path)
-
 
 # save move_to_int mapping
 move_to_int_path = f"{__dirname__}/../output/move_to_int.pickle"

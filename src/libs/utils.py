@@ -25,6 +25,11 @@ def board_to_matrix(board: chess.Board) -> np.ndarray:
         row_to, col_to = divmod(to_square, 8)
         matrix[12, row_to, col_to] = 1
 
+    # for move in legal_moves:
+    #     from_square = move.from_square
+    #     row_from, col_from = divmod(from_square, 8)
+    #     matrix[13, row_from, col_from] = 1
+
     return matrix
 
 def create_input_for_nn(games: list[pgn.Game]) -> tuple[np.ndarray, np.ndarray]:
