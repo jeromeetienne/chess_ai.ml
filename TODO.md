@@ -22,6 +22,9 @@ Seems not necessary, the model can learn the difference of playing white or blac
 - https://jdhwilkins.com/python-chess-game-simulation-and-illegal-moves/
 - https://www.chessprogramming.org/
 
+- about alphazero encoding:
+  - https://blog.devgenius.io/creating-an-ai-chess-engine-part-2-encoding-using-the-alphazero-method-63c3c3c3a960
+
 Current board encoding:
 - 8x8x12 binary tensor (6 first for white pieces, 6 last for black pieces)
   - 6 because each color got 6 types of pieces (pawn, knight, bishop, rook, queen, king)

@@ -1,9 +1,9 @@
 import torch.nn as nn
 
 
-class ChessModel(nn.Module):
+class ChessModelOld(nn.Module):
     def __init__(self, num_classes):
-        super(ChessModel, self).__init__()
+        super(ChessModelOld, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
         self.conv1 = nn.Conv2d(13, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
@@ -26,9 +26,9 @@ class ChessModel(nn.Module):
         x = self.fc2(x)  # Output raw logits
         return x
 
-class ChessModelNew(nn.Module):
+class ChessModel(nn.Module):
     def __init__(self, num_classes):
-        super(ChessModelNew, self).__init__()
+        super(ChessModel, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
         self.conv1 = nn.Conv2d(13, 64, kernel_size=3, padding=1)
         # NOTE: no max pooling layers ??
