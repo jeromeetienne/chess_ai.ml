@@ -31,7 +31,7 @@ pgn_file_paths.sort(reverse=False)
 # truncate file_pgn_paths to max_files_count
 max_files_count = 28
 # max_files_count = 22
-max_files_count = 14
+max_files_count = 25
 pgn_file_paths = pgn_file_paths[:max_files_count]
 
 games: list[pgn.Game] = []
@@ -39,18 +39,17 @@ for file_index, pgn_file_path in enumerate(pgn_file_paths):
     print(f'processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})')
     new_games = load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
     games.extend(new_games)
-
-print(f"GAMES LOADED: {len(games)}")
+    print(f"GAMES LOADED: {len(games)}")
 
 # Shuffle the games
-random_seed = 42
-torch.manual_seed(random_seed)
-games_rnd_indexes = torch.randperm(len(games)).tolist()
-games = [games[i] for i in games_rnd_indexes]
+# random_seed = 42
+# torch.manual_seed(random_seed)
+# games_rnd_indexes = torch.randperm(len(games)).tolist()
+# games = [games[i] for i in games_rnd_indexes]
 
 # keep only max_games_count games
 max_games_count = len(games)
-max_games_count = 1_000
+# max_games_count = 7_000
 # max_games_count = 1_000
 # max_games_count = 100
 games = games[:max_games_count]

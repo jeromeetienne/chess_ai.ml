@@ -8,7 +8,7 @@ def board_to_matrix(board: chess.Board) -> np.ndarray:
     # 12 = number of unique pieces.
     # 13th board for legal moves (WHERE we can move)
     # maybe 14th for squares FROM WHICH we can move? idk
-    matrix = np.zeros((13, 8, 8))
+    matrix = np.zeros((14, 8, 8))
     piece_map = board.piece_map()
 
     # Populate first 12 8x8 boards (where pieces are)
@@ -25,10 +25,10 @@ def board_to_matrix(board: chess.Board) -> np.ndarray:
         row_to, col_to = divmod(to_square, 8)
         matrix[12, row_to, col_to] = 1
 
-    # for move in legal_moves:
-    #     from_square = move.from_square
-    #     row_from, col_from = divmod(from_square, 8)
-    #     matrix[13, row_from, col_from] = 1
+    for move in legal_moves:
+        from_square = move.from_square
+        row_from, col_from = divmod(from_square, 8)
+        matrix[13, row_from, col_from] = 1
 
     return matrix
 

@@ -97,7 +97,7 @@ def predict_next_move(board: chess.Board) -> str | None:
 
     # If it is one, it is the best move
     # if it is less than 1, it will pick randomly among the proposed moves with a probability >= best probability * random_threshold
-    random_threshold = 0.9
+    random_threshold = 1
 
     # keep only the proposed moves with a probability close to the best one
     if len(proposed_moves_uci_proba) > 1:
