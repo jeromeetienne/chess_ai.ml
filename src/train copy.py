@@ -15,92 +15,76 @@ from libs.model import ChessModel
 from libs.pgn_utils import PGNUtils
 from libs.encoding_utils import EncodingUtils
 from libs.io_utils import IOUtils
-from libs.utils import Utils
-from libs.io_utils import IOUtils
 
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
-# ###############################################################################
-# # Load PGN files and parse games
-# #
-# pgn_folder_path = f"{__dirname__}/../data/pgn"
-# pgn_file_paths = [file for file in os.listdir(pgn_folder_path) if file.endswith(".pgn")]
-# # sort files alphabetically to ensure consistent order
-# pgn_file_paths.sort(reverse=False)
+###############################################################################
+# Load PGN files and parse games
+#
+pgn_folder_path = f"{__dirname__}/../data/pgn"
+pgn_file_paths = [file for file in os.listdir(pgn_folder_path) if file.endswith(".pgn")]
+# sort files alphabetically to ensure consistent order
+pgn_file_paths.sort(reverse=False)
 
-# # truncate file_pgn_paths to max_files_count
-# max_files_count = 28
-# # max_files_count = 22
-# # max_files_count = 25
-# max_files_count = 18
-# max_files_count = 10
-# pgn_file_paths = pgn_file_paths[:max_files_count]
-
-
-# games: list[pgn.Game] = []
-# for file_index, pgn_file_path in enumerate(pgn_file_paths):
-#     print(f"processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})")
-#     new_games = PGNUtils.load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
-#     games.extend(new_games)
-#     print(f"GAMES LOADED: {len(games)}")
-
-# # Shuffle the games
-# # random_seed = 42
-# # torch.manual_seed(random_seed)
-# # games_rnd_indexes = torch.randperm(len(games)).tolist()
-# # games = [games[i] for i in games_rnd_indexes]
-
-# # keep only max_games_count games
-# max_games_count = len(games)
-# # max_games_count = 7_000
-# # max_games_count = 1_000
-# max_games_count = 100
-# games = games[:max_games_count]
-# #
-# print(f"GAMES PARSED: {len(games)}")
+# truncate file_pgn_paths to max_files_count
+max_files_count = 28
+# max_files_count = 22
+# max_files_count = 25
+max_files_count = 18
+max_files_count = 10
+pgn_file_paths = pgn_file_paths[:max_files_count]
 
 
-# ###############################################################################
-# # Convert data into tensors
-# #
-# X, y = EncodingUtils.create_input_for_nn(games)
+games: list[pgn.Game] = []
+for file_index, pgn_file_path in enumerate(pgn_file_paths):
+    print(f"processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})")
+    new_games = PGNUtils.load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
+    games.extend(new_games)
+    print(f"GAMES LOADED: {len(games)}")
 
-# print(f"NUMBER OF SAMPLES: {len(y)}")
+# Shuffle the games
+# random_seed = 42
+# torch.manual_seed(random_seed)
+# games_rnd_indexes = torch.randperm(len(games)).tolist()
+# games = [games[i] for i in games_rnd_indexes]
 
-# # Truncate to 2.5 million samples
-# X = X[0:2500000]
-# y = y[0:2500000]
+# keep only max_games_count games
+max_games_count = len(games)
+# max_games_count = 7_000
+# max_games_count = 1_000
+max_games_count = 100
+games = games[:max_games_count]
+#
+print(f"GAMES PARSED: {len(games)}")
 
-# # Encode moves
-# y, uci_to_classindex = EncodingUtils.encode_moves(y)
-# num_classes = len(uci_to_classindex)
-# print(f"NUMBER OF UNIQUE MOVES: {num_classes}")
 
+###############################################################################
+# Convert data into tensors
+#
+X, y = EncodingUtils.create_input_for_nn(games)
 
-# # Convert to PyTorch tensors
-# X = torch.tensor(X, dtype=torch.float32)
-# y = torch.tensor(y, dtype=torch.long)
+print(f"NUMBER OF SAMPLES: {len(y)}")
 
-# # Save the dataset
-# IOUtils.save_dataset(X, y, folder_path=f"{__dirname__}/../output/")
+# Truncate to 2.5 million samples
+X = X[0:2500000]
+y = y[0:2500000]
 
-# X, y = IOUtils.load_dataset(folder_path=f"{__dirname__}/../output/")
-
-output_folder_path = f"{__dirname__}/../output/"
-
-if not IOUtils.has_dataset(output_folder_path):
-    # Create dataset
-    X, y, uci_to_classindex = Utils.create_dataset()
-    # Save the dataset for later
-    IOUtils.save_dataset(X, y, uci_to_classindex, folder_path=output_folder_path)
-else:
-    # Load the dataset
-    X, y, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
-
+# Encode moves
+y, uci_to_classindex = EncodingUtils.encode_moves(y)
 num_classes = len(uci_to_classindex)
 print(f"NUMBER OF UNIQUE MOVES: {num_classes}")
+
+
+# Convert to PyTorch tensors
+X = torch.tensor(X, dtype=torch.float32)
+y = torch.tensor(y, dtype=torch.long)
+
+# Save the dataset
+IOUtils.save_dataset(X, y, folder_path=f"{__dirname__}/../output/")
+
+X, y = IOUtils.load_dataset(folder_path=f"{__dirname__}/../output/")
 
 ###############################################################################
 # Prepare data loaders
@@ -121,7 +105,7 @@ test_dataset = ChessDataset(test_X, test_y)
 test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 # Check for GPU
-device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu" # type: ignore
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
 print(f"Using device: {device}")
 
 # Model Initialization
@@ -178,23 +162,24 @@ for epoch in range(num_epochs):
 # Save the model
 #
 
-IOUtils.save_model(model, folder_path=f"{__dirname__}/../output")
+from libs.io_utils import IOUtils
+IOUtils.save_model(model, uci_to_classindex, folder_path=f"{__dirname__}/../output")
 
 
-# # Write a README file with training details
-# readme_md = f"""# Chess Model Training
-# - Model trained on {len(games)} games from {len(pgn_file_paths)} PGN files.
-# - Number of unique moves: {num_classes}
-# - Number of samples: {len(y)}
-# - Number of epochs: {num_epochs}
-# - Final Loss: {running_loss / len(train_dataloader):.4f}
-# - trainable_params: {trainable_params:_}
-# - model: {model}
-# """
+# Write a README file with training details
+readme_md = f"""# Chess Model Training
+- Model trained on {len(games)} games from {len(pgn_file_paths)} PGN files.
+- Number of unique moves: {num_classes}
+- Number of samples: {len(y)}
+- Number of epochs: {num_epochs}
+- Final Loss: {running_loss / len(train_dataloader):.4f}
+- trainable_params: {trainable_params:_}
+- model: {model}
+"""
 
-# README_path = f"{__dirname__}/../output/README.md"
-# with open(README_path, "w") as readme_file:
-#     readme_file.write(readme_md)
+README_path = f"{__dirname__}/../output/README.md"
+with open(README_path, "w") as readme_file:
+    readme_file.write(readme_md)
 
 ##########################################################################################
 

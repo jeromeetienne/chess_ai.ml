@@ -1,3 +1,4 @@
+# pip imports
 import torch.nn as nn
 import torch
 
@@ -28,7 +29,7 @@ class ChessModel(nn.Module):
 
 class ChessModelConv2d(nn.Module):
     def __init__(self, num_classes):
-        super(ChessModel, self).__init__()
+        super(ChessModelConv2d, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
         self.conv_1 = nn.Conv2d(14, 128, kernel_size=3, padding=1)
         # self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)

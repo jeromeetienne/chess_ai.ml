@@ -6,7 +6,7 @@ import chess
 import chess.pgn as pgn
 import random
 
-from libs.model_io import ModelIO
+from libs.io_utils import IOUtils
 from libs.pgn_utils import PGNUtils
 from libs.encoding_utils import EncodingUtils
 
@@ -29,10 +29,15 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 #
 # Load the mapping
 
-model, uci_to_classindex = ModelIO.load_model(folder_path=f"{__dirname__}/../output")
+output_folder_path = f"{__dirname__}/../output/"
+
+_, _, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
+num_classes = len(uci_to_classindex)
+
+model = IOUtils.load_model(folder_path=output_folder_path, num_classes=num_classes)
 
 # Check for GPU
-device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
 print(f"Using device: {device}")
 
 # move the model to the device and set it to eval mode
@@ -145,7 +150,6 @@ for _ in range(move_count):
 # Optionally, print the PGN representation of the game
 
 # TODO put that into a function
-
 
 
 print("PGN Representation of the game:")

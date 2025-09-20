@@ -1,19 +1,26 @@
+# stdlib imports
+import datetime
+
+# pip imports
 import chess
-import chess.pgn as pgn
+import chess.pgn 
 
 class PGNUtils:
-    def load_games_from_pgn(file_path: str) -> list[pgn.Game]:
-        games: list[pgn.Game] = []
+    @staticmethod
+    def load_games_from_pgn(file_path: str) -> list[chess.pgn.Game]:
+        games: list[chess.pgn.Game] = []
         with open(file_path, 'r') as pgn_file:
             while True:
-                game: pgn.Game = pgn.read_game(pgn_file)
+                game: chess.pgn.Game|None = chess.pgn.read_game(pgn_file)
                 if game is None:
                     break
                 games.append(game)
+
         return games
 
-    def board_to_pgn(board: chess.Board) -> pgn.Game:
-        game = pgn.Game.from_board(board)
+    @staticmethod
+    def board_to_pgn(board: chess.Board) -> str:
+        game = chess.pgn.Game.from_board(board)
         game.headers["Event"] = "AI vs AI"
         game.headers["White"] = "chess_bot.ml 1"
         game.headers["Black"] = "chess_bot.ml 2"
@@ -22,8 +29,6 @@ class PGNUtils:
         game.headers["Site"] = "My Computer"
         game.headers["Round"] = "1"
         # set the date to today in YYYY.MM.DD format
-        import datetime
-
         today = datetime.date.today()
         game.headers["Date"] = today.strftime("%Y.%m.%d")
 
