@@ -26,11 +26,11 @@
 - clean up `./train.py` and `./predict.py`
 - rename X to `board_tensor`, y to `move_tensor`
   - or `input_tensors`, `expected_target_tensors`
-- display chess board with unicode characters
 
 # DONE
 - DONE rename `move_to_int` to `uci_to_classindex`
 - DONE that a test dataset is separate from the training dataset
+- DONE display chess board with unicode characters
 
 # Ideas
 

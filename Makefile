@@ -4,6 +4,9 @@ help: ## show this help
 clean: ## clean output directory
 	rm -f ./output/*
 
+build_dataset: ## build the dataset
+	python src/build_dataset.py
+
 train: ## train the model
 	python src/train.py
 

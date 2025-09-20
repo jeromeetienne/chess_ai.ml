@@ -1,128 +1,70 @@
 # stdlib imports
 import os
+import sys
 import time
 
 # pip imports
+import tqdm
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from chess import pgn
+
 
 # local imports
 from libs.dataset import ChessDataset
 from libs.model import ChessModel
-from libs.pgn_utils import PGNUtils
-from libs.encoding_utils import EncodingUtils
-from libs.io_utils import IOUtils
 from libs.utils import Utils
 from libs.io_utils import IOUtils
-
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
-# ###############################################################################
-# # Load PGN files and parse games
-# #
-# pgn_folder_path = f"{__dirname__}/../data/pgn"
-# pgn_file_paths = [file for file in os.listdir(pgn_folder_path) if file.endswith(".pgn")]
-# # sort files alphabetically to ensure consistent order
-# pgn_file_paths.sort(reverse=False)
-
-# # truncate file_pgn_paths to max_files_count
-# max_files_count = 28
-# # max_files_count = 22
-# # max_files_count = 25
-# max_files_count = 18
-# max_files_count = 10
-# pgn_file_paths = pgn_file_paths[:max_files_count]
-
-
-# games: list[pgn.Game] = []
-# for file_index, pgn_file_path in enumerate(pgn_file_paths):
-#     print(f"processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})")
-#     new_games = PGNUtils.load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
-#     games.extend(new_games)
-#     print(f"GAMES LOADED: {len(games)}")
-
-# # Shuffle the games
-# # random_seed = 42
-# # torch.manual_seed(random_seed)
-# # games_rnd_indexes = torch.randperm(len(games)).tolist()
-# # games = [games[i] for i in games_rnd_indexes]
-
-# # keep only max_games_count games
-# max_games_count = len(games)
-# # max_games_count = 7_000
-# # max_games_count = 1_000
-# max_games_count = 100
-# games = games[:max_games_count]
-# #
-# print(f"GAMES PARSED: {len(games)}")
-
-
-# ###############################################################################
-# # Convert data into tensors
-# #
-# X, y = EncodingUtils.create_input_for_nn(games)
-
-# print(f"NUMBER OF SAMPLES: {len(y)}")
-
-# # Truncate to 2.5 million samples
-# X = X[0:2500000]
-# y = y[0:2500000]
-
-# # Encode moves
-# y, uci_to_classindex = EncodingUtils.encode_moves(y)
-# num_classes = len(uci_to_classindex)
-# print(f"NUMBER OF UNIQUE MOVES: {num_classes}")
-
-
-# # Convert to PyTorch tensors
-# X = torch.tensor(X, dtype=torch.float32)
-# y = torch.tensor(y, dtype=torch.long)
-
-# # Save the dataset
-# IOUtils.save_dataset(X, y, folder_path=f"{__dirname__}/../output/")
-
-# X, y = IOUtils.load_dataset(folder_path=f"{__dirname__}/../output/")
+###############################################################################
+# Load/Create Dataset
+#
 
 output_folder_path = f"{__dirname__}/../output/"
 
+# sanity check: ensure dataset exists else exit
 if not IOUtils.has_dataset(output_folder_path):
-    # Create dataset
-    X, y, uci_to_classindex = Utils.create_dataset()
-    # Save the dataset for later
-    IOUtils.save_dataset(X, y, uci_to_classindex, folder_path=output_folder_path)
-else:
-    # Load the dataset
-    X, y, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
+    print("Dataset not found. Creating a new one.")
+    sys.exit(1)
+
+
+dataset_creation_start_time = time.time()
+# Load the dataset
+boards_tensor, best_move_tensor, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
+
+print(f"Total boards in dataset: {len(boards_tensor)}")
+dataset_creation_elapsed_time = time.time() - dataset_creation_start_time
+print(f"Dataset creation/loading time: {dataset_creation_elapsed_time:.2f} seconds")
 
 num_classes = len(uci_to_classindex)
-print(f"NUMBER OF UNIQUE MOVES: {num_classes}")
+print(f"Number of classes: {num_classes}")
 
 ###############################################################################
 # Prepare data loaders
 #
 
 train_test_split_ratio = 0.7
+batch_size = 2048
 
 # Create train_dataset and train_dataloader with the first 80% of the data
-train_X = X[0 : int(train_test_split_ratio * len(X))]
-train_y = y[0 : int(train_test_split_ratio * len(y))]
-train_dataset = ChessDataset(train_X, train_y)
-train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+train_inputs = boards_tensor[0 : int(train_test_split_ratio * len(boards_tensor))]
+train_labels = best_move_tensor[0 : int(train_test_split_ratio * len(best_move_tensor))]
+train_dataset = ChessDataset(train_inputs, train_labels)
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 # Create test_dataset and test_dataloader with the remaining 20% of the data
-test_X = X[int(train_test_split_ratio * len(X)) :]
-test_y = y[int(train_test_split_ratio * len(y)) :]
-test_dataset = ChessDataset(test_X, test_y)
-test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+test_inputs = boards_tensor[int(train_test_split_ratio * len(boards_tensor)) :]
+test_labels = best_move_tensor[int(train_test_split_ratio * len(best_move_tensor)) :]
+test_dataset = ChessDataset(test_inputs, test_labels)
+test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Check for GPU
-device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu" # type: ignore
-print(f"Using device: {device}")
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
+print(f"Pytorch computes on {device} device")
 
 # Model Initialization
 model = ChessModel(num_classes=num_classes).to(device)
@@ -147,13 +89,10 @@ for name, param in model.named_parameters():
 # Training
 #
 
-# num_epochs = 50
-num_epochs = 2
-for epoch in range(num_epochs):
-    time_start = time.time()
+def train_one_epoch() -> float:
     model.train()
     running_loss = 0.0
-    for inputs, labels in train_dataloader:
+    for inputs, labels in tqdm.tqdm(train_dataloader, ncols=80, desc="Training", unit="batch"):
         inputs, labels = inputs.to(device), labels.to(device)  # Move data to GPU
         optimizer.zero_grad()
 
@@ -168,48 +107,60 @@ for epoch in range(num_epochs):
 
         optimizer.step()
         running_loss += loss.item()
-    time_end = time.time()
-    time_elapsed = time_end - time_start
-    print(
-        f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss / len(train_dataloader):.4f}, Time: {time_elapsed:.2f}-sec"
-    )
+
+    average_loss = running_loss / len(train_dataloader)
+    return average_loss
+
+
+# num_epochs = 50
+num_epochs = 20
+for epoch in range(num_epochs):
+    epoch_start_time = time.time()
+    avg_loss = train_one_epoch()
+    epoch_elapsed_time = time.time() - epoch_start_time
+    print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec")
 
 ###############################################################################
 # Save the model
 #
 
-IOUtils.save_model(model, folder_path=f"{__dirname__}/../output")
+IOUtils.save_model(model, folder_path=output_folder_path)
 
 
-# # Write a README file with training details
-# readme_md = f"""# Chess Model Training
-# - Model trained on {len(games)} games from {len(pgn_file_paths)} PGN files.
-# - Number of unique moves: {num_classes}
-# - Number of samples: {len(y)}
-# - Number of epochs: {num_epochs}
-# - Final Loss: {running_loss / len(train_dataloader):.4f}
-# - trainable_params: {trainable_params:_}
-# - model: {model}
-# """
+# Write a README file with training details
+readme_md = f"""# Chess Model Training
+- Model trained on {len(train_inputs)} game positions
+- Number of unique moves: {num_classes}
+- Number of epochs: {num_epochs}
+- Final Loss: {avg_loss}
+- trainable_params: {trainable_params:_}
+- model: {model}
+"""
 
-# README_path = f"{__dirname__}/../output/README.md"
-# with open(README_path, "w") as readme_file:
-#     readme_file.write(readme_md)
+README_path = f"{output_folder_path}/README.md"
+with open(README_path, "w") as readme_file:
+    readme_file.write(readme_md)
 
 ##########################################################################################
 
 print("Training complete.")
 
-# Now test the model on the test set
-model.eval()
+def evaluate_model_accuracy(model: nn.Module, dataloader: DataLoader) -> float:
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for inputs, labels in dataloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    accuracy = 100 * correct / total
+    return accuracy
 
-correct = 0
-total = 0
-with torch.no_grad():
-    for inputs, labels in test_dataloader:
-        inputs, labels = inputs.to(device), labels.to(device)
-        outputs = model(inputs)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
-print(f"Accuracy on test set: {100 * correct / total:.2f}%")
+
+# Now test the model on the test set
+eval_accuracy = evaluate_model_accuracy(model, test_dataloader)
+print(f"Accuracy on test set: {eval_accuracy:.2f}%")
+
