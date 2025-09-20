@@ -7,8 +7,8 @@ heavyly inspired by https://github.com/Skripkon/chess-engine.git
 We recommend to use a virtual environment:
 
 ```bash
-python3.10 -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+python3.10 -m venv .venv
+source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
 ```
 
 Then install the required packages:

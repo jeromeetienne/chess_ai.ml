@@ -1,5 +1,9 @@
 # TODO
 - evaluate the model on a validation set during training
+- look for model structure on the web
+  - search for 'pytorch chess model'
+  - search for 'pytorch chess neural network'
+  - search for 'pytorch/tensorflow alpha zero github'
 - do a `./play.py` able to play against a human and stockfish, with good cmdline args
   - cmdline options:
     - `--model-path` to load a model
@@ -9,6 +13,8 @@
   - display the board in ascii
   - move in uci format (e2e4)
   - display the move suggested by the model and the move suggested by stockfish
+- connect `./play.py` to lichess.org to play online
+  - see lichess API documentation for integration details
 
 # DONE
 - DONE that a test dataset is separate from the training dataset

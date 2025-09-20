@@ -1,8 +1,4 @@
 # Virtual environment
-venv/
-# all the pgn chess game files
-data/pgn/*.pgn
+.venv/
 # compiled python files
 __pycache__/
-# the output directory after the training
-output/
