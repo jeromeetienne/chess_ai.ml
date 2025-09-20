@@ -34,7 +34,6 @@ def game_slice(src_game: chess.pgn.Game, move_index_start: int, move_index_end: 
     return dst_game
 
 
-
 ###############################################################################
 ###############################################################################
 #	read pgn file and display some info

@@ -2,6 +2,7 @@
 The model is very strong in the opening, i think it is due to the openings are standard so there not much variability. 
 We can leverage the same principles in the endgame as the number of pieces is lower.
 
+- https://www.chessprogramming.org/Game_Phases
 - Q. how to detect the stage of the game?
 - A. by the number of pieces left on the board
 - usually we say endgame is when there is no more queen on the board
@@ -32,10 +33,17 @@ see `./test_stockfish.py`
 - learn only from the winning side ?
   - what if the looser made great moves during the whole game, and blunder at the end
 
+## use stockfish evaluations
+- stockfish is able to evaluate a position with a score in centipawns
+- use that to weight the loss function during training ?
+
+# use transformer model instead of convolutional neural network
+- https://github.com/Atenrev/chessformers
+- transformer and attention mechanism can be used for learning spatial relationships
 
 ## Change the encoding of the board
 - currently it contains only the current pieces positions... with a 0 or 1 per int
-  - what about i add the threaten squares?
+  - what about i add the threaten squares? board.attacks()
 
 - gym-chess got exactly alphazero encoding https://pypi.org/project/gym-chess/#chessalphazero-v0
 
