@@ -5,6 +5,7 @@ class ChessExtra:
     """
     Extra python-chess utilities -- https://python-chess.readthedocs.io/en/latest/
     """
+
     @staticmethod    
     def print_game(game: chess.pgn.Game) -> None:
         print(game.board().unicode())

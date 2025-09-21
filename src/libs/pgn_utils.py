@@ -12,8 +12,9 @@ class PGNUtils:
         """
         Return a list of all PGN file paths in the specified folder.
         The list is sorted alphabetically.
+
         Arguments:
-        - folder_path (str): Path to the folder containing PGN files.
+            folder_path (str): Path to the folder containing PGN files.
         """
         
         pgn_file_paths: list[str] = []
@@ -32,9 +33,10 @@ class PGNUtils:
         Load all games from a PGN file.
 
         Arguments:
-        - file_path (str): Path to the PGN file.
-        - max_games (int): Maximum number of games to load. If 0, load all games.
+            file_path (str): Path to the PGN file.
+            max_games (int): Maximum number of games to load. If 0, load all games.
         """
+
         games: list[chess.pgn.Game] = []
         with open(file_path, 'r') as pgn_file:
             while True:
@@ -49,6 +51,14 @@ class PGNUtils:
 
     @staticmethod
     def board_to_pgn(board: chess.Board, white_player: str = "Unknown", black_player: str = "Unknown") -> str:
+        """
+        Convert a chess.Board to a PGN string with headers.
+
+        Arguments:
+            board (chess.Board): The chess board to convert.
+            white_player (str): Name of the white player.
+            black_player (str): Name of the black player.
+        """
         game = chess.pgn.Game.from_board(board)
         game.headers["Event"] = "AI vs AI"
         game.headers["White"] = white_player

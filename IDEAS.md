@@ -21,6 +21,11 @@ see `./test_stockfish.py`
 - https://www.freecodecamp.org/news/create-a-self-playing-ai-chess-engine-from-scratch/
 - https://github.com/jackdawkins11/pytorch-alpha-zero
 
+## Use good AI 
+- "im writing a chess bot with neural network, can you design a good model for that"
+- chatgpt result - https://chatgpt.com/c/68d0635f-e7a4-832d-93c0-f7c5aef69703
+- gemini 2.5 pro - https://gemini.google.com/app/035250525ba1a737
+
 ## change encoding of the output best_move
 - 2 chessboards one with the source square, one with the destination square
   - 64 squares each

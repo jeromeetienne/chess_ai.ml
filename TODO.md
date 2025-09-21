@@ -1,6 +1,6 @@
 # TODO
-- do early stopping during training
-- evaluate the model on a validation set during training
+- generalize the game slice in the dataset builder
+  - allow not to set begining and end move_index
 - look for model structure on the web
   - search for 'pytorch chess model'
   - search for 'pytorch chess neural network'
@@ -13,6 +13,8 @@
   - generate multiple dataset files for each stage of the game
 
 # DONE
+- DONE do early stopping during training
+- DONE evaluate the model on a validation set during training
 - DONE add proper logs in `./train.py` and `./predict.py`
 - DONE connect `./play.py` to lichess.org to play online
   - add it in `Makefile`

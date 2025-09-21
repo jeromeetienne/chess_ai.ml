@@ -38,10 +38,10 @@ class Utils:
 
         games: list[chess.pgn.Game] = []
         for file_index, pgn_file_path in enumerate(pgn_file_paths):
-            print(f"processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})")
+            print(f"Processing file {pgn_file_path} ({file_index+1}/{len(pgn_file_paths)})")
             new_games = PGNUtils.load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
             games.extend(new_games)
-            print(f"GAMES LOADED: {len(games)}")
+            print(f"Added {len(new_games)} new games, total games: {len(games)}")
 
         ###############################################################################
         ###############################################################################
@@ -52,14 +52,13 @@ class Utils:
         # keep only max_games_count games
         if max_games_count != 0:
             games = games[:max_games_count]
-        #
-        print(f"GAMES PARSED: {len(games)}")
 
         # keep only the 10 first moves of each game
-        if False:
+        if True:
             sliced_games: list[chess.pgn.Game] = []
-            move_index_start = 0
-            move_index_end = 10
+            move_index_start = 15
+            move_index_end = 30
+            print(f"Keeping only moves from {move_index_start} to {move_index_end} non included (if possible)")
             for game in games:
                 move_count = len(list(game.mainline_moves()))
                 # print(f"move_count: {move_count}")
@@ -68,6 +67,9 @@ class Utils:
                 sliced_game = ChessExtra.game_slice(game, move_index_start, move_index_end)
                 sliced_games.append(sliced_game)
             games = list(sliced_games)
+
+        #
+        print(f"Game considered: {len(games)}")
 
         ###############################################################################
         ###############################################################################
@@ -160,7 +162,7 @@ class Utils:
 
         # Disable gradient calculation for inference
         with torch.no_grad():
-            logits = model(boards_tensor)
+            logits: torch.Tensor = model(boards_tensor)
 
         logits = logits.squeeze(0)  # Remove batch dimension
 

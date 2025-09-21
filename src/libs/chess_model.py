@@ -29,41 +29,68 @@ class ChessModelOriginal(nn.Module):
 class ChessModelConv2d(nn.Module):
     def __init__(self, num_classes):
         super(ChessModelConv2d, self).__init__()
-        # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
-        self.conv_1 = nn.Conv2d(14, 64, kernel_size=5, padding=2)
-        # self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.dropout2d_1 = nn.Dropout2d(0.05)
-        # NOTE: no max pooling layers ??
-        # NOTE: no dropout layers ??
-        self.conv_2 = nn.Conv2d(64, 64, kernel_size=5, padding=2)
-        self.dropout2d_2 = nn.Dropout2d(0.05)
+        self.conv_1 = nn.Conv2d(14, 32, kernel_size=3, padding=1)
+        self.bn_1 = nn.BatchNorm2d(32) # Add BatchNorm2d after conv_1
+        self.dropout2d_1 = nn.Dropout2d(0.5)
+
+        self.conv_2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.bn_2 = nn.BatchNorm2d(64) # Add BatchNorm2d after conv_2
+        self.dropout2d_2 = nn.Dropout2d(0.5)
+
+        self.conv_3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.bn_3 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_3
+        self.dropout2d_3 = nn.Dropout2d(0.5)
+
+        self.conv_4 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
+        self.bn_4 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_4
+        self.dropout2d_4 = nn.Dropout2d(0.5)
 
         self.flatten = nn.Flatten()
 
-        # self.fc1 = nn.Linear(8*8 * 64, num_classes)
-        # self.dropout_1 = nn.Dropout(0.01)
-        # self.fc2 = nn.Linear(256, num_classes)
-        self.fc1 = nn.Linear(8 * 8 * 64, 512)
+        self.fc1 = nn.Linear(8 * 8 * 128, 512)
+        self.bn_fc1 = nn.BatchNorm1d(512) # Add BatchNorm1d after fc1
+        self.dropout_1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(512, num_classes)
         self.relu = nn.ReLU()
 
         # Initialize weights
-        # nn.init.kaiming_uniform_(self.conv1.weight, nonlinearity='relu')
-        # nn.init.kaiming_uniform_(self.conv2.weight, nonlinearity='relu')
-        # nn.init.xavier_uniform_(self.fc1.weight)
-        # nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='relu')
+        nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='relu')
+        nn.init.kaiming_uniform_(self.conv_3.weight, nonlinearity='relu')
+        nn.init.kaiming_uniform_(self.conv_4.weight, nonlinearity='relu')
+        nn.init.kaiming_uniform_(self.fc1.weight)
+        nn.init.kaiming_uniform_(self.fc2.weight)
+
+        
 
     def forward(self, x):
-        x = self.relu(self.conv_1(x))
-        # x = self.maxpool(x)
+        x = self.conv_1(x)
+        x = self.bn_1(x)
+        x = self.relu(x)
         x = self.dropout2d_1(x)
-        x = self.relu(self.conv_2(x))
-        # x = self.maxpool(x)
+
+        x = self.conv_2(x)
+        x = self.bn_2(x)
+        x = self.relu(x)
         x = self.dropout2d_2(x)
+
+        x = self.conv_3(x)
+        x = self.bn_3(x)    
+        x = self.relu(x)
+        x = self.dropout2d_3(x)
+
+        x = self.conv_4(x)
+        x = self.bn_4(x)
+        x = self.relu(x)
+        x = self.dropout2d_4(x)
+
         x = self.flatten(x)
-        # x = self.fc1(x)
-        # x = self.dropout_1(x)
-        x = self.relu(self.fc1(x))
+
+        x = self.fc1(x)
+        x = self.bn_fc1(x)
+        x = self.relu(x)
+        x = self.dropout_1(x)
+
         x = self.fc2(x)  # Output raw logits
         return x
 
@@ -111,7 +138,7 @@ class ChessModelLinear(torch.nn.Module):
 ###############################################################################
 ###############################################################################
 
-class ChessModel(ChessModelOriginal):
+class ChessModel(ChessModelConv2d):
     def __init__(self, num_classes):
         super(ChessModel, self).__init__(num_classes)
 

@@ -3,8 +3,8 @@ import torch
 import pickle
 import os
 
-class IOUtils:
 
+class IOUtils:
 
     @staticmethod
     def save_model(model: ChessModel, folder_path: str):
@@ -42,7 +42,7 @@ class IOUtils:
         with open(uci_to_classindex_path, "rb") as file:
             uci_to_classindex = pickle.load(file)
         return boards_tensor, moves_tensor, uci_to_classindex
-    
+
     @staticmethod
     def has_dataset(folder_path: str) -> bool:
         boards_path = f"{folder_path}/dataset_boards.pt"
@@ -50,9 +50,15 @@ class IOUtils:
         uci_to_classindex_path = f"{folder_path}/uci_to_classindex.pickle"
         dataset_exists = os.path.exists(boards_path) and os.path.exists(moves_path) and os.path.exists(uci_to_classindex_path)
         return dataset_exists
-            
+
     @staticmethod
     def load_uci_to_classindex(folder_path: str) -> dict[str, int]:
+        """
+        Load the uci_to_classindex mapping from a pickle file.
+        Useful for inference when playing a game. when we dont want to load the entire dataset, because its large and slow
+        Arguments:
+            folder_path (str): Path to the folder containing the uci_to_classindex.pickle file.
+        """
         uci_to_classindex_path = f"{folder_path}/uci_to_classindex.pickle"
         with open(uci_to_classindex_path, "rb") as file:
             uci_to_classindex = pickle.load(file)

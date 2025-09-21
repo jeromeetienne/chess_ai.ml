@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 # local imports
 from libs.chess_dataset import ChessDataset
 from libs.chess_model import ChessModel
+from libs.early_stopper import EarlyStopper
 from libs.utils import Utils
 from libs.io_utils import IOUtils
 
@@ -23,6 +24,10 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 
 def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7):
+
+    # set random seed for reproducibility
+    torch.manual_seed(42)
+
     ###############################################################################
     # Load Dataset
     #
@@ -74,6 +79,13 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
     model = ChessModel(num_classes=num_classes).to(device)
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    
+    # optimizer = optim.SGD(model.parameters(), 
+    #                                lr=learning_rate, 
+    #                                momentum=0.9, 
+    #                                nesterov=True, 
+    #                                weight_decay=1e-4)
+    
 
     ###############################################################################
     # Display model summary
@@ -108,7 +120,7 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
             loss.backward()
 
             # Gradient clipping
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
             optimizer.step()
             running_loss += loss.item()
@@ -131,6 +143,7 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
         return validation_loss
 
     def evaluate_model_accuracy(model: nn.Module, dataloader: DataLoader) -> float:
+        # FIXME this function is buggy 
         model.eval()
         correct = 0
         total = 0
@@ -149,33 +162,50 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
 
     ###########################################################################
 
-    for epoch in range(num_epochs):
+    early_stopper = EarlyStopper(patience=10)
+    for epoch_index in range(num_epochs):
         epoch_start_time = time.time()
+        # Training the model
         avg_loss = train_one_epoch(model=model, dataloader=train_dataloader)
-
-        epoch_elapsed_time = time.time() - epoch_start_time
-        print(f"Epoch {epoch + 1}/{num_epochs}, Training Loss: {avg_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec")
 
         # Validate the model on the validation set
         validation_loss = validation_one_epoch(model=model, dataloader=validation_dataloader)
-        print(f"Validation Loss: {validation_loss:.4f}")
 
-        # Save the model
-        IOUtils.save_model(model, folder_path=output_folder_path)
-        print(f"Model saved to {output_folder_path}")
+        # Check for early stopping
+        must_stop, must_save = early_stopper.early_stop(validation_loss)
 
-        # Write a README file with training details
-        readme_md = f"""# Chess Model Training
-        - Model trained on {len(train_dataset)} game positions
-        - Number of unique moves: {num_classes}
-        - Number of epochs: {num_epochs}
-        - Final Loss: {avg_loss:.4f}
-        - trainable_params: {trainable_params:_}
-        - model: {model}
-        """
-        README_path = f"{output_folder_path}/README.md"
-        with open(README_path, "w") as readme_file:
-            readme_file.write(readme_md)
+        epoch_elapsed_time = time.time() - epoch_start_time
+        print(f"Epoch {epoch_index + 1}/{num_epochs}, Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}")
+
+        # Save the model if validation loss improved
+        if must_save:
+            # Save the model
+            IOUtils.save_model(model, folder_path=output_folder_path)
+            print(f"Model saved to {output_folder_path}")
+
+            # Write a README file with training details
+            readme_md = f"""# Chess Model Training
+            - Date {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+            - Model trained on {len(train_dataset)} game positions
+            - Number of unique moves: {num_classes}
+            - Number of epochs: {epoch_index + 1}
+            - Final Loss: {validation_loss:.4f}
+            - trainable_params: {trainable_params:_}
+            - model: {model}
+            """
+            README_path = f"{output_folder_path}/README.md"
+            with open(README_path, "w") as readme_file:
+                readme_file.write(readme_md)
+
+            # Now test the model on the test set
+            eval_accuracy = evaluate_model_accuracy(model, test_dataloader)
+            print(f"Accuracy on test set: {eval_accuracy:.2f}%")
+
+
+        # Stop training if no improvement for 'patience' epochs
+        if must_stop:
+            print(f"Early stopping triggered at epoch {epoch_index + 1}")
+            break
 
     ##########################################################################################
 
@@ -198,7 +228,7 @@ if __name__ == "__main__":
         description="Train a chess model using PyTorch.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--num_epochs", type=int, default=20, help="Number of training epochs")
+    parser.add_argument("--num_epochs", type=int, default=100, help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=2048, help="Batch size for training")
     parser.add_argument("--train_test_split_ratio", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
     # --learning_rate 0.001 or -lr 0.001

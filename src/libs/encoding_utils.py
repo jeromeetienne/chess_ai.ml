@@ -44,24 +44,28 @@ class EncodingUtils:
     @staticmethod
     def create_input_for_nn_np(games: list[pgn.Game]) -> tuple[np.ndarray, np.ndarray, dict[str, int]]:
         board_array = []
-        best_move_array = []
+        best_move_array_uci = []
         for game in games:
             board = game.board()
             for move in game.mainline_moves():
+                # encode the current board position
                 board_matrix = EncodingUtils.board_to_matrix_np(board)
                 board_array.append(board_matrix)
-                best_move_array.append(move.uci())
+                # append the best move in UCI format
+                best_move_array_uci.append(move.uci())
+
+                # Play this move on the board to get to the next position
                 board.push(move)
 
         board_nparray =  np.array(board_array, dtype=np.float32)
 
         # Create a mapping from UCI move strings to class indices
-        uci_to_classindex = {move: idx for idx, move in enumerate(set(best_move_array))}
+        uci_to_classindex = {move: idx for idx, move in enumerate(set(best_move_array_uci))}
 
         # Encode best moves as class indices
-        best_move_nparray = np.array([uci_to_classindex[move] for move in best_move_array], dtype=np.float32)
+        best_move_nparray = np.array([uci_to_classindex[move] for move in best_move_array_uci], dtype=np.float32)
 
-
+        # return the boards, best moves and the mapping
         return board_nparray, best_move_nparray, uci_to_classindex
 
     # @staticmethod   
