@@ -1,4 +1,5 @@
 # TODO
+- do early stopping during training
 - evaluate the model on a validation set during training
 - look for model structure on the web
   - search for 'pytorch chess model'

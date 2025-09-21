@@ -27,8 +27,9 @@ see `./test_stockfish.py`
   - 64 + 64 = 128 output neurons
   - much less than the current 1869 output neurons... 
   - currently it is a classification problem with 1869 classes... with only one is correct... poorly formulated problem
-
+- https://www.baeldung.com/cs/encode-chess-board-state
 ## Learn only winning moves
+- ISSUE: currently i learn from any move
 - use stockfish to evaluate the position after each move... and use that to filter the dataset
 - learn only from the winning side ?
   - what if the looser made great moves during the whole game, and blunder at the end
@@ -40,6 +41,7 @@ see `./test_stockfish.py`
 # use transformer model instead of convolutional neural network
 - https://github.com/Atenrev/chessformers
 - transformer and attention mechanism can be used for learning spatial relationships
+- "spatial transformer with self attention mechanism on mnist with pytorch" with perplexity
 
 ## Change the encoding of the board
 - currently it contains only the current pieces positions... with a 0 or 1 per int

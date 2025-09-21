@@ -13,10 +13,10 @@ class ChessModelOriginal(nn.Module):
         self.relu = nn.ReLU()
 
         # Initialize weights
-        # nn.init.kaiming_uniform_(self.conv1.weight, nonlinearity='relu')
-        # nn.init.kaiming_uniform_(self.conv2.weight, nonlinearity='relu')
-        # nn.init.xavier_uniform_(self.fc1.weight)
-        # nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.kaiming_uniform_(self.conv1.weight, nonlinearity='relu')
+        nn.init.kaiming_uniform_(self.conv2.weight, nonlinearity='relu')
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
 
     def forward(self, x):
         x = self.relu(self.conv1(x))
@@ -111,7 +111,7 @@ class ChessModelLinear(torch.nn.Module):
 ###############################################################################
 ###############################################################################
 
-class ChessModel(ChessModelConv2d):
+class ChessModel(ChessModelOriginal):
     def __init__(self, num_classes):
         super(ChessModel, self).__init__(num_classes)
 

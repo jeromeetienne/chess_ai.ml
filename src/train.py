@@ -31,12 +31,13 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
 
     # sanity check: ensure dataset exists else exit
     if not IOUtils.has_dataset(output_folder_path):
-        print("Dataset not found. Creating a new one.")
+        print("Dataset not found. Please create a new one.")
         sys.exit(1)
 
     dataset_creation_start_time = time.time()
     # Load the dataset
     boards_tensor, best_move_tensor, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
+    boards_dataset = ChessDataset(boards_tensor, best_move_tensor)
 
     print(f"Total boards in dataset: {len(boards_tensor)}")
     dataset_creation_elapsed_time = time.time() - dataset_creation_start_time
@@ -44,23 +45,25 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
 
     num_classes = len(uci_to_classindex)
     print(f"Number of classes: {num_classes}")
-    print(f'boards_tensor shape: {boards_tensor.shape}')
-    print(f'best_move_tensor shape: {best_move_tensor.shape}')
+    print(f"boards_tensor shape: {boards_tensor.shape}")
+    print(f"best_move_tensor shape: {best_move_tensor.shape}")
 
     ###############################################################################
     # Prepare data loaders
     #
 
-    # Create train_dataset and train_dataloader with the first 80% of the data
-    train_inputs = boards_tensor[0 : int(train_test_split_ratio * len(boards_tensor))]
-    train_labels = best_move_tensor[0 : int(train_test_split_ratio * len(best_move_tensor))]
-    train_dataset = ChessDataset(train_inputs, train_labels)
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    dataset_ratio_train = train_test_split_ratio
+    dataset_ratio_validation = (1 - train_test_split_ratio) / 2
+    dataset_ratio_test = (1 - train_test_split_ratio) / 2
 
-    # Create test_dataset and test_dataloader with the remaining 20% of the data
-    test_inputs = boards_tensor[int(train_test_split_ratio * len(boards_tensor)) :]
-    test_labels = best_move_tensor[int(train_test_split_ratio * len(best_move_tensor)) :]
-    test_dataset = ChessDataset(test_inputs, test_labels)
+    # Create the datasets for training, validation and testing by splitting the original dataset
+    train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(
+        boards_dataset, [dataset_ratio_train, dataset_ratio_validation, dataset_ratio_test]
+    )
+
+    # Create dataloaders for training, validation and testing
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    validation_dataloader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     # Check for GPU
@@ -91,10 +94,10 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
     # Training
     #
 
-    def train_one_epoch() -> float:
+    def train_one_epoch(model: nn.Module, dataloader: DataLoader) -> float:
         model.train()
         running_loss = 0.0
-        for inputs, labels in tqdm.tqdm(train_dataloader, ncols=80, desc="Training", unit="batch"):
+        for inputs, labels in tqdm.tqdm(dataloader, ncols=80, desc="Training", unit="batch"):
             inputs, labels = inputs.to(device), labels.to(device)  # Move data to GPU
             optimizer.zero_grad()
 
@@ -110,14 +113,52 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
             optimizer.step()
             running_loss += loss.item()
 
-        average_loss = running_loss / len(train_dataloader)
+        average_loss = running_loss / len(dataloader)
         return average_loss
+
+    def validation_one_epoch(model: nn.Module, dataloader: DataLoader) -> float:
+        model.eval()
+        running_loss = 0.0
+        with torch.no_grad():
+            for inputs, labels in dataloader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                outputs = model(inputs)
+
+                loss = loss_fn(outputs, labels)
+                running_loss += loss.item()
+
+        validation_loss = running_loss / len(dataloader)
+        return validation_loss
+
+    def evaluate_model_accuracy(model: nn.Module, dataloader: DataLoader) -> float:
+        model.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for inputs, labels in dataloader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                logits = model(inputs)
+
+                _, predicted = torch.max(logits, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+
+        accuracy = 100 * correct / total
+        return accuracy
+
+    ###########################################################################
 
     for epoch in range(num_epochs):
         epoch_start_time = time.time()
-        avg_loss = train_one_epoch()
+        avg_loss = train_one_epoch(model=model, dataloader=train_dataloader)
+
         epoch_elapsed_time = time.time() - epoch_start_time
-        print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec")
+        print(f"Epoch {epoch + 1}/{num_epochs}, Training Loss: {avg_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec")
+
+        # Validate the model on the validation set
+        validation_loss = validation_one_epoch(model=model, dataloader=validation_dataloader)
+        print(f"Validation Loss: {validation_loss:.4f}")
 
         # Save the model
         IOUtils.save_model(model, folder_path=output_folder_path)
@@ -125,7 +166,7 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
 
         # Write a README file with training details
         readme_md = f"""# Chess Model Training
-        - Model trained on {len(train_inputs)} game positions
+        - Model trained on {len(train_dataset)} game positions
         - Number of unique moves: {num_classes}
         - Number of epochs: {num_epochs}
         - Final Loss: {avg_loss:.4f}
@@ -139,20 +180,6 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
     ##########################################################################################
 
     print("Training complete.")
-
-    def evaluate_model_accuracy(model: nn.Module, dataloader: DataLoader) -> float:
-        model.eval()
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for inputs, labels in dataloader:
-                inputs, labels = inputs.to(device), labels.to(device)
-                outputs = model(inputs)
-                _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-        accuracy = 100 * correct / total
-        return accuracy
 
     # Now test the model on the test set
     eval_accuracy = evaluate_model_accuracy(model, test_dataloader)
@@ -173,9 +200,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--num_epochs", type=int, default=20, help="Number of training epochs")
     parser.add_argument("--batch_size", type=int, default=2048, help="Batch size for training")
-    parser.add_argument(
-        "--train_test_split_ratio", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)"
-    )
+    parser.add_argument("--train_test_split_ratio", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
     # --learning_rate 0.001 or -lr 0.001
     parser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")

@@ -8,6 +8,7 @@ import chess.pgn
 import numpy as np
 
 # local imports
+from libs.chess_extra import ChessExtra
 from libs.pgn_utils import PGNUtils
 from libs.encoding_utils import EncodingUtils
 from libs.chess_model import ChessModel
@@ -18,7 +19,9 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 class Utils:
     @staticmethod
-    def create_dataset(max_files_count: int = 15, max_games_count: int = 7000) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
+    def create_dataset(
+        max_files_count: int = 15, max_games_count: int = 7000
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
         print("Creating dataset...")
 
         ###############################################################################
@@ -42,15 +45,9 @@ class Utils:
 
         ###############################################################################
         ###############################################################################
-        #	 Shuffle and truncate games
+        # 	 Shuffle and truncate games
         ###############################################################################
         ###############################################################################
-                
-        # Shuffle the games
-        # random_seed = 42
-        # torch.manual_seed(random_seed)
-        # games_rnd_indexes = torch.randperm(len(games)).tolist()
-        # games = [games[i] for i in games_rnd_indexes]
 
         # keep only max_games_count games
         if max_games_count != 0:
@@ -58,30 +55,42 @@ class Utils:
         #
         print(f"GAMES PARSED: {len(games)}")
 
+        # keep only the 10 first moves of each game
+        if False:
+            sliced_games: list[chess.pgn.Game] = []
+            move_index_start = 0
+            move_index_end = 10
+            for game in games:
+                move_count = len(list(game.mainline_moves()))
+                # print(f"move_count: {move_count}")
+                if move_count < move_index_end:
+                    continue
+                sliced_game = ChessExtra.game_slice(game, move_index_start, move_index_end)
+                sliced_games.append(sliced_game)
+            games = list(sliced_games)
+
         ###############################################################################
         ###############################################################################
-        #	 Create input tensors for the neural network
+        # 	 Create input tensors for the neural network
         ###############################################################################
         ###############################################################################
 
-        boards_tensor, best_move_tensor = EncodingUtils.create_input_for_nn(games)
-
-        # # Truncate to 2.5 million samples
-        # boards_tensor = boards_tensor[0:2500000]
-        # best_move_tensor = best_move_tensor[0:2500000]
+        boards_nparray, best_move_nparray, uci_to_classindex = EncodingUtils.create_input_for_nn_np(games)
 
         # Encode moves
-        best_move_tensor, uci_to_classindex = EncodingUtils.encode_moves(best_move_tensor)
+        # best_move_nparray, uci_to_classindex = EncodingUtils.encode_moves_np(best_move_nparray)
 
         # Convert to PyTorch tensors
-        boards_tensor = torch.tensor(boards_tensor, dtype=torch.float32)
-        best_move_tensor = torch.tensor(best_move_tensor, dtype=torch.long)
+        boards_tensor = torch.tensor(boards_nparray, dtype=torch.float32)
+        best_move_tensor = torch.tensor(best_move_nparray, dtype=torch.long)
 
         # print dataset stats
         return boards_tensor, best_move_tensor, uci_to_classindex
 
     @staticmethod
-    def select_best_move(board: chess.Board, probabilities:np.ndarray, classindex_to_uci: dict[int, str], random_threshold: float = 1) -> str | None:
+    def select_best_move(
+        board: chess.Board, probabilities: np.ndarray, classindex_to_uci: dict[int, str], random_threshold: float = 1
+    ) -> str | None:
         """
         Select the best move based on the model's output probabilities.
 
@@ -134,7 +143,9 @@ class Utils:
         return best_move_uci
 
     @staticmethod
-    def predict_next_move(board: chess.Board, model: ChessModel, device: str, classindex_to_uci: dict[int, str]) -> str | None:
+    def predict_next_move(
+        board: chess.Board, model: ChessModel, device: str, classindex_to_uci: dict[int, str]
+    ) -> str | None:
         """
         Predict the best move for the given board state.
         Args:
@@ -142,10 +153,10 @@ class Utils:
         Returns:
             str | None: The predicted best move in UCI format, or None if no legal move is found.
         """
-        boards_tensor = EncodingUtils.prepare_input(board).to(device)
+        boards_tensor = EncodingUtils.board_to_tensor(board).to(device)
 
         # Set the model to evaluation mode (it may be reductant)
-        model.eval()  
+        model.eval()
 
         # Disable gradient calculation for inference
         with torch.no_grad():

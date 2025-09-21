@@ -1,5 +1,6 @@
 # stdlib imports
 import datetime
+import os
 
 # pip imports
 import chess
@@ -7,10 +8,38 @@ import chess.pgn
 
 class PGNUtils:
     @staticmethod
-    def load_games_from_pgn(file_path: str) -> list[chess.pgn.Game]:
+    def all_pgn_file_paths(folder_path: str) -> list[str]:
+        """
+        Return a list of all PGN file paths in the specified folder.
+        The list is sorted alphabetically.
+        Arguments:
+        - folder_path (str): Path to the folder containing PGN files.
+        """
+        
+        pgn_file_paths: list[str] = []
+        for file_name in os.listdir(folder_path):
+            if file_name.endswith(".pgn"):
+                file_path = os.path.join(folder_path, file_name)
+                pgn_file_paths.append(file_path)
+        # sort the list
+        pgn_file_paths.sort()
+
+        return pgn_file_paths
+    
+    @staticmethod
+    def load_games_from_pgn(file_path: str, max_games: int = 0) -> list[chess.pgn.Game]:
+        """
+        Load all games from a PGN file.
+
+        Arguments:
+        - file_path (str): Path to the PGN file.
+        - max_games (int): Maximum number of games to load. If 0, load all games.
+        """
         games: list[chess.pgn.Game] = []
         with open(file_path, 'r') as pgn_file:
             while True:
+                if max_games != 0 and len(games) >= max_games:
+                    break
                 game: chess.pgn.Game|None = chess.pgn.read_game(pgn_file)
                 if game is None:
                     break

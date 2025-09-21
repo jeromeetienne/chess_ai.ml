@@ -68,6 +68,8 @@ while True:
         print("Game Over!")
         break
 
+    break
+
 ###############################################################################
 # Optionally, print the PGN representation of the game
 
