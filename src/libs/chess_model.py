@@ -29,66 +29,69 @@ class ChessModelOriginal(nn.Module):
 class ChessModelConv2d(nn.Module):
     def __init__(self, num_classes):
         super(ChessModelConv2d, self).__init__()
-        self.conv_1 = nn.Conv2d(14, 32, kernel_size=3, padding=1)
-        self.bn_1 = nn.BatchNorm2d(32) # Add BatchNorm2d after conv_1
-        self.dropout2d_1 = nn.Dropout2d(0.5)
 
-        self.conv_2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        self.bn_2 = nn.BatchNorm2d(64) # Add BatchNorm2d after conv_2
-        self.dropout2d_2 = nn.Dropout2d(0.5)
+        dropoutProbability = 0.5
 
-        self.conv_3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.bn_3 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_3
-        self.dropout2d_3 = nn.Dropout2d(0.5)
+        self.conv_1 = nn.Conv2d(14, 60, kernel_size=3, padding=1)
+        self.bn_1 = nn.BatchNorm2d(60) # Add BatchNorm2d after conv_1
+        self.dropout2d_1 = nn.Dropout2d(dropoutProbability)
 
-        self.conv_4 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
-        self.bn_4 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_4
-        self.dropout2d_4 = nn.Dropout2d(0.5)
+        self.conv_2 = nn.Conv2d(60, 120, kernel_size=3, padding=1)
+        self.bn_2 = nn.BatchNorm2d(120) # Add BatchNorm2d after conv_2
+        self.dropout2d_2 = nn.Dropout2d(dropoutProbability)
+
+        # self.conv_3 = nn.Conv2d(120, 180, kernel_size=3, padding=1)
+        # self.bn_3 = nn.BatchNorm2d(180) # Add BatchNorm2d after conv_3
+        # self.dropout2d_3 = nn.Dropout2d(dropoutProbability)
+
+        # self.conv_4 = nn.Conv2d(180, 240, kernel_size=3, padding=1)
+        # self.bn_4 = nn.BatchNorm2d(240) # Add BatchNorm2d after conv_4
+        # self.dropout2d_4 = nn.Dropout2d(dropoutProbability)
 
         self.flatten = nn.Flatten()
 
-        self.fc1 = nn.Linear(8 * 8 * 128, 512)
-        self.bn_fc1 = nn.BatchNorm1d(512) # Add BatchNorm1d after fc1
-        self.dropout_1 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(512, num_classes)
-        self.relu = nn.ReLU()
+        self.fc1 = nn.Linear(8 * 8 * 120, 1024)
+        self.bn_fc1 = nn.BatchNorm1d(1024) # Add BatchNorm1d after fc1
+        self.dropout_1 = nn.Dropout(dropoutProbability)
+        self.fc2 = nn.Linear(1024, num_classes)
+        self.leaky_relu = nn.LeakyReLU()
 
         # Initialize weights
-        nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='relu')
-        nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='relu')
-        nn.init.kaiming_uniform_(self.conv_3.weight, nonlinearity='relu')
-        nn.init.kaiming_uniform_(self.conv_4.weight, nonlinearity='relu')
-        nn.init.kaiming_uniform_(self.fc1.weight)
-        nn.init.kaiming_uniform_(self.fc2.weight)
+        nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
+        nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='leaky_relu')
+        # nn.init.kaiming_uniform_(self.conv_3.weight, nonlinearity='leaky_relu')
+        # nn.init.kaiming_uniform_(self.conv_4.weight, nonlinearity='leaky_relu')
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.xavier_uniform_(self.fc2.weight)
 
         
 
     def forward(self, x):
         x = self.conv_1(x)
         x = self.bn_1(x)
-        x = self.relu(x)
+        x = self.leaky_relu(x)
         x = self.dropout2d_1(x)
 
         x = self.conv_2(x)
         x = self.bn_2(x)
-        x = self.relu(x)
+        x = self.leaky_relu(x)
         x = self.dropout2d_2(x)
 
-        x = self.conv_3(x)
-        x = self.bn_3(x)    
-        x = self.relu(x)
-        x = self.dropout2d_3(x)
+        # x = self.conv_3(x)
+        # x = self.bn_3(x)    
+        # x = self.leaky_relu(x)
+        # x = self.dropout2d_3(x)
 
-        x = self.conv_4(x)
-        x = self.bn_4(x)
-        x = self.relu(x)
-        x = self.dropout2d_4(x)
+        # x = self.conv_4(x)
+        # x = self.bn_4(x)
+        # x = self.leaky_relu(x)
+        # x = self.dropout2d_4(x)
 
         x = self.flatten(x)
 
         x = self.fc1(x)
         x = self.bn_fc1(x)
-        x = self.relu(x)
+        x = self.leaky_relu(x)
         x = self.dropout_1(x)
 
         x = self.fc2(x)  # Output raw logits
