@@ -1,16 +1,19 @@
 # TODO
 - generalize the game slice in the dataset builder
   - allow not to set begining and end move_index
+  1. build a dataset for each stage of the game (opening, midgame, endgame)
+  2. train a model for each stage of the game
+  3. during play, detect the stage of the game and use the corresponding model
+- code a way to train on a special range of moves, not the whole game
+  - select by move number (e.g. 10 to 30)
+  - later by dynamically detecting opening, midgame, endgame
+  - generate multiple dataset files for each stage of the game
 - look for model structure on the web
   - search for 'pytorch chess model'
   - search for 'pytorch chess neural network'
   - search for 'pytorch/tensorflow alpha zero github'
 - make it play on lichess ?
 - organize `./libs`
-- code a way to train on a special range of moves, not the whole game
-  - select by move number (e.g. 10 to 30)
-  - later by dynamically detecting opening, midgame, endgame
-  - generate multiple dataset files for each stage of the game
 
 # DONE
 - DONE do early stopping during training

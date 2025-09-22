@@ -17,10 +17,11 @@ class EarlyStopper:
         Checks if training should be stopped early based on validation loss.
         
         Args:
-            validation_loss (float): Current validation loss.
+            - validation_loss (float): Current validation loss.
+
         Returns:
-            must_stop (bool): True if training should be stopped.
-            must_save (bool): True if the model should be saved (i.e., validation loss improved).
+            - (bool, bool): A tuple where the first element indicates whether to stop training,
+                            and the second element indicates whether to save the model.
         """
         must_stop = False
         must_save = False
@@ -33,4 +34,4 @@ class EarlyStopper:
             if self.counter >= self.patience:
                 must_stop = True
 
-        return must_stop, must_save
+        return (must_stop, must_save)
