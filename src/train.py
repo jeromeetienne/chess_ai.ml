@@ -143,7 +143,7 @@ def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0
         return validation_loss
 
     def evaluate_model_accuracy(model: nn.Module, dataloader: DataLoader) -> float:
-        # FIXME this function is buggy 
+        # FIXME this function is buggy ?
         model.eval()
         correct = 0
         total = 0
