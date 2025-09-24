@@ -1,0 +1,84 @@
+# stdlib imports
+import os
+import random
+import typing
+import argparse
+
+# local imports
+from src.commands.play import PlayCommand
+
+__dirname__ = os.path.dirname(os.path.abspath(__file__))
+output_folder_path = f"{__dirname__}/../output/"
+
+# define the opponent PYTHON type
+opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
+color_t = typing.Literal["white", "black"]
+
+###############################################################################
+###############################################################################
+# 	 Main Entry Point
+###############################################################################
+###############################################################################
+
+if __name__ == "__main__":
+
+    ###############################################################################
+    #   Parse command line arguments
+    #
+    parser = argparse.ArgumentParser(
+        description="Play a game of chess between ChessBotML and an opponent (human or Stockfish).",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--color",
+        type=str,
+        choices=["white", "black", "random"],
+        default="random",
+        help="The color for ChessBotML (white or black). Default is random.",
+    )
+    parser.add_argument(
+        "--opponent",
+        type=str,
+        choices=["human", "stockfish"],
+        default="stockfish",
+        help="The type of opponent (human or stockfish). Default is stockfish.",
+    )
+    parser.add_argument(
+        "--stockfish-elo",
+        type=int,
+        default=10,
+        help="The ELO rating for Stockfish (if opponent is stockfish). Default is 1350.",
+    )
+    parser.add_argument(
+        "--stockfish-depth",
+        type=int,
+        default=1,
+        help="The search depth for Stockfish (if opponent is stockfish). Default is 10.",
+    )
+    parser.add_argument(
+        "--debug",
+        "-d",
+        action="store_true",
+        help="Enable debug mode.",
+    )
+    args = parser.parse_args()
+
+    if args.debug is True:
+        print(f"Arguments: {args}")
+
+    #  decide the color for chessbotml
+    if args.color == "random":
+        chessbotml_color: color_t = random.choice(["white", "black"])
+    else:
+        chessbotml_color: color_t = args.color
+    opponent_tech: opponent_tech_t = args.opponent
+
+    ###############################################################################
+    #   Start the game
+    #
+    PlayCommand.play_game(
+        chatbotml_color=chessbotml_color,
+        opponent_tech=opponent_tech,
+        stockfish_elo=args.stockfish_elo,
+        stockfish_depth=args.stockfish_depth,
+    )

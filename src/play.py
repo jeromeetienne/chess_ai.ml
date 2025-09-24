@@ -1,7 +1,6 @@
 # stdlib imports
 import os
 import random
-import time
 import typing
 import argparse
 
@@ -11,9 +10,9 @@ import chess
 from stockfish import Stockfish
 
 # local imports
+from libs.chessbotml_player import ChessbotMLPlayer
 from libs.io_utils import IOUtils
 from libs.pgn_utils import PGNUtils
-from libs.utils import Utils
 from libs.termcolor_utils import TermcolorUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -65,6 +64,8 @@ def play_game(
     # create the reverse mapping
     classindex_to_uci: dict[int, str] = {v: k for k, v in uci_to_classindex.items()}
 
+    chatbotml_player = ChessbotMLPlayer(model=model, classindex_to_uci=classindex_to_uci)
+
     ###############################################################################
     # Use the ```predict_move``` function to get the best move and its probabilities for a given board state:
     #
@@ -78,7 +79,7 @@ def play_game(
 
     stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
     stockfish_evaluation = Stockfish(path=stockfish_path)
-    stockfish_evaluation.set_depth(10)
+    # stockfish_evaluation.set_depth(20)
     stockfish_evaluation.set_elo_rating(2000)
 
     # Initialize Stockfish if needed
@@ -107,7 +108,7 @@ def play_game(
         # predict the move depending who is it to play. chessbotml or opponent (human or stockfish)
         if player_type == "chessbotml":
             # predict the best move
-            best_move = Utils.predict_next_move(board, model, device, classindex_to_uci)
+            best_move = chatbotml_player.predict_next_move(board)
 
             if best_move is None:
                 # raise an error if no legal moves are available...
@@ -149,6 +150,8 @@ def play_game(
 
         # display the post-move board
         print(f"Move {board.fullmove_number} played by {turn_color} ({player_type}): {TermcolorUtils.cyan(best_move)} ")
+        # print(f'in opening book: {chatbotml_player.is_in_opening_book(board)}')
+        print(f'in opening book: {TermcolorUtils.green("yes") if chatbotml_player.is_in_opening_book(board) else "no"}')
 
         ###############################################################################
         #   Optionally, evaluate the position using Stockfish after each move
