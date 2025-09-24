@@ -1,6 +1,7 @@
 # stdlib imports
 import os
 import random
+import time
 import typing
 import argparse
 
@@ -13,6 +14,7 @@ from stockfish import Stockfish
 from libs.io_utils import IOUtils
 from libs.pgn_utils import PGNUtils
 from libs.utils import Utils
+from libs.termcolor_utils import TermcolorUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = f"{__dirname__}/../output/"
@@ -55,7 +57,7 @@ def play_game(
 
     # Check for GPU
     device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
-    print(f"Using device: {device}")
+    # print(f"Using device: {device}")
 
     # move the model to the device and set it to eval mode
     model.to(device)
@@ -70,7 +72,14 @@ def play_game(
     # Initialize a chess board
     board = chess.Board()
     print(board.unicode())
-    print("\n")
+
+    print(f'White: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "white" else opponent_tech)}')
+    print(f'Black: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "black" else opponent_tech)}')
+
+    stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
+    stockfish_evaluation = Stockfish(path=stockfish_path)
+    stockfish_evaluation.set_depth(10)
+    stockfish_evaluation.set_elo_rating(2000)
 
     # Initialize Stockfish if needed
     if opponent_tech == "stockfish":
@@ -79,10 +88,24 @@ def play_game(
         stockfish.set_elo_rating(stockfish_elo)
         stockfish.set_depth(stockfish_depth)
 
+    ###############################################################################
+    #   Play the game
+    #
     while True:
         turn_color = "white" if board.turn == chess.WHITE else "black"
 
-        if chessbotml_color == turn_color:
+        # display the separator between boards
+        print(TermcolorUtils.magenta("-" * 50))
+
+        ###############################################################################
+        #   Decide the move to play
+        #
+
+        # decide who is to play
+        player_type = "chessbotml" if chessbotml_color == turn_color else opponent_tech
+
+        # predict the move depending who is it to play. chessbotml or opponent (human or stockfish)
+        if player_type == "chessbotml":
             # predict the best move
             best_move = Utils.predict_next_move(board, model, device, classindex_to_uci)
 
@@ -92,8 +115,8 @@ def play_game(
                 raise ValueError("No legal moves available. Game over.")
 
             # show the board
-            print(f"Predicted Move {board.fullmove_number} for {turn_color}: {best_move} ")
-        elif opponent_tech == "human":
+            # print(f"Predicted Move {board.fullmove_number} for {turn_color}: {best_move} ")
+        elif player_type == "human":
             # get the move from the human player
             legal_moves = [move.uci() for move in board.legal_moves]
             print(f"Legal Moves: {legal_moves}")
@@ -101,7 +124,7 @@ def play_game(
             while best_move not in legal_moves:
                 print("Invalid move. Please enter a legal move in UCI format.")
                 best_move = input(f"Enter your move {board.fullmove_number} for {turn_color} (in UCI format): ")
-        elif opponent_tech == "stockfish":
+        elif player_type == "stockfish":
             # Set the current board position in Stockfish
             stockfish.set_fen_position(board.fen())
 
@@ -110,30 +133,55 @@ def play_game(
             if best_move is None:
                 raise ValueError("Stockfish could not find a move. BUG BUG.")
 
-            print(f"Stockfish Move {board.fullmove_number} for {turn_color}: {best_move} ")
+            # print(f"Stockfish Move {board.fullmove_number} for {turn_color}: {best_move} ")
         else:
             raise NotImplementedError("Only human opponent is implemented for now.")
 
+        ###############################################################################
+        #   Make the move on the board
+        #
+
         # Make the move on the board
         board.push_uci(best_move)
-        print(board.unicode())
-        print("\n")
 
+        # display the post-move board
+        print(board.unicode())
+
+        # display the post-move board
+        print(f"Move {board.fullmove_number} played by {turn_color} ({player_type}): {TermcolorUtils.cyan(best_move)} ")
+
+        ###############################################################################
+        #   Optionally, evaluate the position using Stockfish after each move
+        #
+        position_eval_enabled = True
+        if position_eval_enabled is True:
+            # evaluate the resulting position and display it
+            stockfish_evaluation.set_fen_position(board.fen())
+            evaluation = stockfish_evaluation.get_evaluation()
+            eval_value = evaluation["value"]
+            eval_str = f"{eval_value/100}" if evaluation["type"] == "cp" else f"mate in {eval_value}"
+            print(f"Stockfish evaluation: {TermcolorUtils.cyan(eval_str)} for white")
+
+        # Check for game over
         if board.is_game_over():
-            print(f"Game Over! outcome: {board.outcome()}")
+            game_outcome = typing.cast(chess.Outcome, board.outcome())
+            outcome_str = "1-0" if game_outcome.winner is True else "0-1" if game_outcome.winner is False else "1/2-1/2"
+            print(f"Game Over! outcome: {TermcolorUtils.cyan(outcome_str)}")
             break
 
     ###############################################################################
-    # Optionally, print the PGN representation of the game
+    # Print the PGN representation of the game, at the end of the game
+    #
 
-    print("PGN Representation of the game:")
+    # display the separator between boards
+    print(TermcolorUtils.magenta("-" * 50))
 
     opponent_name = "Human" if opponent_tech == "human" else f"Stockfish {stockfish_elo}"
-
     white_player = "ChessBotML" if chessbotml_color == "white" else opponent_name
     black_player = "ChessBotML" if chessbotml_color == "black" else opponent_name
-
     pgn_game = PGNUtils.board_to_pgn(board, white_player=white_player, black_player=black_player)
+
+    print("PGN Representation of the game:")
     print(pgn_game)
 
 
@@ -145,7 +193,9 @@ def play_game(
 
 if __name__ == "__main__":
 
-    # Parse command-line arguments
+    ###############################################################################
+    #   Parse command line arguments
+    #
     parser = argparse.ArgumentParser(
         description="Play a game of chess between ChessBotML and an opponent (human or Stockfish).",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -187,12 +237,16 @@ if __name__ == "__main__":
     if args.debug is True:
         print(f"Arguments: {args}")
 
-    # Play the game with the specified arguments
+    #  decide the color for chessbotml
     if args.color == "random":
         chessbotml_color: color_t = random.choice(["white", "black"])
     else:
         chessbotml_color: color_t = args.color
     opponent_tech: opponent_tech_t = args.opponent
+
+    ###############################################################################
+    #   Start the game
+    #
     play_game(
         chatbotml_color=chessbotml_color,
         opponent_tech=opponent_tech,

@@ -54,14 +54,14 @@ class Utils:
             games = games[:max_games_count]
 
         # keep only the 10 first moves of each game
-        if True:
+        if False:
             sliced_games: list[chess.pgn.Game] = []
             # # opening positions only
             # move_index_start = 0
             # move_index_end = 15
             # middle-game positions only
-            move_index_start = 15
-            move_index_end = 30
+            # move_index_start = 15
+            # move_index_end = 30
             print(f"Keeping only moves from {move_index_start} to {move_index_end} non included (if possible)")
             for game in games:
                 move_count = len(list(game.mainline_moves()))

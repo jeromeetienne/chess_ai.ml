@@ -15,3 +15,4 @@ print(f"Stockfish suggests the move: {best_move}")
 evaluation = stockfish.get_evaluation()
 print(f"Stockfish evaluation: {evaluation}")
 
+

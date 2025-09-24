@@ -142,7 +142,7 @@ class ChessModelLinear(torch.nn.Module):
 ###############################################################################
 ###############################################################################
 
-class ChessModel(ChessModelConv2d):
+class ChessModel(ChessModelOriginal):
     def __init__(self, num_classes):
         super(ChessModel, self).__init__(num_classes)
 
