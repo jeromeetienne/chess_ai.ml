@@ -7,3 +7,10 @@
 - from https://github.com/niklasf/python-chess/tree/master/data/polyglot
   - performance.bin
   
+
+---
+## Notes
+- here are some pgn https://sites.google.com/site/computerschess/download
+- more polyglot opening books https://github.com/michaeldv/donna_opening_books/
+- several collection https://chess.stackexchange.com/questions/35448/looking-for-polyglot-opening-books
+- how to use it https://chess.stackexchange.com/questions/24738/how-to-use-opening-books-on-mac-linux

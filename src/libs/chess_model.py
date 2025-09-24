@@ -31,14 +31,14 @@ class ChessModelConv2d(nn.Module):
         super(ChessModelConv2d, self).__init__()
 
         dropoutProbability = 0.5
-        dropoutProbability = 0.2
+        # dropoutProbability = 0.2
 
-        self.conv_1 = nn.Conv2d(14, 128, kernel_size=3, padding=1)
-        self.bn_1 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_1
+        self.conv_1 = nn.Conv2d(14, 64, kernel_size=3, padding=1)
+        self.bn_1 = nn.BatchNorm2d(64) # Add BatchNorm2d after conv_1
         self.dropout2d_1 = nn.Dropout2d(dropoutProbability)
 
-        self.conv_2 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
-        self.bn_2 = nn.BatchNorm2d(256) # Add BatchNorm2d after conv_2
+        self.conv_2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.bn_2 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_2
         self.dropout2d_2 = nn.Dropout2d(dropoutProbability)
 
         # self.conv_3 = nn.Conv2d(120, 180, kernel_size=3, padding=1)
@@ -51,7 +51,7 @@ class ChessModelConv2d(nn.Module):
 
         self.flatten = nn.Flatten()
 
-        self.fc1 = nn.Linear(8 * 8 * 256, 1024)
+        self.fc1 = nn.Linear(8 * 8 * 128, 1024)
         self.bn_fc1 = nn.BatchNorm1d(1024) # Add BatchNorm1d after fc1
         self.dropout_1 = nn.Dropout(dropoutProbability)
         self.fc2 = nn.Linear(1024, num_classes)
@@ -142,7 +142,7 @@ class ChessModelLinear(torch.nn.Module):
 ###############################################################################
 ###############################################################################
 
-class ChessModel(ChessModelOriginal):
+class ChessModel(ChessModelConv2d):
     def __init__(self, num_classes):
         super(ChessModel, self).__init__(num_classes)
 

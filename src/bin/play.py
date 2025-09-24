@@ -31,6 +31,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--color",
+        "-c",
         type=str,
         choices=["white", "black", "random"],
         default="random",
@@ -38,6 +39,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--opponent",
+        "-o",
         type=str,
         choices=["human", "stockfish"],
         default="stockfish",
@@ -45,12 +47,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--stockfish-elo",
+        "-e",
+        "-elo",
         type=int,
         default=10,
         help="The ELO rating for Stockfish (if opponent is stockfish). Default is 1350.",
     )
     parser.add_argument(
         "--stockfish-depth",
+        "-D",
         type=int,
         default=1,
         help="The search depth for Stockfish (if opponent is stockfish). Default is 10.",
