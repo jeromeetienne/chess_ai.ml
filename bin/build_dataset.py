@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 
 # stdlib imports
-import os
 import argparse
 
 # local imports
 from src.build_dataset import DatasetBuilderCommand
-
-# setup __dirname__
-__dirname__ = os.path.dirname(os.path.abspath(__file__))
 
 ###############################################################################
 ###############################################################################

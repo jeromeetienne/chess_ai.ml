@@ -140,7 +140,7 @@ class ChessExtra:
         board = chess.Board()
 
         move_count = 0
-        unique_moves = set()
+        unique_moves: set[str] = set()
 
         # Special case for kings: Handle castling moves
         if piece_symbol == 'K': # white king

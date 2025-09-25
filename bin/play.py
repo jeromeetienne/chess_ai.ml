@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 
 # stdlib imports
-import os
 import random
 import typing
 import argparse
 
 # local imports
 from src.play import PlayCommand
-
-__dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = f"{__dirname__}/../output/"
 
 # define the opponent PYTHON type
 opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]

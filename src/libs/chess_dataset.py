@@ -13,6 +13,6 @@ class ChessDataset(Dataset):
     def __len__(self):
         return len(self.boards_tensor)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         return self.boards_tensor[idx], self.moves_tensor[idx]
 
