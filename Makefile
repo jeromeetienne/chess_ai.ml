@@ -4,6 +4,13 @@ help: ## show this help
 clean: ## clean output directory
 	rm -f ./output/*
 
+lint_checker: ## Run lint checker on source files
+	pyright bin/**/*.py src/**/*.py
+
+full_pipeline: clean build_dataset train predict play ## run the full pipeline
+
+.PHONY: help clean build_dataset train predict play full_pipeline
+
 build_dataset: ## build the dataset
 	python ./bin/build_dataset.py
 
@@ -15,7 +22,3 @@ predict: ## predict a move
 
 play: ## play against the model
 	python ./bin/play.py
-
-full_pipeline: clean build_dataset train predict play ## run the full pipeline
-
-.PHONY: help clean build_dataset train predict play full_pipeline
