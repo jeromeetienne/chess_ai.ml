@@ -2,6 +2,11 @@
 
 heavyly inspired by https://github.com/Skripkon/chess-engine.git
 
+## Good Looking!
+
+Superbe board display with unicode characters
+![Ascii chess board](https://github.com/user-attachments/assets/3df3d359-f05f-4cac-8f9a-fcbf9489c985)
+
 ## Installation
 
 We recommend to use a virtual environment:
