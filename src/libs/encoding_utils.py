@@ -2,6 +2,10 @@ import numpy as np
 import torch
 import chess
 import chess.pgn as pgn
+from tqdm import tqdm
+
+from .chess_extra import ChessExtra
+
 
 class EncodingUtils:
     @staticmethod
@@ -10,7 +14,7 @@ class EncodingUtils:
         # 12 = number of unique pieces.
         # 13th board for pieces we can move (FROM WHERE we can move)
         # 14th board for legal moves (WHERE we can move)
-        matrix = np.zeros((14, 8, 8))
+        matrix = np.zeros((16, 8, 8))
         piece_map = board.piece_map()
 
         # Populate first 12 8x8 boards (where pieces are)
@@ -33,6 +37,20 @@ class EncodingUtils:
             row_to, col_to = divmod(to_square, 8)
             matrix[13, row_to, col_to] = 1
 
+        my_color = board.turn
+        opponent_color = chess.BLACK if board.turn == chess.WHITE else chess.WHITE
+        my_board_attacked_count = ChessExtra.board_attacked_count_compute(board, opponent_color)
+        # print('my attacked squares:')
+        # print(ChessExtra.board_square_count_to_string(my_board_attacked_count))
+        matrix[14] = np.array(my_board_attacked_count)
+
+        opponent_board_attacked_count = ChessExtra.board_attacked_count_compute(board, my_color)
+        # print('opponent attacked squares:')
+        # print(ChessExtra.board_square_count_to_string(opponent_board_attacked_count))
+        matrix[15] = np.array(opponent_board_attacked_count)
+
+        # breakpoint()
+
         return matrix
 
     @staticmethod
@@ -45,7 +63,7 @@ class EncodingUtils:
     def create_input_for_nn_np(games: list[pgn.Game]) -> tuple[np.ndarray, np.ndarray, dict[str, int]]:
         board_array = []
         best_move_array_uci = []
-        for game in games:
+        for game in tqdm(games, ncols=80, desc="Encoding", unit="games"):
             board = game.board()
             for move in game.mainline_moves():
                 # encode the current board position
@@ -57,7 +75,7 @@ class EncodingUtils:
                 # Play this move on the board to get to the next position
                 board.push(move)
 
-        board_nparray =  np.array(board_array, dtype=np.float32)
+        board_nparray = np.array(board_array, dtype=np.float32)
 
         # Create a mapping from UCI move strings to class indices
         uci_to_classindex = {move: idx for idx, move in enumerate(set(best_move_array_uci))}
@@ -68,8 +86,7 @@ class EncodingUtils:
         # return the boards, best moves and the mapping
         return board_nparray, best_move_nparray, uci_to_classindex
 
-    # @staticmethod   
+    # @staticmethod
     # def encode_moves_np(moves: np.ndarray) -> tuple[np.ndarray, dict[str, int]]:
     #     uci_to_classindex = {move: idx for idx, move in enumerate(set(moves))}
     #     return np.array([uci_to_classindex[move] for move in moves], dtype=np.float32), uci_to_classindex
-    
