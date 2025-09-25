@@ -14,6 +14,7 @@ from ..libs.chessbotml_player import ChessbotMLPlayer
 from ..libs.io_utils import IOUtils
 from ..libs.pgn_utils import PGNUtils
 from ..libs.termcolor_utils import TermcolorUtils
+from ..libs.board_utils import BoardUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = f"{__dirname__}/../../output/"
@@ -55,14 +56,7 @@ class PlayCommand:
 
         # Load the model
         model = IOUtils.load_model(folder_path=output_folder_path, num_classes=num_classes)
-
-        # Check for GPU
-        device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
-        # print(f"Using device: {device}")
-
-        # move the model to the device and set it to eval mode
-        model.to(device)
-
+        
         # create the reverse mapping
         classindex_to_uci: dict[int, str] = {v: k for k, v in uci_to_classindex.items()}
 
@@ -74,7 +68,8 @@ class PlayCommand:
 
         # Initialize a chess board
         board = chess.Board()
-        print(board.unicode())
+        # print(board.unicode())
+        print(BoardUtils.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 
         print(f'White: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "white" else opponent_tech)}')
         print(f'Black: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "black" else opponent_tech)}')
@@ -82,7 +77,7 @@ class PlayCommand:
         stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
         stockfish_evaluation = Stockfish(path=stockfish_path)
         # stockfish_evaluation.set_depth(20)
-        stockfish_evaluation.set_elo_rating(2000)
+        stockfish_evaluation.set_elo_rating(20)
 
         # Initialize Stockfish if needed
         if opponent_tech == "stockfish":
@@ -148,12 +143,12 @@ class PlayCommand:
             board.push_uci(best_move)
 
             # display the post-move board
-            print(board.unicode())
+            # print(board.unicode())
+            print(BoardUtils.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 
             # display the post-move board
-            print(f"Move {board.fullmove_number} played by {turn_color} ({player_type}): {TermcolorUtils.cyan(best_move)} ")
-            # print(f'in opening book: {chatbotml_player.is_in_opening_book(board)}')
-            print(f'in opening book: {TermcolorUtils.green("yes") if chatbotml_player.is_in_opening_book(board) else "no"}')
+            in_opening_str = " (in opening book)" if chatbotml_player.is_in_opening_book(board) else ""
+            print(f"Move {board.fullmove_number} played by {turn_color} ({player_type}): {TermcolorUtils.cyan(best_move)} {in_opening_str}")
 
             ###############################################################################
             #   Optionally, evaluate the position using Stockfish after each move
@@ -163,9 +158,10 @@ class PlayCommand:
                 # evaluate the resulting position and display it
                 stockfish_evaluation.set_fen_position(board.fen())
                 evaluation = stockfish_evaluation.get_evaluation()
-                eval_value = evaluation["value"]
+                eval_value = evaluation["value"] if chatbotml_color == "white" else -evaluation["value"]
+
                 eval_str = f"{eval_value/100}" if evaluation["type"] == "cp" else f"mate in {eval_value}"
-                print(f"Stockfish evaluation: {TermcolorUtils.cyan(eval_str)} for white")
+                print(f"Stockfish evaluation: {TermcolorUtils.cyan(eval_str)}")
 
             # Check for game over
             if board.is_game_over():

@@ -94,8 +94,11 @@ class ChessbotMLPlayer:
 
         boards_tensor = EncodingUtils.board_to_tensor(board).to(device)
 
-        # Set the model to evaluation mode (it may be reductant)
+        # Set the model to evaluation mode
         self._model.eval()
+
+        # move the model to the device
+        self._model.to(device)
 
         # Disable gradient calculation for inference
         with torch.no_grad():
