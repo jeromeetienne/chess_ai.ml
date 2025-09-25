@@ -7,11 +7,11 @@ class ChessExtra:
     Extra python-chess utilities -- https://python-chess.readthedocs.io/en/latest/
     """
 
-    @staticmethod    
-    def print_game(game: chess.pgn.Game) -> None:
-        print(game.board().unicode())
-        for move in game.mainline_moves():
-            print(f"move: {move.uci()}")
+    # @staticmethod    
+    # def print_game(game: chess.pgn.Game) -> None:
+    #     print(game.board().unicode())
+    #     for move in game.mainline_moves():
+    #         print(f"move: {move.uci()}")
 
     
     @staticmethod
@@ -51,7 +51,6 @@ class ChessExtra:
 
         dst_game = chess.pgn.Game.from_board(dst_board)
         return dst_game
-
 
     @staticmethod
     def board_to_string(board: chess.Board, flip_board: bool = False, borders: bool = True, colors: bool = True) -> str:
@@ -103,8 +102,6 @@ class ChessExtra:
         if colors == True:
             white_bg =  colorama.Fore.BLACK + colorama.Back.YELLOW
             black_bg =  colorama.Fore.BLACK + colorama.Back.GREEN
-            # white_bg = colorama.Fore.WHITE
-            # black_bg = colorama.Fore.WHITE
             reset_color = colorama.Style.RESET_ALL
             for row in range(board_width):
                 line = ""

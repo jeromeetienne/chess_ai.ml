@@ -8,14 +8,13 @@ from .libs.io_utils import IOUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-
+output_folder_path = f"{__dirname__}/../output/"
 class DatasetBuilderCommand:
     ###############################################################################
     # Create Dataset
     ###############################################################################
     @staticmethod
     def build_dataset(max_files_count: int = 15, max_games_count: int = 7000):
-        output_folder_path = f"{__dirname__}/../output/"
         dataset_creation_start_time = time.time()
 
         # Create dataset
