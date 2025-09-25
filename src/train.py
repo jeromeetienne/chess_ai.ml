@@ -11,11 +11,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 # local imports
-from ..libs.chess_dataset import ChessDataset
-from ..libs.chess_model import ChessModel
-from ..libs.early_stopper import EarlyStopper
-from ..libs.utils import Utils
-from ..libs.io_utils import IOUtils
+from .libs.chess_dataset import ChessDataset
+from .libs.chess_model import ChessModel
+from .libs.early_stopper import EarlyStopper
+from .libs.utils import Utils
+from .libs.io_utils import IOUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +34,7 @@ class TrainCommand:
         # Load Dataset
         #
 
-        output_folder_path = f"{__dirname__}/../../output/"
+        output_folder_path = f"{__dirname__}/../output/"
 
         # sanity check: ensure dataset exists else exit
         if not IOUtils.has_dataset(output_folder_path):

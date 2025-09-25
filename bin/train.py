@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
+
 # stdlib imports
 import argparse
 
 # local imports
-from src.commands.train import TrainCommand
+from src.train import TrainCommand
 
 ###############################################################################
 #   Main Entry Point
@@ -14,8 +16,8 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--num_epochs", type=int, default=100, help="Number of training epochs")
-    parser.add_argument("--batch_size", type=int, default=2048, help="Batch size for training")
-    parser.add_argument("--train_test_split_ratio", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
+    parser.add_argument("--batch_size", "-bs", type=int, default=2048, help="Batch size for training")
+    parser.add_argument("--train_test_split_ratio", "-ts", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
     # --learning_rate 0.001 or -lr 0.001
     parser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")

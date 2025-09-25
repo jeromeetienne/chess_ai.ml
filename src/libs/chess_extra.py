@@ -1,5 +1,6 @@
 # pip imports
 import chess.pgn
+import colorama
 
 class ChessExtra:
     """
@@ -50,3 +51,178 @@ class ChessExtra:
 
         dst_game = chess.pgn.Game.from_board(dst_board)
         return dst_game
+
+
+    @staticmethod
+    def board_to_string(board: chess.Board, flip_board: bool = False, borders: bool = True, colors: bool = True) -> str:
+        """
+        Convert a chess.Board to a string representation with optional flipping, borders, and background colors.
+
+        Args:
+            board (chess.Board): The chess board to convert.
+            flip_board (bool): Whether to flip the board vertically.
+            borders (bool): Whether to include borders around the board.
+            colors (bool): Whether to include background colors for squares.
+
+        Returns:
+            str: The string representation of the board.
+        """
+
+        board_width = 8
+        board_unicode = board.unicode()
+
+        # board_unicode looks like this:
+        # ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+        # ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+        # ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+        # ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+        # ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+        # ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘ ⭘
+        # ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+        # ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+        
+        # Split the board into lines
+        board_lines = board_unicode.split("\n")
+
+        # Make each square 3 characters wide instead of 2
+        # "♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜" -> " ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜ "
+        board_lines = [line.replace(" ", "  ") for line in board_lines]
+        board_lines = [f" {line} " for line in board_lines]
+        
+        # Replace "⭘" dots with empty squares
+        board_lines = [line.replace("⭘", " ") for line in board_lines]
+
+        # honor flip_board option
+        if flip_board:
+            # Flip the board vertically
+            board_lines = board_lines[::-1]
+            # Flip the pieces horizontally
+            board_lines = [line[::-1] for line in board_lines]
+
+        # honor colors option
+        if colors == True:
+            white_bg =  colorama.Fore.BLACK + colorama.Back.YELLOW
+            black_bg =  colorama.Fore.BLACK + colorama.Back.GREEN
+            # white_bg = colorama.Fore.WHITE
+            # black_bg = colorama.Fore.WHITE
+            reset_color = colorama.Style.RESET_ALL
+            for row in range(board_width):
+                line = ""
+                for col in range(board_width):
+                    char = board_lines[row][col * 3 + 1 : col * 3 + 2]
+                    char = " " + char + " "
+                    if (row + col) % 2 == (0 if not flip_board else 1):
+                        line += f"{white_bg}{char}{reset_color}"
+                    else:
+                        line += f"{black_bg}{char}{reset_color}"
+                board_lines[row] = line
+
+        # Honor borders option
+        if borders == True:
+            # Add side borders
+            board_lines = [f"│{line}│" for line in board_lines]
+            # Add the row numbers on the left
+            row_numbers = list(range(8, 0, -1)) if not flip_board else list(range(1, 9))
+            board_lines = [f"{row_numbers[i]}{line}" for i, line in enumerate(board_lines)]
+            # Add top and bottom borders
+            border_top_line = " " + "┌" + "─" * (board_width * 3) + "┐"
+            border_bottom_line = " " + "└" + "─" * (board_width * 3) + "┘"
+            board_lines = [border_top_line] + board_lines + [border_bottom_line]
+            # Add the column letters at the bottom
+            column_letters = "   A  B  C  D  E  F  G  H  " if not flip_board else "   H  G  F  E  D  C  B  A  "
+            board_lines.append(column_letters)
+
+        return "\n".join(board_lines)
+
+    @staticmethod
+    def piece_unique_moves(piece_symbol: str, turn: chess.Color) -> set[str]:
+        """
+        Count all possible moves for a given piece type on an empty chess board.
+        """
+        # Create empty board
+        board = chess.Board()
+
+        move_count = 0
+        unique_moves = set()
+
+        # Special case for kings: Handle castling moves
+        if piece_symbol == 'K': # white king
+            unique_moves.add('e1g1') # white king side
+            unique_moves.add('e1c1') # white queen side
+        elif piece_symbol == 'k': # black king
+            unique_moves.add('e8g8') # black king side
+            unique_moves.add('e8c8') # black queen side
+
+        # enumerate all the squares
+        for square in chess.SQUARES:
+            # clear the board
+            board.clear()
+            # put a piece on the square
+            board.set_piece_at(square, chess.Piece.from_symbol(piece_symbol))
+            board.turn = turn
+
+            ###############################################################################
+            #   Special cases
+            #
+
+            # Special case for pawns: they cannot be on the first or last rank
+            if(piece_symbol == 'P'): # white pawn
+                # pawns cannot be on the first rank
+                if chess.square_rank(square) == 0:
+                    continue
+            elif(piece_symbol == 'p'): # black pawn
+                # pawns cannot be on the last rank
+                if chess.square_rank(square) == 7:
+                    continue
+
+            # Special case for pawns: Handle pawns special moves to capture diagonally
+            # - add 2 pawns from the other color as bait to attack diagonally
+            if piece_symbol == 'P' and chess.square_rank(square) != 7:
+                # on file A, cannot add a pawn on the left diagonal
+                if chess.square_file(square) != 0:
+                    board.set_piece_at(square+7, chess.Piece.from_symbol('p'))
+                # on file H, cannot add a pawn on the right diagonal
+                if chess.square_file(square) != 7:
+                    board.set_piece_at(square+9, chess.Piece.from_symbol('p'))
+            elif piece_symbol == 'p' and chess.square_rank(square) != 0:
+                # on file A, cannot add a pawn on the left diagonal
+                if chess.square_file(square) != 0:
+                    board.set_piece_at(square-9, chess.Piece.from_symbol('P'))
+                # on file H, cannot add a pawn on the right diagonal
+                if chess.square_file(square) != 7:
+                    board.set_piece_at(square-7, chess.Piece.from_symbol('P'))
+
+            ###############################################################################
+            #   Process the board
+            #
+
+            # Get all possible moves for the rook
+            possible_moves = list(board.legal_moves)
+            move_count += len(possible_moves)
+            for move in possible_moves:
+                unique_moves.add(move.uci())
+
+        return unique_moves
+
+    @staticmethod
+    def all_unique_moves() -> set[str]:
+
+        total_unique_moves = set()
+
+        # enumerate all piece types
+        piece_types = ['p', 'n', 'b', 'r', 'q', 'k', 'P', 'N', 'B', 'R', 'Q', 'K']
+
+        for piece_type in piece_types:
+            # print(f"Counting moves for piece type: {piece_type}")
+            turn = chess.WHITE if piece_type.isupper() else chess.BLACK
+            unique_moves = ChessExtra.piece_unique_moves(piece_type, turn)
+            # update totals count
+            # old_unique_count = len(total_unique_moves)
+            total_unique_moves.update(unique_moves)
+            # new_unique_count = len(total_unique_moves)
+            # print(f"Piece: {piece_type}, New Unique moves: {new_unique_count - old_unique_count}, Total Unique moves: {new_unique_count}")
+            # print(f'has castling moves: {"e1g1" in unique_moves or "e1c1" in unique_moves or "e8g8" in unique_moves or "e8c8" in unique_moves}  ')
+
+        # print(f"Total unique moves: {len(total_unique_moves)}")
+
+        return total_unique_moves

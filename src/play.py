@@ -7,14 +7,14 @@ import chess
 from stockfish import Stockfish
 
 # local imports
-from ..libs.chessbotml_player import ChessbotMLPlayer
-from ..libs.io_utils import IOUtils
-from ..libs.pgn_utils import PGNUtils
-from ..libs.termcolor_utils import TermcolorUtils
-from ..libs.board_utils import BoardUtils
+from .libs.chessbotml_player import ChessbotMLPlayer
+from .libs.io_utils import IOUtils
+from .libs.pgn_utils import PGNUtils
+from .libs.termcolor_utils import TermcolorUtils
+from .libs.chess_extra import ChessExtra
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = f"{__dirname__}/../../output/"
+output_folder_path = f"{__dirname__}/../output/"
 
 # define the opponent PYTHON type
 opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
@@ -69,7 +69,7 @@ class PlayCommand:
 
         # display the initial board
         # print(board.unicode())
-        print(BoardUtils.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
+        print(ChessExtra.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 
         print(f'White: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "white" else opponent_tech)}')
         print(f'Black: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "black" else opponent_tech)}')
@@ -144,7 +144,7 @@ class PlayCommand:
 
             # display the post-move board
             # print(board.unicode())
-            print(BoardUtils.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
+            print(ChessExtra.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 
             # display the post-move board
             in_opening_str = " (in opening book)" if chatbotml_player.is_in_opening_book(board) else ""

@@ -111,7 +111,7 @@ class ChessbotMLPlayer:
         best_move_uci = self._select_best_move_ml(board, probabilities)
         return best_move_uci
 
-    def _select_best_move_ml(self, board: chess.Board, probabilities: np.ndarray, random_threshold: float = 1) -> str | None:
+    def _select_best_move_ml(self, board: chess.Board, probabilities: np.ndarray, random_threshold: float = 0.95) -> str | None:
         """
         Select the best move based on the model's output probabilities. only for model-based move prediction.
 

@@ -1,6 +1,7 @@
 # pip imports
 import torch.nn as nn
 import torch
+
 class ChessModelOriginal(nn.Module):
     def __init__(self, num_classes):
         super(ChessModelOriginal, self).__init__()

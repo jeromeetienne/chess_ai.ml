@@ -6,13 +6,13 @@ import torch
 import chess
 
 # local imports
-from ..libs.chessbotml_player import ChessbotMLPlayer
-from ..libs.io_utils import IOUtils
-from ..libs.pgn_utils import PGNUtils
-from ..libs.utils import Utils
+from .libs.chessbotml_player import ChessbotMLPlayer
+from .libs.io_utils import IOUtils
+from .libs.pgn_utils import PGNUtils
+from .libs.utils import Utils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = f"{__dirname__}/../../output/"
+output_folder_path = f"{__dirname__}/../output/"
 
 class PredictCommand:
     @staticmethod

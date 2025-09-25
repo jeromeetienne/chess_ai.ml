@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 # stdlib imports
 import os
 import argparse
 
 # local imports
-from src.commands.build_dataset import DatasetBuilderCommand
+from src.build_dataset import DatasetBuilderCommand
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +22,7 @@ if __name__ == "__main__":
         description="Build chess dataset from PGN files.", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        "--max-files-count", type=int, default=20, help="Maximum number of PGN files to process."
+        "--max-files-count", type=int, default=15, help="Maximum number of PGN files to process."
     )
     parser.add_argument(
         "--max-games-count",

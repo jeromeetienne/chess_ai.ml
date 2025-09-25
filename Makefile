@@ -5,15 +5,17 @@ clean: ## clean output directory
 	rm -f ./output/*
 
 build_dataset: ## build the dataset
-	python src/bin/build_dataset.py
+	python ./bin/build_dataset.py
 
 train: ## train the model
-	python src/bin/train.py
+	python ./bin/train.py
 
 predict: ## predict a move
-	python src/bin/predict.py
+	python ./bin/predict.py
 
 play: ## play against the model
-	python src/bin/play.py
+	python ./bin/play.py
 
 full_pipeline: clean build_dataset train predict play ## run the full pipeline
+
+.PHONY: help clean build_dataset train predict play full_pipeline

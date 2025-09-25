@@ -127,9 +127,9 @@ class Utils:
     @staticmethod
     def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor, uci_to_classindex: dict) -> str:
             summary = f"""Dataset Summary:
-- Total positions: {len(boards_tensor)}
+- Total positions: {len(boards_tensor):,}
 - Input shape: {boards_tensor.shape[1:]} (Channels, Height, Width)
-- Number of unique moves (classes): {len(uci_to_classindex)}
+- Number of unique moves (classes): {len(uci_to_classindex):,}
 - Sample move index (first position): {moves_tensor[0].item()}
 - Sample move UCI (first position): {list(uci_to_classindex.keys())[list(uci_to_classindex.values()).index(moves_tensor[0].item())]}
 """
