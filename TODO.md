@@ -1,4 +1,7 @@
 # TODO
+- make a converter .pgn to the dataset format for each file
+  - thus you can reload the dataset without reprocessing the pgn files
+  - Q. how to handle `uci_to_classindex` changes ? would work if i have it fixed
 - have a tool to go from boards to tenser and back
   - `board_to_tensor(board) -> tensor`
   - `tensor_to_board(tensor) -> board`
