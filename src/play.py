@@ -81,7 +81,6 @@ class PlayCommand:
 
         # Initialize Stockfish if needed
         if opponent_tech == "stockfish":
-            stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
             stockfish = Stockfish(path=stockfish_path)
             stockfish.set_elo_rating(stockfish_elo)
             stockfish.set_depth(stockfish_depth)
@@ -124,10 +123,10 @@ class PlayCommand:
                     best_move = input(f"Enter your move {board.fullmove_number} for {turn_color} (in UCI format): ")
             elif player_type == "stockfish":
                 # Set the current board position in Stockfish
-                stockfish.set_fen_position(board.fen())
+                stockfish.set_fen_position(board.fen()) # type: ignore
 
                 # Get the best move from Stockfish
-                best_move = stockfish.get_best_move()
+                best_move = stockfish.get_best_move() # type: ignore
                 if best_move is None:
                     raise ValueError("Stockfish could not find a move. BUG BUG.")
 
