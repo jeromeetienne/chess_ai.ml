@@ -129,6 +129,10 @@ class ChessExtra:
             column_letters = "   A  B  C  D  E  F  G  H  " if not flip_board else "   H  G  F  E  D  C  B  A  "
             board_lines.append(column_letters)
 
+        # add a line "Turn: White" or "Turn: Black" on top of the board
+        turn_str = "White" if board.turn == chess.WHITE else "Black"
+        board_lines = [f" Turn: {turn_str}"] + board_lines
+
         return "\n".join(board_lines)
 
     @staticmethod
@@ -223,3 +227,41 @@ class ChessExtra:
         # print(f"Total unique moves: {len(total_unique_moves)}")
 
         return total_unique_moves
+
+    @staticmethod
+    def board_attacked_count_compute(board: chess.Board, color: chess.Color) -> list[list[int]]:
+        """
+        For each square on the board, count how many pieces of the opposite color are attacking it.
+        Return a 2D array of shape (8, 8) with the counts.
+        """
+        # initialize the 8x8 array with zeros
+        board_square_count = [[0 for _ in range(8)] for _ in range(8)]
+        for square in chess.SQUARES:
+            attackers_squareset = board.attackers(color, square)
+            attackers_list = list(attackers_squareset)
+            if len(attackers_list) == 0:
+                continue
+            # print(f"Square {chess.square_name(square)} is attacked by {len(attackers_list)} pieces: {[chess.square_name(sq) for sq in attackers_list]}")
+            rank = chess.square_rank(square)
+            file = chess.square_file(square)
+            board_square_count[rank][file] += len(attackers_list)
+
+        return board_square_count
+
+    @staticmethod
+    def board_square_count_to_string(board_square_count: list[list[int]]) -> str:
+        """
+        Print the attacked_squares 2D array in a readable format.
+        """
+        output = []
+        output.append("Attacked squares (number of attackers):")
+        output.append("  +-----------------------+")
+        for rank in range(7, -1, -1):
+            line = f"{rank + 1}|"
+            for file in range(8):
+                line += f" {board_square_count[rank][file]} "
+            line += f"|"
+            output.append(line)
+        output.append("  +-----------------------+")
+        output.append("   A  B  C  D  E  F  G  H")
+        return "\n".join(output)
