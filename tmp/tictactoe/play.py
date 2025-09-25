@@ -1,9 +1,8 @@
-from typing import List, Optional
-from tmp.tictactoe.tictactoe import TicTacToe
-from tmp.tictactoe.player_human import HumanPlayer
-from tmp.tictactoe.player_random import RandomPlayer
-from tmp.tictactoe.mtcs_player import MCTSPlayer
-from tmp.tictactoe.player_protocol import PlayerProtocol
+from tmp.tictactoe.games.game_tictactoe import GameTicTacToe
+from tmp.tictactoe.players.player_human import PlayerHuman
+from tmp.tictactoe.players.player_random import PlayerRandom
+from tmp.tictactoe.players.player_mtcs import PlayerMCTS
+from tmp.tictactoe.protocols.player_protocol import PlayerProtocol
 
 def play_tictactoe_game(human_starts: bool = True) -> None:
     """
@@ -11,16 +10,16 @@ def play_tictactoe_game(human_starts: bool = True) -> None:
 
     :param human_starts: If True, HumanPlayer is 'X' (1); otherwise, RandomPlayer is 'X'.
     """
-    game: TicTacToe = TicTacToe()
+    game: GameTicTacToe = GameTicTacToe()
 
     if human_starts:
-        player1 = HumanPlayer(1) # X
+        player1 = PlayerHuman(1) # X
         # player2 = RandomPlayer(-1) # O
-        player2 = MCTSPlayer(-1) # O
+        player2 = PlayerMCTS(-1) # O
     else:
         # player1 = RandomPlayer(1) # X
-        player1 = MCTSPlayer(1) # X
-        player2 = HumanPlayer(-1) # O
+        player1 = PlayerMCTS(1) # X
+        player2 = PlayerHuman(-1) # O
 
     players: dict[int, PlayerProtocol] = {1: player1, -1: player2}
 

@@ -1,10 +1,9 @@
 import sys
 
-from .tictactoe import TicTacToe
-from .player_protocol import PlayerProtocol
+from ..games.game_tictactoe import GameTicTacToe
+from ..protocols.player_protocol import PlayerProtocol
 
-
-class HumanPlayer:
+class PlayerHuman(PlayerProtocol):
     """
     Represents a player whose moves are decided by human input.
     """
@@ -12,9 +11,7 @@ class HumanPlayer:
         self.player_id: int = player_id
         self.marker: str = 'X' if player_id == 1 else 'O'
 
-        assert isinstance(self, PlayerProtocol), "HumanPlayer does not conform to Player protocol."
-
-    def get_move(self, game: TicTacToe) -> int:
+    def get_move(self, game: GameTicTacToe) -> int:
         """
         Prompts the human for a move and validates the input.
         """

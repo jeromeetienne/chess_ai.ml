@@ -1,6 +1,5 @@
+from ..games.game_tictactoe import GameTicTacToe
 from typing import List, Optional, Protocol, runtime_checkable
-
-from .tictactoe import TicTacToe
 
 @runtime_checkable
 class PlayerProtocol(Protocol):
@@ -11,7 +10,7 @@ class PlayerProtocol(Protocol):
     player_id: int
     marker: str
 
-    def get_move(self, game: TicTacToe) -> int:
+    def get_move(self, game: GameTicTacToe) -> int:
         """
         Calculates and returns the player's chosen move (index 0-8).
         """

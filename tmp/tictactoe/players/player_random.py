@@ -1,11 +1,9 @@
 import random
+from typing import runtime_checkable
+from ..protocols.player_protocol import PlayerProtocol
+from ..games.game_tictactoe import GameTicTacToe
 
-from tmp.tictactoe.player_protocol import PlayerProtocol
-
-from .tictactoe import TicTacToe
-
-
-class RandomPlayer:
+class PlayerRandom(PlayerProtocol):
     """
     Represents an AI player that chooses a move randomly from legal options.
     """
@@ -13,10 +11,7 @@ class RandomPlayer:
         self.player_id: int = player_id
         self.marker: str = 'X' if player_id == 1 else 'O'
 
-        assert isinstance(self, PlayerProtocol), "RandomPlayer does not conform to Player protocol."
-
-
-    def get_move(self, game: TicTacToe) -> int:
+    def get_move(self, game: GameTicTacToe) -> int:
         """
         Picks a random move from the list of legal moves.
         """

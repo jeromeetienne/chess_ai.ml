@@ -1,9 +1,10 @@
 import random
-import sys
-from typing import List, Optional, Protocol, runtime_checkable
+from typing import List, Optional
+from ..protocols.game_protocol import GameProtocol
+
 
 # --- TicTacToe Class (Unchanged) ---
-class TicTacToe:
+class GameTicTacToe:
     """
     Represents the state and rules of a Tic-Tac-Toe game.
     """
@@ -14,6 +15,9 @@ class TicTacToe:
         self.board: List[int] = [0] * (size * size)
         # 1: 'X', -1: 'O'
         self.current_player: int = 1
+
+        # check this instance conforms to GameProtocol
+        assert isinstance(self, GameProtocol), "GameTicTacToe does not conform to GameProtocol."
 
     def __repr__(self) -> str:
         """Prints a human-readable board representation, showing move indices on empty cells."""
@@ -34,7 +38,7 @@ class TicTacToe:
         """Returns the current game state as a list."""
         return list(self.board)
 
-    def make_move(self, move: int) -> "TicTacToe":
+    def make_move(self, move: int) -> "GameTicTacToe":
         """
         Creates and returns a new TicTacToe object after making the move.
         Assumes the move is valid.
@@ -42,7 +46,7 @@ class TicTacToe:
         if self.board[move] != 0:
             raise ValueError("Invalid move attempted on a non-empty cell.")
             
-        new_game = TicTacToe(self.size)
+        new_game = GameTicTacToe(self.size)
         new_game.board = list(self.board)  # Deep copy the board
         new_game.board[move] = self.current_player
         new_game.current_player = -self.current_player  # Switch player
@@ -86,7 +90,7 @@ class TicTacToe:
         return self.check_win() is not None
 
 if __name__ == "__main__":
-    game = TicTacToe()
+    game = GameTicTacToe()
     print("Initial Game State:")
     print(game)
     while not game.is_game_over():
