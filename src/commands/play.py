@@ -1,11 +1,8 @@
 # stdlib imports
 import os
-import random
 import typing
-import argparse
 
 # pip imports
-import torch
 import chess
 from stockfish import Stockfish
 
@@ -62,12 +59,15 @@ class PlayCommand:
 
         chatbotml_player = ChessbotMLPlayer(model=model, classindex_to_uci=classindex_to_uci)
 
+
         ###############################################################################
         # Use the ```predict_move``` function to get the best move and its probabilities for a given board state:
         #
 
         # Initialize a chess board
         board = chess.Board()
+
+        # display the initial board
         # print(board.unicode())
         print(BoardUtils.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 

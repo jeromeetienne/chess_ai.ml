@@ -2,7 +2,6 @@
 import os
 import sys
 import time
-import argparse
 
 # pip imports
 import tqdm
@@ -10,7 +9,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-
 
 # local imports
 from ..libs.chess_dataset import ChessDataset
@@ -30,7 +28,7 @@ class TrainCommand:
     def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7):
 
         # set random seed for reproducibility
-        torch.manual_seed(42)
+        # torch.manual_seed(42)
 
         ###############################################################################
         # Load Dataset
@@ -45,8 +43,8 @@ class TrainCommand:
 
         dataset_creation_start_time = time.time()
         # Load the dataset
-        boards_tensor, best_move_tensor, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
-        boards_dataset = ChessDataset(boards_tensor, best_move_tensor)
+        boards_tensor, moves_tensor, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
+        boards_dataset = ChessDataset(boards_tensor, moves_tensor)
 
         print(f"Total boards in dataset: {len(boards_tensor)}")
         dataset_creation_elapsed_time = time.time() - dataset_creation_start_time
@@ -55,7 +53,9 @@ class TrainCommand:
         num_classes = len(uci_to_classindex)
         print(f"Number of classes: {num_classes}")
         print(f"boards_tensor shape: {boards_tensor.shape}")
-        print(f"best_move_tensor shape: {best_move_tensor.shape}")
+        print(f"best_move_tensor shape: {moves_tensor.shape}")
+
+        print(Utils.dataset_summary(boards_tensor, moves_tensor, uci_to_classindex))
 
         ###############################################################################
         # Prepare data loaders
@@ -83,28 +83,11 @@ class TrainCommand:
         model = ChessModel(num_classes=num_classes).to(device)
         loss_fn = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-        
-        # optimizer = optim.SGD(model.parameters(), 
-        #                                lr=learning_rate, 
-        #                                momentum=0.9, 
-        #                                nesterov=True, 
-        #                                weight_decay=1e-4)
-        
 
         ###############################################################################
         # Display model summary
 
-        print(model)
-
-        # TODO put that in a library function
-
-        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        print(f"Trainable parameters: {trainable_params:_}")
-
-        print("\nTrainable parameters per layer:")
-        for name, param in model.named_parameters():
-            if param.requires_grad:
-                print(f"{name:40s}: {param.numel():_}")
+        print(Utils.model_summary(model))
 
         ###############################################################################
         # Training
@@ -189,13 +172,14 @@ class TrainCommand:
 
                 # Write a README file with training details
                 readme_md = f"""# Chess Model Training
-                - Date {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
-                - Model trained on {len(train_dataset)} game positions
-                - Number of unique moves: {num_classes}
-                - Number of epochs: {epoch_index + 1}
-                - Final Loss: {validation_loss:.4f}
-                - trainable_params: {trainable_params:_}
-                - model: {model}
+- Trained at {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+- Model trained on {len(train_dataset)} game positions
+- Number of unique moves: {num_classes}
+- Number of epochs: {epoch_index + 1}
+- Final Loss: {validation_loss:.4f}
+
+# Model Summary
+{Utils.model_summary(model)}
                 """
                 README_path = f"{output_folder_path}/README.md"
                 with open(README_path, "w") as readme_file:

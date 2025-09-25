@@ -34,13 +34,17 @@ class IOUtils:
 
     @staticmethod
     def load_dataset(folder_path: str) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
+        # setup paths
         boards_path = f"{folder_path}/dataset_boards.pt"
         moves_path = f"{folder_path}/dataset_moves.pt"
         uci_to_classindex_path = f"{folder_path}/uci_to_classindex.pickle"
+        # load files
         boards_tensor = torch.load(boards_path)
         moves_tensor = torch.load(moves_path)
         with open(uci_to_classindex_path, "rb") as file:
             uci_to_classindex = pickle.load(file)
+        
+        # return the dataset
         return boards_tensor, moves_tensor, uci_to_classindex
 
     @staticmethod

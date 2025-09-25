@@ -1,4 +1,11 @@
 # TODO
+- make a small script which compute the list of all move type at chess
+  - https://gemini.google.com/app/b876c2f17d4fde4e
+  - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
+  - https://www.chess.com/blog/the_real_greco/move-finding-the-engine-way
+  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
+  - AI seems to contradict the alpha zero paper which says there are 4672 possible moves
+  - brute force all possible moves on an empty board
 - generalize the game slice in the dataset builder
   - allow not to set begining and end move_index
   1. build a dataset for each stage of the game (opening, midgame, endgame)

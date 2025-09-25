@@ -19,6 +19,7 @@ class ChessModelOriginal(nn.Module):
         nn.init.xavier_uniform_(self.fc2.weight)
 
     def forward(self, x):
+        # x shape: (batch_size, 14, 8, 8)
         x = self.relu(self.conv1(x))
         x = self.relu(self.conv2(x))
         x = self.flatten(x)
@@ -30,12 +31,14 @@ class ChessModelConv2d(nn.Module):
     def __init__(self, num_classes):
         super(ChessModelConv2d, self).__init__()
 
-        dropoutProbability = 0.5
-        # dropoutProbability = 0.2
+        # dropoutProbability = 0.0
+        dropoutProbability = 0.2
 
         self.conv_1 = nn.Conv2d(14, 64, kernel_size=3, padding=1)
         self.bn_1 = nn.BatchNorm2d(64) # Add BatchNorm2d after conv_1
         self.dropout2d_1 = nn.Dropout2d(dropoutProbability)
+
+        # self.maxpool_1 = nn.MaxPool2d(2, 2)
 
         self.conv_2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         self.bn_2 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_2
@@ -68,6 +71,7 @@ class ChessModelConv2d(nn.Module):
         
 
     def forward(self, x):
+        # x shape: (batch_size, 14, 8, 8)
         x = self.conv_1(x)
         x = self.bn_1(x)
         x = self.leaky_relu(x)
@@ -77,6 +81,9 @@ class ChessModelConv2d(nn.Module):
         x = self.bn_2(x)
         x = self.leaky_relu(x)
         x = self.dropout2d_2(x)
+
+        # x = self.maxpool_1(x)
+
 
         # x = self.conv_3(x)
         # x = self.bn_3(x)    
@@ -118,7 +125,9 @@ class ChessModelLinear(torch.nn.Module):
         self.linear5 = torch.nn.Linear(200, self.OUTPUT_SIZE)
         self.softmax = torch.nn.Softmax(1) #use softmax as prob for each move, dim 1 as dim 0 is the batch dimension
 
-    def forward(self, x): #x.shape = (batch size, 896)
+    def forward(self, x):
+        # x shape: (batch_size, 14, 8, 8)
+
         x = x.to(torch.float32)
         # x = self.cnn1(x) #for using cnns
         x = x.reshape(x.shape[0], -1)

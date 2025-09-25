@@ -27,13 +27,14 @@ see `./test_stockfish.py`
 - gemini 2.5 pro - https://gemini.google.com/app/035250525ba1a737
 
 ## change encoding of the output best_move
+- output encoding from alpha-zero https://ai.stackexchange.com/questions/27336/how-does-the-alpha-zeros-move-encoding-work
 - 2 chessboards one with the source square, one with the destination square
   - 64 squares each
   - 64 + 64 = 128 output neurons
   - much less than the current 1869 output neurons... 
   - currently it is a classification problem with 1869 classes... with only one is correct... poorly formulated problem
 - https://www.baeldung.com/cs/encode-chess-board-state
-## Learn only winning moves
+## Learn only winning moves ?
 - ISSUE: currently i learn from any move
 - use stockfish to evaluate the position after each move... and use that to filter the dataset
 - learn only from the winning side ?

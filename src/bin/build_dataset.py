@@ -20,12 +20,12 @@ if __name__ == "__main__":
         description="Build chess dataset from PGN files.", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        "--max-files-count", type=int, default=15, help="Maximum number of PGN files to process."
+        "--max-files-count", type=int, default=20, help="Maximum number of PGN files to process."
     )
     parser.add_argument(
         "--max-games-count",
         type=int,
-        default=7000,
+        default=0,
         help="Maximum number of games to process. Use 0 for no limit.",
     )
     args = parser.parse_args()
