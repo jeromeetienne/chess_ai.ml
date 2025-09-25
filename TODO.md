@@ -1,11 +1,4 @@
 # TODO
-- read opening books
-  - here are some pgn https://sites.google.com/site/computerschess/download
-  - more polyglot opening books https://github.com/michaeldv/donna_opening_books/
-  - several collection https://chess.stackexchange.com/questions/35448/looking-for-polyglot-opening-books
-  - how to use it https://chess.stackexchange.com/questions/24738/how-to-use-opening-books-on-mac-linux
-- implement better looking board display - between ascii art and color - it is possible to do something more readable
-  - https://rebel13.nl/download/books.html
 - generalize the game slice in the dataset builder
   - allow not to set begining and end move_index
   1. build a dataset for each stage of the game (opening, midgame, endgame)
@@ -23,6 +16,13 @@
 - organize `./libs`
 
 # DONE
+- DONE read opening books
+  - here are some pgn https://sites.google.com/site/computerschess/download
+  - more polyglot opening books https://github.com/michaeldv/donna_opening_books/
+  - several collection https://chess.stackexchange.com/questions/35448/looking-for-polyglot-opening-books
+  - how to use it https://chess.stackexchange.com/questions/24738/how-to-use-opening-books-on-mac-linux
+- DONE implement better looking board display - between ascii art and color - it is possible to do something more readable
+  - https://rebel13.nl/download/books.html
 - WONTDO plug stockfish into python chess
   - https://python-chess.readthedocs.io/en/latest/engine.html
 - DONE do early stopping during training
