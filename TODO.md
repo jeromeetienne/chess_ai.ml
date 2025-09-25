@@ -1,4 +1,11 @@
 # TODO
+- have a tool to go from boards to tenser and back
+  - `board_to_tensor(board) -> tensor`
+  - `tensor_to_board(tensor) -> board`
+- experiment with the attacked squares feature
+  - https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.attacks
+  - add it to the input tensor
+  - see if it improves the model
 - make a small script which compute the list of all move type at chess
   - https://gemini.google.com/app/b876c2f17d4fde4e
   - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
