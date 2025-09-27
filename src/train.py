@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import matplotlib
 
 # local imports
 from .libs.chess_dataset import ChessDataset
@@ -148,6 +149,9 @@ class TrainCommand:
             return accuracy
 
         ###########################################################################
+
+        validation_losses = []
+        train_losses = []
 
         early_stopper = EarlyStopper(patience=10)
         for epoch_index in range(num_epochs):
