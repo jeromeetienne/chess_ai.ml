@@ -1,10 +1,13 @@
 # TODO
 - make a converter .pgn to the dataset format for each file
+  - PRO it would avoid the 'build_dataset' step during training (which can take 10+ minutes for large pgn files)
   - thus you can reload the dataset without reprocessing the pgn files
-  - Q. how to handle `uci_to_classindex` changes ? would work if i have it fixed
+  - Q. how to handle `uci_to_classindex` changes ? would work if i have it static (./bin/all_possible_moves.py)
 - have a tool to go from boards to tenser and back
   - `board_to_tensor(board) -> tensor`
   - `tensor_to_board(tensor) -> board`
+- multi-head network: good for alpha alpha-zero 
+  - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
 - experiment with the attacked squares feature
   - https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.attacks
   - add it to the input tensor
