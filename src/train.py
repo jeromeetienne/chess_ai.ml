@@ -23,7 +23,6 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = f"{__dirname__}/../output"
 
 
-
 class TrainCommand:
 
     @staticmethod
@@ -33,7 +32,7 @@ class TrainCommand:
         plt.plot(epochs, validation_losses, label="Validation Loss")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
-        plt.title('Train vs Validation Loss per Epoch')
+        plt.title("Train vs Validation Loss per Epoch")
         plt.legend()
         # Save the plot to output folder
         plt_path = f"{output_folder_path}/training_validation_loss.png"
@@ -42,10 +41,20 @@ class TrainCommand:
         # print(f"Training and validation loss plot saved to {plt_path}")
 
     @staticmethod
-    def save_training_report(train_dataset:torch.utils.data.Subset, num_classes:int, epoch_index:int, validation_loss:float, model: nn.Module):
+    def save_training_report(
+        train_dataset: torch.utils.data.Subset,
+        validation_dataset: torch.utils.data.Subset,
+        test_dataset: torch.utils.data.Subset,
+        num_classes: int,
+        epoch_index: int,
+        validation_loss: float,
+        model: nn.Module,
+    ):
         file_content = f"""# Chess Model Training
 - Trained at {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
 - Model trained on {len(train_dataset)} game positions
+- Model validated on {len(validation_dataset)} game positions
+- Model tested on {len(test_dataset)} game positions
 - Number of unique moves: {num_classes}
 - Number of epochs: {epoch_index + 1}
 - Final validation loss: {validation_loss:.4f}
@@ -111,10 +120,8 @@ class TrainCommand:
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
-
         accuracy = 100 * correct / total
         return accuracy
-
 
     ###############################################################################
     # Train a chess model using PyTorch.
@@ -123,7 +130,7 @@ class TrainCommand:
     def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7):
 
         # set random seed for reproducibility
-        # torch.manual_seed(42)
+        torch.manual_seed(42)
 
         ###############################################################################
         # Load Dataset
@@ -165,8 +172,14 @@ class TrainCommand:
 
         # Model Initialization
         model = ChessModel(num_classes=num_classes).to(device)
+        # use cross entropy loss for multi-class classification
         loss_fn = nn.CrossEntropyLoss()
+        # use Adam optimizer to update model weights
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        # Add a learning rate scheduler to reduce LR over time
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, threshold=0.1)
+        # Initialize early stopper to stop training if no improvement for 'patience' epochs
+        early_stopper = EarlyStopper(patience=10, threshold=0.05)
 
         ###############################################################################
         # Display model summary
@@ -179,7 +192,6 @@ class TrainCommand:
         validation_losses = []
         train_losses = []
 
-        early_stopper = EarlyStopper(patience=10, min_delta=0.1)
         for epoch_index in range(num_epochs):
             epoch_start_time = time.time()
             # Training the model
@@ -187,16 +199,22 @@ class TrainCommand:
 
             # Validate the model on the validation set
             validation_loss = TrainCommand.validation_one_epoch(model=model, dataloader=validation_dataloader, loss_fn=loss_fn, device=device)
+            epoch_elapsed_time = time.time() - epoch_start_time
 
-            # update training and validation losses
+            # Step the scheduler
+            scheduler.step(validation_loss)
+
+            # update training and validation losses array
             train_losses.append(avg_loss)
             validation_losses.append(validation_loss)
 
             # Check for early stopping
             must_stop, must_save = early_stopper.early_stop(validation_loss)
 
-            epoch_elapsed_time = time.time() - epoch_start_time
-            print(f"Epoch {epoch_index + 1}/{num_epochs}, Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}")
+            # Print epoch summary            
+            print(
+                f"Epoch {epoch_index + 1}/{num_epochs}, lr={scheduler.get_last_lr()[0]} Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}"
+            )
 
             # honor must_save: Save the model if validation loss improved
             if must_save:
@@ -204,7 +222,7 @@ class TrainCommand:
                 IOUtils.save_model(model, folder_path=output_folder_path)
                 # print(f"Model saved to {output_folder_path}")
 
-                TrainCommand.save_training_report(train_dataset, num_classes, epoch_index, validation_loss, model)
+                TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, validation_loss, model)
 
                 # Plot training and validation loss
                 TrainCommand.plot_losses(train_losses, validation_losses)
