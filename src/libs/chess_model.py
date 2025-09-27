@@ -33,7 +33,7 @@ class ChessModelConv2d(nn.Module):
         super(ChessModelConv2d, self).__init__()
 
         # dropoutProbability = 0.0
-        dropoutProbability = 0.6
+        dropoutProbability = 0.7
         # dropoutProbability = 0.2
 
         self.conv_1 = nn.Conv2d(16, 64, kernel_size=3, padding=1)
