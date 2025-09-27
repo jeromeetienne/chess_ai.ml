@@ -32,27 +32,16 @@ class ChessModelConv2d(nn.Module):
     def __init__(self, num_classes):
         super(ChessModelConv2d, self).__init__()
 
+        dropoutProbability = 0.5
         # dropoutProbability = 0.0
-        dropoutProbability = 0.7
-        # dropoutProbability = 0.2
 
         self.conv_1 = nn.Conv2d(16, 64, kernel_size=3, padding=1)
-        self.bn_1 = nn.BatchNorm2d(64) # Add BatchNorm2d after conv_1
+        self.bn_1 = nn.BatchNorm2d(64)
         self.dropout2d_1 = nn.Dropout2d(dropoutProbability)
 
-        # self.maxpool_1 = nn.MaxPool2d(2, 2)
-
         self.conv_2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.bn_2 = nn.BatchNorm2d(128) # Add BatchNorm2d after conv_2
+        self.bn_2 = nn.BatchNorm2d(128)
         self.dropout2d_2 = nn.Dropout2d(dropoutProbability)
-
-        # self.conv_3 = nn.Conv2d(120, 180, kernel_size=3, padding=1)
-        # self.bn_3 = nn.BatchNorm2d(180) # Add BatchNorm2d after conv_3
-        # self.dropout2d_3 = nn.Dropout2d(dropoutProbability)
-
-        # self.conv_4 = nn.Conv2d(180, 240, kernel_size=3, padding=1)
-        # self.bn_4 = nn.BatchNorm2d(240) # Add BatchNorm2d after conv_4
-        # self.dropout2d_4 = nn.Dropout2d(dropoutProbability)
 
         self.flatten = nn.Flatten()
 
@@ -65,8 +54,6 @@ class ChessModelConv2d(nn.Module):
         # Initialize weights
         nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
         nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='leaky_relu')
-        # nn.init.kaiming_uniform_(self.conv_3.weight, nonlinearity='leaky_relu')
-        # nn.init.kaiming_uniform_(self.conv_4.weight, nonlinearity='leaky_relu')
         nn.init.xavier_uniform_(self.fc1.weight)
         nn.init.xavier_uniform_(self.fc2.weight)
 
@@ -83,19 +70,6 @@ class ChessModelConv2d(nn.Module):
         x = self.bn_2(x)
         x = self.leaky_relu(x)
         x = self.dropout2d_2(x)
-
-        # x = self.maxpool_1(x)
-
-
-        # x = self.conv_3(x)
-        # x = self.bn_3(x)    
-        # x = self.leaky_relu(x)
-        # x = self.dropout2d_3(x)
-
-        # x = self.conv_4(x)
-        # x = self.bn_4(x)
-        # x = self.leaky_relu(x)
-        # x = self.dropout2d_4(x)
 
         x = self.flatten(x)
 
