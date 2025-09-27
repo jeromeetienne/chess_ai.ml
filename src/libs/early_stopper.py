@@ -26,17 +26,19 @@ class EarlyStopper:
         must_stop = False
         must_save = False
 
+        # Check if the validation loss has improved by at least min_delta
         is_improved = validation_loss < (self.min_validation_loss - self.min_delta)
 
-        # check if the model MUST be saved
         if is_improved:
+            # If improved, update the minimum validation loss and reset wait counter
             self.min_validation_loss = validation_loss
             self.wait_counter = 0
-            must_save = True
-        # check if the learning MUST be stopped
+            must_save = True  # Signal to save the model
         else:
+            # If not improved, increment the wait counter
             self.wait_counter += 1
             if self.wait_counter >= self.patience:
+                # If patience exceeded, signal to stop training
                 must_stop = True
 
         return (must_stop, must_save)
