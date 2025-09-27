@@ -1,14 +1,14 @@
 class EarlyStopper:
-    def __init__(self, patience: int = 10, min_delta: float = 0.001):
+    def __init__(self, patience: int = 10, threshold: float = 0.001):
         """
         Early stops the training if validation loss doesn't improve after a given patience.
 
         Args:
             patience (int): How many epochs to wait after last time validation loss improved.
-            min_delta (float): Minimum change in the monitored quantity to qualify as an improvement.
+            threshold (float): Minimum change in the monitored quantity to qualify as an improvement.
         """
         self.patience = patience
-        self.min_delta = min_delta
+        self.threshold = threshold
         self.wait_counter = 0
         self.min_validation_loss = float("inf")
 
@@ -27,7 +27,7 @@ class EarlyStopper:
         must_save = False
 
         # Check if the validation loss has improved by at least min_delta
-        is_improved = validation_loss < (self.min_validation_loss - self.min_delta)
+        is_improved = validation_loss < (self.min_validation_loss - self.threshold)
 
         if is_improved:
             # If improved, update the minimum validation loss and reset wait counter
