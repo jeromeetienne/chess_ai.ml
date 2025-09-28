@@ -10,8 +10,8 @@ from src.libs.chess_extra import ChessExtra
 
 class EncodingUtils:
 
-    # INPUT_SHAPE = (21, 8, 8)  # (channels, height, width)
-    INPUT_SHAPE = (16, 8, 8)  # (channels, height, width)
+    INPUT_SHAPE = (21, 8, 8)  # (channels, height, width)
+    # INPUT_SHAPE = (16, 8, 8)  # (channels, height, width)
     BOARD_DTYPE = np.dtype(np.float32)
     MOVE_DTYPE = np.dtype(np.long)  # class index as long
     class PLANE:
@@ -27,14 +27,20 @@ class EncodingUtils:
         BLACK_ROOK = 9
         BLACK_QUEEN = 10
         BLACK_KING = 11
-        MOVABLE_PIECES = 12
-        LEGAL_MOVES = 13
-        ATTACKED_BY_US = 14
-        ATTACKED_BY_OPPONENT = 15
 
+        REPETITION_2 = 12
+        REPETITION_3 = 13
+
+        TURN = 14
+        FULLMOVE_NUMBER = 15
+        ACTIVE_KINGSIDE_CASTLING_RIGHTS = 16
+        ACTIVE_QUEENSIDE_CASTLING_RIGHTS = 17
+        OPPONENT_KINGSIDE_CASTLING_RIGHTS = 18
+        OPPONENT_QUEENSIDE_CASTLING_RIGHTS = 19
+        NO_PROGRESS_COUNTER = 20
 
     @staticmethod
-    def _board_to_numpy_new(board: chess.Board) -> np.ndarray:
+    def __board_to_numpy(board: chess.Board) -> np.ndarray:
         # AlphaZero style board encoding
         # https://github.com/iamlucaswolf/gym-chess/blob/6a5eb43650c400a556505ec035cc3a3c5792f8b2/gym_chess/alphazero/board_encoding.py#L11C1-L33C1
 
@@ -137,7 +143,7 @@ class EncodingUtils:
             raise ValueError(f"No torch equivalent for numpy dtype {np_dtype}")
 
     @staticmethod
-    def _board_to_numpy(board: chess.Board) -> np.ndarray:
+    def _board_to_numpy_old(board: chess.Board) -> np.ndarray:
         # Create a numpy array of shape (16, 8, 8)
         # 8x8 is a size of the chess board.
         # 12 = number of unique pieces.
@@ -147,6 +153,12 @@ class EncodingUtils:
         # 16th board for number of opponent pieces attacking each square
 
         assert EncodingUtils.INPUT_SHAPE == (16, 8, 8), f"INPUT_SHAPE must be (16, 8, 8), got {EncodingUtils.INPUT_SHAPE}"
+        PLANE_MOVABLE_PIECES = 12
+        PLANE_LEGAL_MOVES = 13
+        PLANE_ATTACKED_BY_US = 14
+        PLANE_ATTACKED_BY_OPPONENT = 15
+
+
 
         board_numpy = np.zeros((16, 8, 8), dtype=EncodingUtils.BOARD_DTYPE)
         piece_map = board.piece_map()
@@ -163,30 +175,30 @@ class EncodingUtils:
         for move in legal_moves:
             from_square = move.from_square
             row_from, col_from = divmod(from_square, 8)
-            board_numpy[12, row_from, col_from] = 1
+            board_numpy[PLANE_MOVABLE_PIECES, row_from, col_from] = 1
 
         # Populate the 14th board - squares TO WHICH we can move (i.e. legal move targets)
         for move in legal_moves:
             to_square = move.to_square
             row_to, col_to = divmod(to_square, 8)
-            board_numpy[13, row_to, col_to] = 1
+            board_numpy[PLANE_LEGAL_MOVES, row_to, col_to] = 1
 
         # Populate the 15th board - number of our pieces attacking each square
         my_color = board.turn
         opponent_color = chess.BLACK if board.turn == chess.WHITE else chess.WHITE
         my_board_attacked_count = ChessExtra.board_attacked_count_compute(board, opponent_color)
-        board_numpy[14] = np.array(my_board_attacked_count, dtype=EncodingUtils.BOARD_DTYPE)
+        board_numpy[PLANE_ATTACKED_BY_US] = np.array(my_board_attacked_count, dtype=EncodingUtils.BOARD_DTYPE)
 
         # Populate the 16th board - number of opponent pieces attacking each square
         opponent_board_attacked_count = ChessExtra.board_attacked_count_compute(board, my_color)
-        board_numpy[15] = np.array(opponent_board_attacked_count, dtype=EncodingUtils.BOARD_DTYPE)
+        board_numpy[PLANE_ATTACKED_BY_OPPONENT] = np.array(opponent_board_attacked_count, dtype=EncodingUtils.BOARD_DTYPE)
 
         # Return a numpy array of shape (16, 8, 8)
         return board_numpy
 
     @staticmethod
     def board_to_tensor(board: chess.Board) -> torch.Tensor:
-        board_numpy = EncodingUtils._board_to_numpy(board)
+        board_numpy = EncodingUtils.__board_to_numpy(board)
         # Convert the numpy array to a torch tensor
         board_tensor_dtype = EncodingUtils.__numpy_dtype_to_torch(EncodingUtils.BOARD_DTYPE)
         board_tensor = torch.tensor(board_numpy, dtype=board_tensor_dtype)
@@ -199,9 +211,6 @@ class EncodingUtils:
         convert a board tensor of shape (16, 8, 8) to a chess.Board object
         """
 
-        assert EncodingUtils.INPUT_SHAPE[0] == 16, "not updated to new encoding"
-
-        assert board_tensor.shape == (16, 8, 8), f"board_tensor shape must be (16, 8, 8), got {board_tensor.shape}"
         board_recontruct = chess.Board()
         board_recontruct.clear_board()
 
@@ -226,6 +235,30 @@ class EncodingUtils:
                     # set piece on the board
                     piece = chess.Piece.from_symbol(piece_symbol)
                     board_recontruct.set_piece_at(square, piece)
+
+        # TMP: remove this when not needed
+        if EncodingUtils.INPUT_SHAPE[0] == 16:
+            return board_recontruct
+
+
+        # set turn
+        board_recontruct.turn = bool(board_tensor[12, 0, 0].item())
+        # set fullmove number
+        board_recontruct.fullmove_number = int(board_tensor[13, 0, 0].item())
+        # set castling rights
+        if board_tensor[14, 0, 0].item():
+            if board_recontruct.turn == chess.WHITE:
+                board_recontruct.castling_rights |= chess.BB_H1
+            else:
+                board_recontruct.castling_rights |= chess.BB_A8
+        if board_tensor[15, 0, 0].item():
+            if board_recontruct.turn == chess.WHITE:
+                board_recontruct.castling_rights |= chess.BB_A1
+            else:
+                board_recontruct.castling_rights |= chess.BB_H8
+        # set halfmove clock
+        board_recontruct.halfmove_clock = int(board_tensor[19, 0, 0].item())
+
         return board_recontruct
 
     @staticmethod
@@ -287,7 +320,7 @@ class EncodingUtils:
             board = game.board()
             for move in game.mainline_moves():
                 # encode the current board position
-                board_numpy = EncodingUtils._board_to_numpy(board)
+                board_numpy = EncodingUtils.__board_to_numpy(board)
                 boards_numpy[board_index] = board_numpy
 
                 # append the best move in UCI format
