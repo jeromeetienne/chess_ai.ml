@@ -78,17 +78,11 @@ class Utils:
         ###############################################################################
         ###############################################################################
 
-        boards_nparray, best_move_nparray, uci_to_classindex = EncodingUtils.create_input_for_nn_np(games)
+        boards_tensor, moves_tensor, uci_to_classindex = EncodingUtils.games_to_tensor(games)
 
-        # Encode moves
-        # best_move_nparray, uci_to_classindex = EncodingUtils.encode_moves_np(best_move_nparray)
-
-        # Convert to PyTorch tensors
-        boards_tensor = torch.tensor(boards_nparray, dtype=torch.float32)
-        best_move_tensor = torch.tensor(best_move_nparray, dtype=torch.long)
 
         # print dataset stats
-        return boards_tensor, best_move_tensor, uci_to_classindex
+        return boards_tensor, moves_tensor, uci_to_classindex
 
     @staticmethod
     def model_summary(model: torch.nn.Module) -> str:

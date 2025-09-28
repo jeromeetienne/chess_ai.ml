@@ -63,7 +63,9 @@ class ChessModelConv2d(nn.Module):
         
 
     def forward(self, x):
-        # x shape: (batch_size, 14, 8, 8)
+        # x shape: (batch_size, 16, 8, 8)
+        x = x.to(torch.float32)
+
         x = self.conv_1(x)
         x = self.bn_1(x)
         x = self.leaky_relu(x)
