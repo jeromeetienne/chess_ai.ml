@@ -9,7 +9,7 @@ import chess.polyglot
 import numpy as np
 
 # local imports
-from .encoding_utils import EncodingUtils
+from .encoding import Encoding
 from .chess_model import ChessModel
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -92,7 +92,7 @@ class ChessbotMLPlayer:
         device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
         # print(f"Using device: {device}")
 
-        boards_tensor = EncodingUtils.board_to_tensor(board).to(device)
+        boards_tensor = Encoding.board_to_tensor(board).unsqueeze(0).to(device)
 
         # Set the model to evaluation mode
         self._model.eval()

@@ -35,8 +35,8 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # dropoutProbability = 0.5
-        dropoutProbability = 0.2
+        dropoutProbability = 0.5
+        # dropoutProbability = 0.4
 
         self.conv_1 = nn.Conv2d(input_channels, 64, kernel_size=3, padding=1)
         self.bn_1 = nn.BatchNorm2d(64)

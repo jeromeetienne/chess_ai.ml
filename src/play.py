@@ -8,7 +8,7 @@ from stockfish import Stockfish
 
 
 # local imports
-from src.libs.encoding_utils import EncodingUtils
+from src.libs.encoding import Encoding
 from .libs.chessbotml_player import ChessbotMLPlayer
 from .libs.io_utils import IOUtils
 from .libs.pgn_utils import PGNUtils
@@ -54,7 +54,7 @@ class PlayCommand:
         num_classes = len(uci_to_classindex)
 
         # Load the model
-        input_shape = EncodingUtils.INPUT_SHAPE  # (channels, height, width)
+        input_shape = Encoding.INPUT_SHAPE  # (channels, height, width)
         output_shape = (num_classes,)
         model = IOUtils.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
         

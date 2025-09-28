@@ -8,7 +8,7 @@ import chess.pgn
 # local imports
 from .chess_extra import ChessExtra
 from .pgn_utils import PGNUtils
-from .encoding_utils import EncodingUtils
+from .encoding import Encoding
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -78,7 +78,7 @@ class Utils:
         ###############################################################################
         ###############################################################################
 
-        boards_tensor, moves_tensor, uci_to_classindex = EncodingUtils.games_to_tensor(games)
+        boards_tensor, moves_tensor, uci_to_classindex = Encoding.games_to_tensor(games)
 
 
         # print dataset stats

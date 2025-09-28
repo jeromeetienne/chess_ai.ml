@@ -9,7 +9,7 @@ import chess
 from stockfish import Stockfish
 
 # local imports
-from src.libs.encoding_utils import EncodingUtils
+from src.libs.encoding import Encoding
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_path = f"{__dirname__}/../output"
@@ -40,7 +40,7 @@ stockfish.set_depth(10)
 for tensor_index, board_tensor in enumerate(boards_tensor):
     print(f"Evaluating board {tensor_index+1}/{tensor_count} ...")
     # board reconstruction from tensor
-    board = EncodingUtils.board_from_tensor(board_tensor)
+    board = Encoding.board_from_tensor(board_tensor)
     board.set_castling_fen('-')  # allow no castling rights
 
     # TODO

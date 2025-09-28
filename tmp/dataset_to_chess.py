@@ -9,7 +9,7 @@ import chess
 # local imports
 from src.libs.io_utils import IOUtils
 from src.libs.pgn_utils import PGNUtils
-from src.libs.encoding_utils import EncodingUtils
+from src.libs.encoding import Encoding
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_path = f"{__dirname__}/../output"
@@ -34,11 +34,11 @@ board_tensor = boards_tensor[position_idx]
 move_tensor = moves_tensor[position_idx]
 
 # board reconstruction from tensor
-board_recontruct = EncodingUtils.board_from_tensor(board_tensor)
+board_recontruct = Encoding.board_from_tensor(board_tensor)
 print(f"Board reconstruction:\n{board_recontruct}")
 
 # Move reconstruction from tensor
-move_tensor_uci = EncodingUtils.move_from_tensor(move_tensor, classindex_to_uci)
+move_tensor_uci = Encoding.move_from_tensor(move_tensor, classindex_to_uci)
 print(f"Move reconstruction UCI: {move_tensor_uci}")
 
 ###############################################################################
