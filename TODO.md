@@ -1,4 +1,12 @@
 # TODO
+- the type used in input/output is a mess. Sometimes float32, sometimes long
+  - search for ".float" or ".long" or ".int"
+  - centralize it and then set it 
+  - best setting: likely int8 for input, and int16 for output
+- create a new class called encoding.py with a unit test, and then use it everywhere in the code
+  - in encoding, if turn is black, flip the board so that always the side to play is at the bottom
+  - it will make learning easier
+  - do that for board and for move (e2e4 becomes e7e5 ?)
 - fix the bug in the board encoding
   - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py
   - encode every as alpha-zero as it is the FEN standard

@@ -129,6 +129,7 @@ class Utils:
             summary = f"""Dataset Summary:
 - Total positions: {len(boards_tensor):,}
 - Input shape: {boards_tensor.shape[1:]} (Channels, Height, Width)
+- Output shape: {moves_tensor.shape[1:]} (Scalar class index)
 - Number of unique moves (classes): {len(uci_to_classindex):,}
 - Sample move index (first position): {moves_tensor[0].item()}
 - Sample move UCI (first position): {list(uci_to_classindex.keys())[list(uci_to_classindex.values()).index(moves_tensor[0].item())]}

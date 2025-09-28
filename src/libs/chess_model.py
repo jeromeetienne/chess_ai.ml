@@ -29,13 +29,16 @@ class ChessModelOriginal(nn.Module):
         return x
 
 class ChessModelConv2d(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, input_shape: tuple[int,int,int], output_shape: tuple[int]):
         super(ChessModelConv2d, self).__init__()
 
-        dropoutProbability = 0.5
-        # dropoutProbability = 0.0
+        output_width = output_shape[0]
+        input_channels, input_height, input_width = input_shape
 
-        self.conv_1 = nn.Conv2d(16, 64, kernel_size=3, padding=1)
+        # dropoutProbability = 0.5
+        dropoutProbability = 0.2
+
+        self.conv_1 = nn.Conv2d(input_channels, 64, kernel_size=3, padding=1)
         self.bn_1 = nn.BatchNorm2d(64)
         self.dropout2d_1 = nn.Dropout2d(dropoutProbability)
 
@@ -44,12 +47,12 @@ class ChessModelConv2d(nn.Module):
         self.dropout2d_2 = nn.Dropout2d(dropoutProbability)
 
         self.flatten = nn.Flatten()
+        self.leaky_relu = nn.LeakyReLU()
 
-        self.fc1 = nn.Linear(8 * 8 * 128, 1024)
+        self.fc1 = nn.Linear(input_height * input_width * 128, 1024)
         self.bn_fc1 = nn.BatchNorm1d(1024) # Add BatchNorm1d after fc1
         self.dropout_1 = nn.Dropout(dropoutProbability)
-        self.fc2 = nn.Linear(1024, num_classes)
-        self.leaky_relu = nn.LeakyReLU()
+        self.fc2 = nn.Linear(1024, output_width)
 
         # Initialize weights
         nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
@@ -128,6 +131,6 @@ class ChessModelLinear(torch.nn.Module):
 ###############################################################################
 
 class ChessModel(ChessModelConv2d):
-    def __init__(self, num_classes):
-        super(ChessModel, self).__init__(num_classes)
+    def __init__(self, input_shape: tuple[int,int,int], output_shape: tuple[int]):
+        super(ChessModel, self).__init__(input_shape, output_shape)
 

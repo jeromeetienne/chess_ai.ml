@@ -13,9 +13,9 @@ class IOUtils:
         torch.save(model.state_dict(), state_dict_path)
 
     @staticmethod
-    def load_model(folder_path: str, num_classes: int) -> ChessModel:
+    def load_model(folder_path: str, input_shape: tuple[int,int,int], output_shape: tuple[int]) -> ChessModel:
         # Load the model
-        model = ChessModel(num_classes=num_classes)
+        model = ChessModel(input_shape=input_shape, output_shape=output_shape)
         model_path = f"{folder_path}/model.pth"
         model.load_state_dict(torch.load(model_path))
 

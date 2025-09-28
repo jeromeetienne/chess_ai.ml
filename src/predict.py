@@ -9,6 +9,7 @@ import chess
 from .libs.chessbotml_player import ChessbotMLPlayer
 from .libs.io_utils import IOUtils
 from .libs.pgn_utils import PGNUtils
+from .libs.encoding_utils import EncodingUtils
 from .libs.utils import Utils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +27,9 @@ class PredictCommand:
         num_classes = len(uci_to_classindex)
 
         # Load the model
-        model = IOUtils.load_model(folder_path=output_folder_path, num_classes=num_classes)
+        input_shape = EncodingUtils.INPUT_SHAPE  # (channels, height, width)
+        output_shape = (num_classes,)
+        model = IOUtils.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
 
         # Check for GPU
         device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore

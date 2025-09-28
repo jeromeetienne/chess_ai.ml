@@ -4,12 +4,89 @@ import chess
 import chess.pgn as pgn
 from tqdm import tqdm
 
-from .chess_extra import ChessExtra
+from src.libs.chess_extra import ChessExtra
 
 
 class EncodingUtils:
+
+    INPUT_SHAPE = (16, 8, 8)  # (channels, height, width)
+
     @staticmethod
-    def board_to_matrix_np(board: chess.Board) -> np.ndarray:
+    def board_to_numpy_new(board: chess.Board) -> np.ndarray:
+        # AlphaZero style board encoding
+        # https://github.com/iamlucaswolf/gym-chess/blob/6a5eb43650c400a556505ec035cc3a3c5792f8b2/gym_chess/alphazero/board_encoding.py#L11C1-L33C1
+
+        unique_piece_count = 6  # P, N, B, R, Q, K
+        color_count = 2  # white, black
+        board_plane_count = unique_piece_count * color_count
+
+        repetition_plane_count = 2  # planes for 2 and 3 fold repetition
+
+        # 7 additional planes for metadata
+        # - 1 plane for active player color
+        # - 1 plane for total move count
+        # - 2 planes for active player castling rights
+        # - 2 planes for opponent player castling rights
+        # - 1 plane for no-progress counter
+        meta_plane_count = 7
+
+        plane_count = board_plane_count + repetition_plane_count + meta_plane_count
+
+
+        ###############################################################################
+        #   Piece planes
+        #
+        piece_planes = np.zeros((board_plane_count, 8, 8))
+
+        # Populate first 12 8x8 boards (where pieces are)
+        for square, piece in board.piece_map().items():
+            row, col = divmod(square, 8)
+            piece_color = 0 if piece.color else 6
+            piece_type = piece.piece_type - 1
+            piece_planes[piece_color + piece_type, row, col] = 1
+
+        ###############################################################################
+        #   Repetition planes
+        #
+        # Repetition counters
+        repetition_planes = np.zeros((repetition_plane_count, 8, 8))
+        repetition_planes[0, :, :] = board.is_repetition(2)
+        repetition_planes[1, :, :] = board.is_repetition(3)
+
+        ###############################################################################
+        #   Metadata planes
+        #
+        meta_planes = np.zeros(shape=(meta_plane_count, 8, 8))
+
+        # Active player color
+        meta_planes[0, :, :] = int(board.turn)  # 1 for white, 0 for black
+
+        # Total move count
+        meta_planes[1, :, :] = board.fullmove_number
+
+        # # Active player castling rights
+        active_color = board.turn
+        meta_planes[2, :, :] = board.has_kingside_castling_rights(active_color)
+        meta_planes[3, :, :] = board.has_queenside_castling_rights(active_color)
+
+        # Opponent player castling rights
+        opponent_color = not board.turn
+        meta_planes[4, :, :] = board.has_kingside_castling_rights(opponent_color)
+        meta_planes[5, :, :] = board.has_queenside_castling_rights(opponent_color)
+
+        # # No-progress counter
+        meta_planes[6, :, :] = board.halfmove_clock
+
+        ###############################################################################
+        #   Concatenate all planes
+        #
+        board_numpy = np.concatenate([piece_planes, repetition_planes, meta_planes], axis=0)
+
+        # Return a numpy array of shape (21, 8, 8)
+        return board_numpy
+
+    @staticmethod
+    def board_to_numpy(board: chess.Board) -> np.ndarray:
         # Create a numpy array of shape (16, 8, 8)
         # 8x8 is a size of the chess board.
         # 12 = number of unique pieces.
@@ -55,8 +132,8 @@ class EncodingUtils:
 
     @staticmethod
     def board_to_tensor(board: chess.Board) -> torch.Tensor:
-        matrix = EncodingUtils.board_to_matrix_np(board)
-        board_tensor = torch.tensor(matrix, dtype=torch.float32).unsqueeze(0)
+        board_np = EncodingUtils.board_to_numpy(board)
+        board_tensor = torch.tensor(board_np, dtype=torch.float32).unsqueeze(0)
         return board_tensor
 
     @staticmethod
@@ -64,6 +141,9 @@ class EncodingUtils:
         """
         convert a board tensor of shape (16, 8, 8) to a chess.Board object
         """
+
+        assert False, "not updated to new encoding"
+
         assert board_tensor.shape == (16, 8, 8), f"board_tensor shape must be (16, 8, 8), got {board_tensor.shape}"
         board_recontruct = chess.Board()
         board_recontruct.clear_board()
@@ -96,11 +176,22 @@ class EncodingUtils:
         """
         convert a move tensor (scalar tensor with class index) to UCI string using the provided mapping
         """
+
+        assert False, "not updated to new encoding"
+
         assert move_tensor.shape == (), f"move_tensor shape must be (), got {move_tensor.shape}"
         move_uci = classindex_to_uci[int(move_tensor.item())]
         return move_uci
 
+    @staticmethod
+    def move_to_tensor(move_uci: str, uci_to_classindex: dict[str, int]) -> torch.Tensor:
+        """
+        convert a move in UCI string format to a tensor (scalar tensor with class index) using the provided mapping
+        """
 
+        class_index = uci_to_classindex[move_uci]
+        move_tensor = torch.tensor(class_index, dtype=torch.long)
+        return move_tensor
 
     @staticmethod
     def create_input_for_nn_np(games: list[pgn.Game]) -> tuple[np.ndarray, np.ndarray, dict[str, int]]:
@@ -110,8 +201,8 @@ class EncodingUtils:
             board = game.board()
             for move in game.mainline_moves():
                 # encode the current board position
-                board_matrix = EncodingUtils.board_to_matrix_np(board)
-                board_array.append(board_matrix)
+                board_numpy = EncodingUtils.board_to_numpy(board)
+                board_array.append(board_numpy)
                 # append the best move in UCI format
                 best_move_array_uci.append(move.uci())
 
@@ -129,7 +220,12 @@ class EncodingUtils:
         # return the boards, best moves and the mapping
         return board_nparray, best_move_nparray, uci_to_classindex
 
-    # @staticmethod
-    # def encode_moves_np(moves: np.ndarray) -> tuple[np.ndarray, dict[str, int]]:
-    #     uci_to_classindex = {move: idx for idx, move in enumerate(set(moves))}
-    #     return np.array([uci_to_classindex[move] for move in moves], dtype=np.float32), uci_to_classindex
+
+if __name__ == "__main__":
+    board = chess.Board()
+    board.push(chess.Move.from_uci("e2e4"))
+    # board.push(chess.Move.from_uci("e7e5"))
+
+    print(f"Current board:\n{board}")
+    board_numpy = EncodingUtils.board_to_numpy(board)
+    print(f"Board tensor shape: {board_numpy.shape}")

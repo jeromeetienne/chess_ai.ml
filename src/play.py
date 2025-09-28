@@ -6,7 +6,9 @@ import typing
 import chess
 from stockfish import Stockfish
 
+
 # local imports
+from src.libs.encoding_utils import EncodingUtils
 from .libs.chessbotml_player import ChessbotMLPlayer
 from .libs.io_utils import IOUtils
 from .libs.pgn_utils import PGNUtils
@@ -52,10 +54,12 @@ class PlayCommand:
         num_classes = len(uci_to_classindex)
 
         # Load the model
-        model = IOUtils.load_model(folder_path=output_folder_path, num_classes=num_classes)
+        input_shape = EncodingUtils.INPUT_SHAPE  # (channels, height, width)
+        output_shape = (num_classes,)
+        model = IOUtils.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
         
         # create the reverse mapping
-        classindex_to_uci: dict[int, str] = {v: k for k, v in uci_to_classindex.items()}
+        classindex_to_uci = IOUtils.classindex_to_uci_inverse_mapping(uci_to_classindex)
 
         chatbotml_player = ChessbotMLPlayer(model=model, classindex_to_uci=classindex_to_uci)
 
@@ -77,7 +81,7 @@ class PlayCommand:
         stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
         stockfish_evaluation = Stockfish(path=stockfish_path)
         # stockfish_evaluation.set_depth(20)
-        stockfish_evaluation.set_elo_rating(20)
+        # stockfish_evaluation.set_elo_rating(20)
 
         # Initialize Stockfish if needed
         if opponent_tech == "stockfish":

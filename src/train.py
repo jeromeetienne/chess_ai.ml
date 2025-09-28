@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import typing
 
 # pip imports
 import tqdm
@@ -173,7 +174,10 @@ class TrainCommand:
         # print(f"Pytorch computes on {device} device")
 
         # Model Initialization
-        model = ChessModel(num_classes=num_classes).to(device)
+        input_shape: tuple[int, int, int] = typing.cast(tuple[int,int,int],boards_tensor.shape[1:])  # (channels, height, width)
+        output_shape = (num_classes, )
+        model = ChessModel(input_shape=input_shape, output_shape=output_shape).to(device)
+
         # use cross entropy loss for multi-class classification
         loss_fn = nn.CrossEntropyLoss()
         # use Adam optimizer to update model weights

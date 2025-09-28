@@ -12,7 +12,7 @@ full_pipeline: clean build_dataset train predict play ## run the full pipeline
 .PHONY: help clean build_dataset train predict play full_pipeline
 
 build_dataset: ## build the dataset
-	python ./bin/build_dataset.py
+	python ./bin/build_dataset.py --max-files-count 10
 
 train: ## train the model
 	python ./bin/train.py
