@@ -50,6 +50,8 @@ see `./test_stockfish.py`
 - "spatial transformer with self attention mechanism on mnist with pytorch" with perplexity
 
 ## Change the encoding of the board
+- alpha zero board encoding in details
+  - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py
 - currently it contains only the current pieces positions... with a 0 or 1 per int
   - what about i add the threaten squares? board.attacks()
 

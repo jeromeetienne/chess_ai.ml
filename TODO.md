@@ -1,4 +1,9 @@
 # TODO
+- fix the bug in the board encoding
+  - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py
+  - encode every as alpha-zero as it is the FEN standard
+  - except the 14 previous moves, encode only the last move
+  - encode all this thru constants - it will keep the information in the source
 - make a converter .pgn to the dataset format for each file
   - PRO it would avoid the 'build_dataset' step during training (which can take 10+ minutes for large pgn files)
   - thus you can reload the dataset without reprocessing the pgn files

@@ -60,7 +60,9 @@ class TrainCommand:
 - Final validation loss: {validation_loss:.4f}
 
 # Model Summary
+```
 {Utils.model_summary(model)}
+```
         """
         report_path = f"{output_folder_path}/TRAINING_REPORT.md"
         with open(report_path, "w") as report_file:
@@ -179,7 +181,7 @@ class TrainCommand:
         # Add a learning rate scheduler to reduce LR over time
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, threshold=0.1)
         # Initialize early stopper to stop training if no improvement for 'patience' epochs
-        early_stopper = EarlyStopper(patience=10, threshold=0.05)
+        early_stopper = EarlyStopper(patience=10, threshold=0.01)
 
         ###############################################################################
         # Display model summary

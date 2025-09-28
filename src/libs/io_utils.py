@@ -67,3 +67,8 @@ class IOUtils:
         with open(uci_to_classindex_path, "rb") as file:
             uci_to_classindex = pickle.load(file)
         return uci_to_classindex
+
+    @staticmethod
+    def classindex_to_uci_inverse_mapping(uci_to_classindex: dict[str, int]) -> dict[int, str]:
+        classindex_to_uci = {v: k for k, v in uci_to_classindex.items()}
+        return classindex_to_uci
