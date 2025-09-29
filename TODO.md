@@ -9,6 +9,9 @@
   - FIXME: issue in the `board_from_tensor` function. see script in `./tmp/dataset_to_eval.py`
 - finish the boards tensor to eval script
   - it is a good checker
+- how many chess move are there ?
+  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
+- https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp
 - using gym_chess to generate the board mapping
   - save it in a file, then the uci2class is static
   - check with your own list of all possible moves (you are missing 4 moves)
@@ -19,6 +22,13 @@
     - the board tensor
     - the eval tensor
   - **TO FLIP A MOVE**: get the class index to UCI, parse row/col, flip row/col 7-row, 7-col, convert back to UCI, convert back to class index
+  - as in this function [Move.rotate](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/utils.py#L34) in gym-chess
+  - move_pack(uci) -> chess.Move
+  - move_unpack(chess.Move) -> uci
+  - move_flip(chess.Move) -> chess.Move
+- understand the alpha zero paper move encoding
+  - perplexity summarizing it - https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA
+  - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
 - can i encode the move flip by changing the mapping ?
   - one mapping if it is white to play, another if it is black to play
   - and you store both mapping in the dataset

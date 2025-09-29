@@ -58,3 +58,8 @@ python ./src/predict.py
 - alpha zero board/move encoding - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/
   - [board_encoding.py](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py)
   - [move_encoding](https://github.com/iamlucaswolf/gym-chess/tree/master/gym_chess/alphazero/move_encoding)
+- [AlphaZero paper](https://arxiv.org/abs/1712.01815)
+- [AlphaZero paper2](https://arxiv.org/abs/2304.14918)
+- [alpha vile](https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp) - the second version of alpha zero
+- [article](https://ar5iv.labs.arxiv.org/html/2304.14918) explaining why transformer may be unsuitable for chess
+- chess.com article [Another Silly Question: How Many Chess Moves Are There?](https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there)
