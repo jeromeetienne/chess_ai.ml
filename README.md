@@ -55,3 +55,6 @@ python ./src/predict.py
 
 ## Useful Links
 - stackoverflow specific to chess: http://chess.stackexchange.com/
+- alpha zero board/move encoding - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/
+  - [board_encoding.py](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py)
+  - [move_encoding](https://github.com/iamlucaswolf/gym-chess/tree/master/gym_chess/alphazero/move_encoding)
