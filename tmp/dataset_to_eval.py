@@ -9,6 +9,7 @@ import chess
 from stockfish import Stockfish
 
 # local imports
+from src.libs.chess_extra import ChessExtra
 from src.libs.encoding import Encoding
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +21,7 @@ boards_tensor = torch.load(boards_path)
 
 
 # keep only the first 100 boards for testing
-boards_tensor = boards_tensor[:100]
+# boards_tensor = boards_tensor[1:100]
 
 tensor_count = boards_tensor.shape[0]
 print(f"Loaded {tensor_count} boards from {boards_path}")
@@ -38,11 +39,16 @@ stockfish = Stockfish(path=stockfish_path)
 stockfish.set_depth(10)
 
 for tensor_index, board_tensor in enumerate(boards_tensor):
+    print(f'-'*40)
     print(f"Evaluating board {tensor_index+1}/{tensor_count} ...")
     # board reconstruction from tensor
     board = Encoding.board_from_tensor(board_tensor)
-    board.set_castling_fen('-')  # allow no castling rights
 
+    # print(f'board from tensor:\n{board}')
+    # print(ChessExtra.board_to_string(board, flip_board=False))
+
+
+    board.set_castling_fen('-')  # allow no castling rights
     # TODO
     # - BUG BUG BUG in dataset
     # - boards_tensor does not encode turn (white/black to move)
@@ -52,7 +58,7 @@ for tensor_index, board_tensor in enumerate(boards_tensor):
     # - boards_tensor does not encode 50-move rule counter
     # - boards_tensor does not encode repetition rule
     # - Q. how to encode that in the tensor?
-    #   - https://github.com/genyrosk/gym-chess <- find the code that encodes the board to tensor
+    #   - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py <- find the code that encodes the board to tensor
 
 
 
@@ -61,9 +67,7 @@ for tensor_index, board_tensor in enumerate(boards_tensor):
         print(f'board status: {board.status()}  ')
         print(f"Panic Invalid board position:\n{board}")
         print(f"FEN: {board.fen()}")
-        pass
-        continue
-        assert board.is_valid(), "Reconstructed board is not valid"
+        raise ValueError("Reconstructed board is not valid")
 
     # invalid board positions examples: no black king
     # r n . . k b . r
@@ -78,28 +82,15 @@ for tensor_index, board_tensor in enumerate(boards_tensor):
     # set the board position in Stockfish and evaluate it
     board_fen = board.fen()
 
-    stockfish.set_fen_position(board.fen())
+    stockfish.set_fen_position(board_fen)
 
-
-
-    # import time
-    # time.sleep(0.1)  # give stockfish some time to think
     try:
-        print(f'fen: {board.fen()}')
         stockfish_eval = stockfish.get_evaluation()
+        # {"type": "cp", "value": 20} for +0.20
+        # {"type": "mate", "value": 3} for mate in 3 moves
     except Exception as e:
-        print(f"Error getting evaluation from Stockfish: {e}")
-        
-        stockfish = Stockfish(path=stockfish_path)
-        stockfish.set_depth(10)
-        continue
+        raise RuntimeError(f"Error getting evaluation from Stockfish: {e}")
 
-        # print(f"Error getting evaluation from Stockfish: {e}")
-        # print("Exiting...")
-        # sys.exit(1)
-    stockfish_eval = stockfish.get_evaluation()
-    # {"type": "cp", "value": 20} for +0.20
-    # {"type": "mate", "value": 3} for mate in 3 moves
 
     # convert stockfish evaluation to a float
     if( stockfish_eval["type"] == "cp" ):

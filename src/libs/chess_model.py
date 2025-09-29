@@ -35,8 +35,8 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        dropoutProbability = 0.5
-        # dropoutProbability = 0.4
+        # dropoutProbability = 0.5
+        dropoutProbability = 0.3
 
         self.conv_1 = nn.Conv2d(input_channels, 64, kernel_size=3, padding=1)
         self.bn_1 = nn.BatchNorm2d(64)
@@ -49,10 +49,10 @@ class ChessModelConv2d(nn.Module):
         self.flatten = nn.Flatten()
         self.leaky_relu = nn.LeakyReLU()
 
-        self.fc1 = nn.Linear(input_height * input_width * 128, 1024)
-        self.bn_fc1 = nn.BatchNorm1d(1024) # Add BatchNorm1d after fc1
+        self.fc1 = nn.Linear(input_height * input_width * 128, 256)
+        self.bn_fc1 = nn.BatchNorm1d(256)
         self.dropout_1 = nn.Dropout(dropoutProbability)
-        self.fc2 = nn.Linear(1024, output_width)
+        self.fc2 = nn.Linear(256, output_width)
 
         # Initialize weights
         nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
@@ -123,15 +123,12 @@ class ChessModelLinear(torch.nn.Module):
         x = self.linear5(x)
         # x = self.softmax(x) #do not use softmax since you are using cross entropy loss
         return x
-    
-
 
 ###############################################################################
 ###############################################################################
 #	 ChessModel class that wraps the original ChessModel
 ###############################################################################
 ###############################################################################
-
 class ChessModel(ChessModelConv2d):
     def __init__(self, input_shape: tuple[int,int,int], output_shape: tuple[int]):
         super(ChessModel, self).__init__(input_shape, output_shape)

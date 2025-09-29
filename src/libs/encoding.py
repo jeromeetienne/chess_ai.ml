@@ -8,12 +8,13 @@ from tqdm import tqdm
 # local imports
 from src.libs.chess_extra import ChessExtra
 
+
 class Encoding:
 
     INPUT_SHAPE = (21, 8, 8)  # (channels, height, width)
-    # INPUT_SHAPE = (16, 8, 8)  # (channels, height, width)
-    BOARD_DTYPE =torch.float32
-    MOVE_DTYPE =torch.long  # class index as long
+    BOARD_DTYPE = torch.uint8
+    MOVE_DTYPE = torch.int32  # class index as long
+
     class PLANE:
         WHITE_PAWN = 0
         WHITE_KNIGHT = 1
@@ -39,6 +40,9 @@ class Encoding:
         OPPONENT_QUEENSIDE_CASTLING_RIGHTS = 19
         NO_PROGRESS_COUNTER = 20
 
+        # Total planes
+        PLANE_COUNT = 21
+
     @staticmethod
     def board_to_tensor(board: chess.Board) -> torch.Tensor:
         # AlphaZero style board encoding
@@ -46,88 +50,69 @@ class Encoding:
 
         assert Encoding.INPUT_SHAPE == (21, 8, 8), f"INPUT_SHAPE must be (21, 8, 8), got {Encoding.INPUT_SHAPE}"
 
-        unique_piece_count = 6  # P, N, B, R, Q, K
-        color_count = 2  # white, black
-        board_plane_count = unique_piece_count * color_count
-
-        repetition_plane_count = 2  # planes for 2 and 3 fold repetition
-
-        # 7 additional planes for metadata
-        # - 1 plane for active player color
-        # - 1 plane for total move count
-        # - 2 planes for active player castling rights
-        # - 2 planes for opponent player castling rights
-        # - 1 plane for no-progress counter
-        meta_plane_count = 7
-
-        plane_count = board_plane_count + repetition_plane_count + meta_plane_count
-
-        # board_tensor = torch.zeros(plane_count, 8, 8, dtype=Encoding.BOARD_DTYPE)
+        # create an empty tensor
+        board_tensor = torch.zeros(Encoding.PLANE.PLANE_COUNT, 8, 8, dtype=Encoding.BOARD_DTYPE)
 
         ###############################################################################
         #   Piece planes
         #
-        piece_planes = np.zeros((board_plane_count, 8, 8))
 
         # Populate first 12 8x8 boards (where pieces are)
         for square, piece in board.piece_map().items():
             row, col = divmod(square, 8)
             piece_color = 0 if piece.color else 6
             piece_type = piece.piece_type - 1
-            piece_planes[piece_color + piece_type, row, col] = 1
+            board_tensor[piece_color + piece_type, row, col] = 1
 
         ###############################################################################
         #   Repetition planes
         #
-        # Repetition counters
-        repetition_planes = np.zeros((repetition_plane_count, 8, 8))
-        repetition_planes[0, :, :] = board.is_repetition(2)
-        repetition_planes[1, :, :] = board.is_repetition(3)
+
+        # repetition_planes = np.zeros((repetition_plane_count, 8, 8))
+        board_tensor[Encoding.PLANE.REPETITION_2, :, :] = board.is_repetition(2)
+        board_tensor[Encoding.PLANE.REPETITION_3, :, :] = board.is_repetition(3)
 
         ###############################################################################
         #   Metadata planes
         #
-        meta_planes = np.zeros(shape=(meta_plane_count, 8, 8))
 
         # Active player color
-        meta_planes[0, :, :] = int(board.turn)  # 1 for white, 0 for black
+        board_tensor[Encoding.PLANE.TURN, :, :] = int(board.turn)  # 1 for white, 0 for black
 
         # Total move count
-        meta_planes[1, :, :] = board.fullmove_number
+        board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
 
         # # Active player castling rights
         active_color = board.turn
-        meta_planes[2, :, :] = board.has_kingside_castling_rights(active_color)
-        meta_planes[3, :, :] = board.has_queenside_castling_rights(active_color)
+        board_tensor[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(active_color)
+        board_tensor[Encoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(active_color)
 
         # Opponent player castling rights
         opponent_color = not board.turn
-        meta_planes[4, :, :] = board.has_kingside_castling_rights(opponent_color)
-        meta_planes[5, :, :] = board.has_queenside_castling_rights(opponent_color)
+        board_tensor[Encoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(opponent_color)
+        board_tensor[Encoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(opponent_color)
 
-        # # No-progress counter
-        meta_planes[6, :, :] = board.halfmove_clock
+        # No-progress counter
+        board_tensor[Encoding.PLANE.NO_PROGRESS_COUNTER, :, :] = board.halfmove_clock
 
         ###############################################################################
-        #   Concatenate all planes
+        #   Return the board tensor
         #
-        board_numpy = np.concatenate([piece_planes, repetition_planes, meta_planes], axis=0)
-
-        # Convert the numpy array to a torch tensor
-        # board_tensor_dtype = EncodingUtils.__numpy_dtype_to_torch(EncodingUtils.BOARD_DTYPE)
-        board_tensor = torch.tensor(board_numpy, dtype=Encoding.BOARD_DTYPE)
-
         return board_tensor
 
     @staticmethod
     def board_from_tensor(board_tensor: torch.Tensor) -> chess.Board:
         """
-        convert a board tensor of shape (16, 8, 8) to a chess.Board object
+        convert a board tensor of shape (21, 8, 8) to a chess.Board object
         """
 
-        board_recontruct = chess.Board()
-        board_recontruct.clear_board()
+        assert board_tensor.shape == Encoding.INPUT_SHAPE, f"board_tensor shape must be {Encoding.INPUT_SHAPE}, got {board_tensor.shape}"
 
+        board = chess.Board()
+        board.clear()  # clear the board
+        ###############################################################################
+        #   Parse Piece Planes and set pieces on the board
+        #
         for board_idx in range(12):
             for row in range(8):
                 for col in range(8):
@@ -148,32 +133,33 @@ class Encoding:
                     piece_symbol = piece_symbol.upper() if piece_color == chess.WHITE else piece_symbol.lower()
                     # set piece on the board
                     piece = chess.Piece.from_symbol(piece_symbol)
-                    board_recontruct.set_piece_at(square, piece)
+                    board.set_piece_at(square, piece)
 
-        # TMP: remove this when not needed
-        if Encoding.INPUT_SHAPE[0] == 16:
-            return board_recontruct
 
+        ###############################################################################
+        #   Parse Metadata Planes
+        #
 
         # set turn
-        board_recontruct.turn = bool(board_tensor[12, 0, 0].item())
+        board.turn = bool(board_tensor[Encoding.PLANE.TURN, 0, 0].item())
         # set fullmove number
-        board_recontruct.fullmove_number = int(board_tensor[13, 0, 0].item())
+        board.fullmove_number = int(board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, 0, 0].item())
         # set castling rights
-        if board_tensor[14, 0, 0].item():
-            if board_recontruct.turn == chess.WHITE:
-                board_recontruct.castling_rights |= chess.BB_H1
-            else:
-                board_recontruct.castling_rights |= chess.BB_A8
-        if board_tensor[15, 0, 0].item():
-            if board_recontruct.turn == chess.WHITE:
-                board_recontruct.castling_rights |= chess.BB_A1
-            else:
-                board_recontruct.castling_rights |= chess.BB_H8
+        # FIXME this seems fragile ... check this out
+        # if board_tensor[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+        #     if board.turn == chess.WHITE:
+        #         board.castling_rights |= chess.BB_H1
+        #     else:
+        #         board.castling_rights |= chess.BB_A8
+        # if board_tensor[15, 0, 0].item():
+        #     if board.turn == chess.WHITE:
+        #         board.castling_rights |= chess.BB_A1
+        #     else:
+        #         board.castling_rights |= chess.BB_H8
         # set halfmove clock
-        board_recontruct.halfmove_clock = int(board_tensor[19, 0, 0].item())
+        board.halfmove_clock = int(board_tensor[19, 0, 0].item())
 
-        return board_recontruct
+        return board
 
     @staticmethod
     def board_tensor_flip(board_tensor: torch.Tensor, in_place: bool = False) -> torch.Tensor:
@@ -185,7 +171,7 @@ class Encoding:
         assert board_tensor.shape == Encoding.INPUT_SHAPE, f"board_tensor shape must be {Encoding.INPUT_SHAPE}, got {board_tensor.shape}"
 
         # Rotate all planes by 180 degrees
-        rotated_tensor = torch.flip(input=board_tensor, dims=[1,2])
+        rotated_tensor = torch.flip(input=board_tensor, dims=[1, 2])
 
         if in_place == False:
             return rotated_tensor
@@ -196,7 +182,17 @@ class Encoding:
     @staticmethod
     def move_to_tensor(move_uci: str, uci_to_classindex: dict[str, int]) -> torch.Tensor:
         """
-        convert a move in UCI string format to a tensor (scalar tensor with class index) using the provided mapping
+        Converts a move in UCI string format to a scalar tensor representing its class index.
+
+        Args:
+            move_uci (str): The move in UCI (Universal Chess Interface) string format (e.g., 'e2e4').
+            uci_to_classindex (dict[str, int]): A mapping from UCI move strings to their corresponding class indices.
+
+        Returns:
+            torch.Tensor: A scalar tensor containing the class index of the move, with dtype specified by Encoding.MOVE_DTYPE.
+
+        Raises:
+            KeyError: If the provided move_uci is not found in the uci_to_classindex mapping.
         """
         # convert move in UCI format to class index
         class_index = uci_to_classindex[move_uci]
@@ -208,7 +204,14 @@ class Encoding:
     @staticmethod
     def move_from_tensor(move_tensor: torch.Tensor, classindex_to_uci: dict[int, str]) -> str:
         """
-        convert a move tensor (scalar tensor with class index) to UCI string using the provided mapping
+        Converts a scalar move tensor representing a class index into its corresponding UCI move string.
+        Args:
+            move_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
+            classindex_to_uci (dict[int, str]): A mapping from class indices to UCI move strings.
+        Returns:
+            str: The UCI string representation of the move.
+        Raises:
+            AssertionError: If the input tensor shape is not scalar or if the encoding input shape is not as expected.
         """
 
         assert Encoding.INPUT_SHAPE[0] == 16, "not updated to new encoding"
@@ -219,6 +222,19 @@ class Encoding:
 
     @staticmethod
     def games_to_tensor(games: list[pgn.Game]) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
+        """
+        Converts a list of chess games into tensors suitable for machine learning models.
+        Args:
+            games (list[pgn.Game]): A list of chess games in PGN format.
+        Returns:
+            tuple:
+                - torch.Tensor: **boards_tensor** A tensor containing encoded board positions with shape (num_positions, *INPUT_SHAPE).
+                - torch.Tensor: **moves_tensor** A tensor of class indices representing the best move for each position.
+                - dict[str, int]: **uci_to_classindex** A mapping from UCI move strings to class indices.
+        The function iterates through all positions in the provided games, encodes each board state into a tensor,
+        and collects the best move in UCI format. It then creates a mapping from unique UCI moves to class indices,
+        encodes the moves as class indices, and returns the board tensors, move tensors, and the mapping.
+        """
         ###############################################################################
         #   Count total positions
         #
@@ -227,6 +243,9 @@ class Encoding:
             game_move_count = len(list(game.mainline_moves()))
             position_count += game_move_count
 
+        ###############################################################################
+        #   Encode boards and moves
+        #
         boards_tensor = torch.zeros((position_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
         moves_uci = []
         board_index = 0
@@ -245,44 +264,26 @@ class Encoding:
                 # Update the board index
                 board_index += 1
 
-        # boards_numpy = np.array(boards_native, dtype=EncodingUtils.BOARD_DTYPE)
-        # board_tensor_dtype = EncodingUtils.__numpy_dtype_to_torch(EncodingUtils.BOARD_DTYPE)
-        # boards_tensor = torch.tensor(boards_tensor, dtype=board_tensor_dtype)
-
         # Create a mapping from UCI move strings to class indices
-        uci_to_classindex = {move: idx for idx, move in enumerate(set(moves_uci))}
+        uci_to_classindex = {move_uci: idx for idx, move_uci in enumerate(set(moves_uci))}
 
-        # Encode best moves as class indices
-        # moves_tensor_dtype = EncodingUtils.__numpy_dtype_to_torch(EncodingUtils.MOVE_DTYPE)
+        # Encode moves as class indices
         moves_array = [uci_to_classindex[move] for move in moves_uci]
         moves_tensor = torch.tensor(moves_array, dtype=Encoding.MOVE_DTYPE)
 
-        # return the boards, best moves and the mapping
+        # return the boards, moves and the mapping
         return boards_tensor, moves_tensor, uci_to_classindex
 
+
 if __name__ == "__main__":
+    ###############################################################################
+    #   Example usage
+    #
     board = chess.Board()
     board.push(chess.Move.from_uci("e2e4"))
     board.push(chess.Move.from_uci("h7h6"))
 
     print(f"Current board:\n{board}")
-    # board_numpy = EncodingUtils._board_to_numpy(board)
-    # print(f"Board tensor shape: {board_numpy.shape}")
-
-    # # print first plane of the board
-    # # print(f"First plane of the board:\n{board_numpy[EncodingUtils.PLANES.WHITE_PAWN]}")
-
-    # plane_index = EncodingUtils.PLANE.WHITE_PAWN
-
-    # print(f"One plane of the board:\n{board_numpy[plane_index]}")
-
-    # 
-    # to_rotate = board_numpy[:, :, :]
-
-    # rotated = np.rot90(board_numpy, k=2, axes=(1, 2))
-
-    # print(f"Rotated plane of the board:\n{rotated[plane_index]}")
-
 
     plane_index = Encoding.PLANE.BLACK_ROOK
     board_tensor = Encoding.board_to_tensor(board)

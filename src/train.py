@@ -133,7 +133,7 @@ class TrainCommand:
     def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7):
 
         # set random seed for reproducibility
-        torch.manual_seed(42)
+        # torch.manual_seed(42)
 
         ###############################################################################
         # Load Dataset

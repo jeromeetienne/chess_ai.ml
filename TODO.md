@@ -1,12 +1,30 @@
 # TODO
-- the type used in input/output is a mess. Sometimes float32, sometimes long
-  - search for ".float" or ".long" or ".int"
-  - centralize it and then set it 
-  - best setting: likely int8 for input, and int16 for output
 - create a new class called encoding.py with a unit test, and then use it everywhere in the code
   - in encoding, if turn is black, flip the board so that always the side to play is at the bottom
   - it will make learning easier
   - do that for board and for move (e2e4 becomes e7e5 ?)
+- see if you can create a `eval_tensor` which is the stockfish evaluation of the `board_tensor`
+  - thus i can learn a model which evaluates the board, on top of the one which suggest the best move
+  - those are the 2 models in alpha zero
+  - FIXME: issue in the `board_from_tensor` function. see script in `./tmp/dataset_to_eval.py`
+- finish the boards tensor to eval script
+  - it is a good checker
+- using gym_chess to generate the board mapping
+  - save it in a file, then the uci2class is static
+  - check with your own list of all possible moves (you are missing 4 moves)
+  - no need to have uci_to_classindex everywhere
+  - thus i can encode all the dataset once and for all
+  - for all position in the dataset, i store 
+    - the next move which has been player
+    - the board tensor
+    - the eval tensor
+  - **TO FLIP A MOVE**: get the class index to UCI, parse row/col, flip row/col 7-row, 7-col, convert back to UCI, convert back to class index
+- can i encode the move flip by changing the mapping ?
+  - one mapping if it is white to play, another if it is black to play
+  - and you store both mapping in the dataset
+  - easy and backward compatible
+  - `uci2class.mapping[turn]` 
+  - `uci2class.num_classes`
 - fix the bug in the board encoding
   - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py
   - encode every as alpha-zero as it is the FEN standard
@@ -21,10 +39,6 @@
   - `tensor_to_board(tensor) -> board`
 - multi-head network: good for alpha alpha-zero 
   - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
-- experiment with the attacked squares feature
-  - https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.attacks
-  - add it to the input tensor
-  - see if it improves the model
 - make a small script which compute the list of all move type at chess
   - https://gemini.google.com/app/b876c2f17d4fde4e
   - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
@@ -46,9 +60,17 @@
   - search for 'pytorch chess neural network'
   - search for 'pytorch/tensorflow alpha zero github'
 - make it play on lichess ?
-- organize `./libs`
 
 # DONE
+- DONE experiment with the attacked squares feature
+  - https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.attacks
+  - add it to the input tensor
+  - see if it improves the model
+- DONE organize `./libs`
+- DONE the type used in input/output is a mess. Sometimes float32, sometimes long
+  - search for ".float" or ".long" or ".int"
+  - centralize it and then set it 
+  - best setting: likely int8 for input, and int16 for output
 - DONE read opening books
   - here are some pgn https://sites.google.com/site/computerschess/download
   - more polyglot opening books https://github.com/michaeldv/donna_opening_books/
