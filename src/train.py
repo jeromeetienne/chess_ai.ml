@@ -146,8 +146,6 @@ class TrainCommand:
             print("Dataset not found. Please create a new one.")
             sys.exit(1)
 
-
-
         # Load the dataset
         boards_tensor, moves_tensor = DatasetUtils.load_dataset(folder_path=output_folder_path)
         print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))

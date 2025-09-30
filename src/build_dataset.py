@@ -93,7 +93,7 @@ class DatasetBuilderCommand:
         polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
         # Convert games to tensors
-        boards_tensor, moves_tensor = Encoding.games_to_tensor(games, polyglot_reader=polyglot_reader)
+        boards_tensor, moves_tensor = DatasetUtils.games_to_tensor(games, polyglot_reader=polyglot_reader)
 
         # Save the dataset for later
         DatasetUtils.save_dataset(boards_tensor, moves_tensor, folder_path=output_folder_path)
