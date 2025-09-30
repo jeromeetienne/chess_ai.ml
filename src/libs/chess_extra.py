@@ -1,5 +1,6 @@
 # pip imports
 import chess.pgn
+import chess.polyglot
 import colorama
 
 class ChessExtra:
@@ -7,13 +8,21 @@ class ChessExtra:
     Extra python-chess utilities -- https://python-chess.readthedocs.io/en/latest/
     """
 
-    # @staticmethod    
-    # def print_game(game: chess.pgn.Game) -> None:
-    #     print(game.board().unicode())
-    #     for move in game.mainline_moves():
-    #         print(f"move: {move.uci()}")
+    @staticmethod
+    def is_in_opening_book(board: chess.Board, polyglot_reader: chess.polyglot.MemoryMappedReader) -> bool:
+        """
+        Check if the given board state is out of the opening book.
+        Args:
+            board (chess.Board): The current state of the chess board.
+        Returns:
+            bool: True if the board state is in the opening book, False otherwise.
+        """
+        try:
+            polyglot_reader.weighted_choice(board)
+            return True  # Found a move in the opening book
+        except IndexError:
+            return False  # No move found in the opening book
 
-    
     @staticmethod
     def game_slice(src_game: chess.pgn.Game, move_index_start: int, move_index_end: int) -> chess.pgn.Game:
         """

@@ -13,17 +13,18 @@ from .encoding import Encoding
 from .chess_model import ChessModel
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-
+data_folder_path = os.path.join(__dirname__, "../../data")
 
 class ChessbotMLPlayer:
     def __init__(self, model: ChessModel, classindex_to_uci: dict[int, str]):
         self._model = model
         self._classindex_to_uci = classindex_to_uci
 
+        # 479,333
         # Load polyglot opening book
         # polyglot_path = os.path.join(__dirname__, "../../data/polyglot/gm2001.bin")
         # polyglot_path = os.path.join(__dirname__, "../../data/polyglot/komodo.bin")
-        polyglot_path = os.path.join(__dirname__, "../../data/polyglot/lichess_pro_books/lpb-allbook.bin")
+        polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
         self._polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
     def predict_next_move(self, board: chess.Board) -> str | None:

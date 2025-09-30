@@ -2,7 +2,8 @@
 import numpy as np
 import torch
 import chess
-import chess.pgn as pgn
+import chess.pgn
+import chess.polyglot
 from tqdm import tqdm
 
 # local imports
@@ -223,11 +224,15 @@ class Encoding:
         return move_uci
 
     @staticmethod
-    def games_to_tensor(games: list[pgn.Game]) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
+    def games_to_tensor(
+        games: list[chess.pgn.Game]
+    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
         """
-        Converts a list of chess games into tensors suitable for machine learning models.
+        Converts a list of chess games into boards tensor. Skip positions that are in the opening book.
+
         Args:
-            games (list[pgn.Game]): A list of chess games in PGN format.
+            games (list[chess.pgn.Game]): A list of chess games in PGN format.
+            polyglot_reader (chess.polyglot.MemoryMappedReader | None): A polyglot reader for opening book moves.
         Returns:
             tuple:
                 - torch.Tensor: **boards_tensor** A tensor containing encoded board positions with shape (num_positions, *INPUT_SHAPE).

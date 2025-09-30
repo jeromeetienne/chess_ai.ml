@@ -221,17 +221,17 @@ class TrainCommand:
             print(
                 f"Epoch {epoch_index + 1}/{num_epochs}, lr={scheduler.get_last_lr()[0]} Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}"
             )
+            # Plot training and validation loss
+            TrainCommand.plot_losses(train_losses, validation_losses)
+
 
             # honor must_save: Save the model if validation loss improved
             if must_save:
                 # Save the model
                 IOUtils.save_model(model, folder_path=output_folder_path)
-                # print(f"Model saved to {output_folder_path}")
 
+                # Save training report
                 TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, validation_loss, model)
-
-                # Plot training and validation loss
-                TrainCommand.plot_losses(train_losses, validation_losses)
 
                 # Now test the model on the test set
                 eval_accuracy = TrainCommand.evaluate_model_accuracy(model, test_dataloader, device)

@@ -5,8 +5,11 @@ import time
 # pip imports
 import chess
 import chess.pgn
+import chess.polyglot
+
 
 # local imports
+from .libs.chess_extra import ChessExtra
 from .libs.encoding import Encoding
 from .libs.utils import Utils
 from .libs.io_utils import IOUtils
@@ -26,7 +29,7 @@ class DatasetBuilderCommand:
         ###############################################################################
         # Load PGN files and parse games
         #
-        pgn_folder_path = f"{data_folder_path}/pgn"
+        pgn_folder_path = os.path.join(data_folder_path, "./pgn")
         pgn_basenames = [file_path for file_path in os.listdir(pgn_folder_path) if file_path.endswith(".pgn")]
 
         # sort files alphabetically to ensure consistent order
@@ -52,7 +55,7 @@ class DatasetBuilderCommand:
             print(f" {len(new_games)} games")
 
         ###############################################################################
-        # 	 Shuffle and truncate games
+        # 	 truncate games
         #
 
         # keep only max_games_count games
@@ -60,14 +63,15 @@ class DatasetBuilderCommand:
             games = games[:max_games_count]
 
         # keep only the 10 first moves of each game
-        if False:
+        slice_game_enabled = False
+        if slice_game_enabled:
             sliced_games: list[chess.pgn.Game] = []
             # # opening positions only
             # move_index_start = 0
             # move_index_end = 15
             # middle-game positions only
-            # move_index_start = 15
-            # move_index_end = 30
+            move_index_start = 15
+            move_index_end = 30
             print(f"Keeping only moves from {move_index_start} to {move_index_end} non included (if possible)")
             for game in games:
                 move_count = len(list(game.mainline_moves()))
@@ -84,6 +88,11 @@ class DatasetBuilderCommand:
         ###############################################################################
         # 	 Create input tensors for the neural network
         #
+
+        # Load polyglot opening book
+        polyglot_path = os.path.join(data_folder_path, "polyglot/lichess_pro_books/lpb-allbook.bin")
+        polyglot_reader = chess.polyglot.open_reader(polyglot_path)
+
         boards_tensor, moves_tensor, uci_to_classindex = Encoding.games_to_tensor(games)
 
         # Save the dataset for later
