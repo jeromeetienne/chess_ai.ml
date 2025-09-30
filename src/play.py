@@ -10,8 +10,9 @@ from stockfish import Stockfish
 
 # local imports
 from src.libs.encoding import Encoding
+from src.libs.io_model import IoModel
+from src.libs.uci2class_utils import Uci2ClassUtils
 from .libs.chess_player import ChessPlayer
-from .libs.io_utils import IOUtils
 from .libs.pgn_utils import PGNUtils
 from .libs.termcolor_utils import TermcolorUtils
 from .libs.chess_extra import ChessExtra
@@ -49,19 +50,19 @@ class PlayCommand:
         #
 
         # Load the mapping
-        uci2class_white = IOUtils.uci2class_load(chess.WHITE)
+        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
         num_classes = len(uci2class_white)
 
         # Load the model
         input_shape = Encoding.INPUT_SHAPE  # (channels, height, width)
         output_shape = (num_classes,)
-        model = IOUtils.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
+        model = IoModel.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
         
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
         polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
-        chess_player = ChessPlayer(model=model, chess_color=chess.WHITE, polyglot_reader=polyglot_reader)
+        chess_player = ChessPlayer(model=model, color=chess.WHITE, polyglot_reader=polyglot_reader)
 
 
         ###############################################################################

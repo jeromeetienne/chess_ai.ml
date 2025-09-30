@@ -39,17 +39,25 @@ class Uci2ClassUtils:
     @staticmethod
     def get_uci2class(color: chess.Color = chess.WHITE) -> dict[str, int]:
         Uci2ClassUtils._init_if_needed()
+        # TODO to remove!. this is temporary until you get the whole board orientation working correctly
+        color = chess.WHITE
+        # get the appropriate mapping based on the color
         if color == chess.WHITE:
             uci2class = typing.cast(dict[str, int], Uci2ClassUtils._uci2class_white)
         else:
             uci2class = typing.cast(dict[str, int], Uci2ClassUtils._uci2class_black)
+        # return the mapping
         return uci2class
     
     @staticmethod
     def get_class2uci(color: chess.Color = chess.WHITE) -> dict[int, str]:
         Uci2ClassUtils._init_if_needed()
+        # TODO to remove!. this is temporary until you get the whole board orientation working correctly
+        color = chess.WHITE
+        # get the appropriate mapping based on the color
         if color == chess.WHITE:
             class2uci = typing.cast(dict[int, str], Uci2ClassUtils._class2uci_white)
         else:
             class2uci = typing.cast(dict[int, str], Uci2ClassUtils._class2uci_black)
+        # return the mapping
         return class2uci

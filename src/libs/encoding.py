@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # local imports
 from src.libs.chess_extra import ChessExtra
-from src.libs.io_utils import IOUtils
+from src.libs.uci2class_utils import Uci2ClassUtils
 
 
 class Encoding:
@@ -256,8 +256,8 @@ class Encoding:
         #   Encode boards and moves
         #
 
-        uci2class_white = IOUtils.uci2class_load(chess_color=chess.WHITE)
-        uci2class_black = IOUtils.uci2class_load(chess_color=chess.WHITE)
+        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
+        uci2class_black = Uci2ClassUtils.get_uci2class(chess.BLACK)
         
         boards_tensor = torch.zeros((position_max_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
         moves_tensor = torch.zeros((position_max_count,), dtype=Encoding.MOVE_DTYPE)

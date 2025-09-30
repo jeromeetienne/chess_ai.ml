@@ -8,9 +8,10 @@ import chess
 import chess.polyglot
 import numpy as np
 
+from src.libs.uci2class_utils import Uci2ClassUtils
+
 
 # local imports
-from .io_utils import IOUtils
 from .encoding import Encoding
 from .chess_model import ChessModel
 
@@ -18,13 +19,13 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
 class ChessPlayer:
-    def __init__(self, model: ChessModel, chess_color: chess.Color , polyglot_reader: chess.polyglot.MemoryMappedReader|None = None):
+    def __init__(self, model: ChessModel, color: chess.Color , polyglot_reader: chess.polyglot.MemoryMappedReader|None = None):
         """
         Initialize the ChessbotMLPlayer with the given model, class index to UCI mapping, and optional polyglot reader.
         """
-        self._chess_color = chess_color
+        self._color = color
         self._model = model
-        self._class2uci = IOUtils.uci2class_inverse_mapping(chess_color)
+        self._class2uci = Uci2ClassUtils.get_class2uci(color)
         self._polyglot_reader = polyglot_reader
 
     def predict_next_move(self, board: chess.Board) -> str | None:

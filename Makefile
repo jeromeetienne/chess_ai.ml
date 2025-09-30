@@ -7,9 +7,10 @@ clean: ## clean output directory
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py
 
-full_pipeline: clean build_dataset train predict play ## run the full pipeline
+full_pipeline: clean build_dataset train play ## run the full pipeline
 
-.PHONY: help clean build_dataset train predict play full_pipeline
+.PHONY: help clean build_dataset train play full_pipeline
+
 
 build_dataset: ## build the dataset
 	./bin/build_dataset.py
@@ -19,9 +20,6 @@ build_evals: ## build the evals for the dataset
 
 train: ## train the model
 	./bin/train.py
-
-predict: ## predict a move
-	./bin/predict.py
 
 play: ## play against the model
 	./bin/play.py

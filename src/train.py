@@ -18,7 +18,9 @@ from .libs.chess_dataset import ChessDataset
 from .libs.chess_model import ChessModel
 from .libs.early_stopper import EarlyStopper
 from .libs.utils import Utils
-from .libs.io_utils import IOUtils
+from .libs.io_dataset import IoDataset
+from .libs.io_model import IoModel
+from .libs.uci2class_utils import Uci2ClassUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -141,18 +143,18 @@ class TrainCommand:
         #
 
         # sanity check: ensure dataset exists else exit
-        if not IOUtils.has_dataset(output_folder_path):
+        if not IoDataset.has_dataset(output_folder_path):
             print("Dataset not found. Please create a new one.")
             sys.exit(1)
 
 
 
         # Load the dataset
-        boards_tensor, moves_tensor = IOUtils.load_dataset(folder_path=output_folder_path)
+        boards_tensor, moves_tensor = IoDataset.load_dataset(folder_path=output_folder_path)
         print(Utils.dataset_summary(boards_tensor, moves_tensor))
 
 
-        uci2class_white = IOUtils.uci2class_load(chess_color=chess.WHITE)
+        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
         num_classes = len(uci2class_white)
 
         ###############################################################################
@@ -233,7 +235,7 @@ class TrainCommand:
             # honor must_save: Save the model if validation loss improved
             if must_save:
                 # Save the model
-                IOUtils.save_model(model, folder_path=output_folder_path)
+                IoModel.save_model(model, folder_path=output_folder_path)
 
                 # Save training report
                 TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, validation_loss, model)

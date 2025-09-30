@@ -7,7 +7,7 @@ import torch
 import chess
 
 # local imports
-from src.libs.io_utils import IOUtils
+from src.libs.io_dataset import IOUtils
 from src.libs.pgn_utils import PGNUtils
 from src.libs.encoding import Encoding
 
