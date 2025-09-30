@@ -6,9 +6,13 @@ import os
 import chess
 import chess.pgn 
 
+__dirname__ = os.path.dirname(os.path.abspath(__file__))
+data_folder_path = os.path.join(__dirname__, "../../data")
+pgn_folder_path = os.path.join(data_folder_path, "pgn")
+
 class PGNUtils:
     @staticmethod
-    def all_pgn_file_paths(folder_path: str) -> list[str]:
+    def all_pgn_file_paths() -> list[str]:
         """
         Return a list of all PGN file paths in the specified folder.
         The list is sorted alphabetically.
@@ -18,14 +22,31 @@ class PGNUtils:
         """
         
         pgn_file_paths: list[str] = []
-        for file_name in os.listdir(folder_path):
-            if file_name.endswith(".pgn"):
-                file_path = os.path.join(folder_path, file_name)
+        for basename in os.listdir(pgn_folder_path):
+            if basename.endswith(".pgn"):
+                file_path = os.path.join(pgn_folder_path, basename)
                 pgn_file_paths.append(file_path)
         # sort the list
         pgn_file_paths.sort()
 
         return pgn_file_paths
+
+    @staticmethod
+    def parse_pgn_file(file_path: str) -> list[chess.pgn.Game]:
+        """
+        Parse a PGN file and return a list of chess.pgn.Game objects.
+
+        Arguments:
+            file_path (str): Path to the PGN file.
+        """
+        games: list[chess.pgn.Game] = []
+        with open(file_path, 'r') as pgn_file:
+            while True:
+                game = chess.pgn.read_game(pgn_file)
+                if game is None:
+                    break
+                games.append(game)
+        return games
 
     @staticmethod
     def board_to_pgn(board: chess.Board, white_player: str = "Unknown", black_player: str = "Unknown") -> str:

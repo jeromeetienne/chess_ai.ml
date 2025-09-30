@@ -12,6 +12,7 @@ import chess.polyglot
 from .libs.chess_extra import ChessExtra
 from .libs.encoding import Encoding
 from .utils.dataset_utils import DatasetUtils
+from .utils.pgn_utils import PGNUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -28,28 +29,18 @@ class DatasetBuilderCommand:
         ###############################################################################
         # Load PGN files and parse games
         #
-        pgn_folder_path = os.path.join(data_folder_path, "./pgn")
-        pgn_basenames = [file_path for file_path in os.listdir(pgn_folder_path) if file_path.endswith(".pgn")]
+        pgn_file_paths = PGNUtils.all_pgn_file_paths()
 
         # sort files alphabetically to ensure consistent order
-        pgn_basenames.sort(reverse=False)
+        pgn_file_paths.sort(reverse=False)
 
         # truncate file_pgn_paths to max_files_count
-        pgn_basenames = pgn_basenames[:max_files_count]
+        pgn_file_paths = pgn_file_paths[:max_files_count]
 
         games: list[chess.pgn.Game] = []
-        for pgn_basename in pgn_basenames:
-            pgn_file_path = os.path.join(pgn_folder_path, pgn_basename)
-            print(f"Parsing PGN file {pgn_basename} ...", end="", flush=True)
-            new_games: list[chess.pgn.Game] = []
-            with open(pgn_file_path, 'r') as pgn_file:
-                while True:
-                    if max_games_count != 0 and len(games) >= max_games_count:
-                        break
-                    game: chess.pgn.Game|None = chess.pgn.read_game(pgn_file)
-                    if game is None:
-                        break
-                    new_games.append(game)
+        for pgn_file_path in pgn_file_paths:
+            print(f"Parsing PGN file {os.path.basename(pgn_file_path)} ...", end="", flush=True)
+            new_games = PGNUtils.parse_pgn_file(pgn_file_path)  
             games.extend(new_games)
             print(f" {len(new_games)} games")
 
