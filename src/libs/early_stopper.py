@@ -1,4 +1,8 @@
 class EarlyStopper:
+    """
+    Earlt stopper for pyTorch training loops.
+    """
+
     def __init__(self, patience: int = 10, threshold: float = 0.001):
         """
         Early stops the training if validation loss doesn't improve after a given patience.

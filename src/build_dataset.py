@@ -11,8 +11,7 @@ import chess.polyglot
 # local imports
 from .libs.chess_extra import ChessExtra
 from .libs.encoding import Encoding
-from .libs.utils import Utils
-from .libs.io_dataset import IoDataset
+from .utils.dataset_utils import DatasetUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -97,11 +96,11 @@ class DatasetBuilderCommand:
         boards_tensor, moves_tensor = Encoding.games_to_tensor(games, polyglot_reader=polyglot_reader)
 
         # Save the dataset for later
-        IoDataset.save_dataset(boards_tensor, moves_tensor, folder_path=output_folder_path)
+        DatasetUtils.save_dataset(boards_tensor, moves_tensor, folder_path=output_folder_path)
 
         # display elapsed time
         dataset_creation_elapsed_time = time.time() - dataset_creation_start_time
         print(f"Dataset creation/loading time: {dataset_creation_elapsed_time:.2f} seconds")
 
         # Dataset creation stats
-        print(Utils.dataset_summary(boards_tensor, moves_tensor))
+        print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))

@@ -5,7 +5,7 @@ import os
 import chess.pgn
 
 # local imports
-from src.libs.pgn_utils import PGNUtils
+from src.utils.pgn_utils import PGNUtils
 from src.libs.chess_extra import ChessExtra
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))

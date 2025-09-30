@@ -9,7 +9,16 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
 
-class IoDataset:
+class DatasetUtils:
+    @staticmethod
+    def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor) -> str:
+            summary = f"""Dataset Summary:
+- Total positions: {len(boards_tensor):,}
+- Input shape: {boards_tensor.shape[1:]} (Channels, Height, Width)
+- Output shape: {moves_tensor.shape[1:]} (Scalar class index)
+"""
+            # FIXME the output share is super crappy
+            return summary
 
     @staticmethod
     def save_dataset(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor, folder_path: str):

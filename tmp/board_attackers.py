@@ -4,7 +4,7 @@ import chess
 import os
 
 from src.libs.chess_extra import ChessExtra
-from src.libs.pgn_utils import PGNUtils
+from src.utils.pgn_utils import PGNUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 pgn_folder_path = f"{__dirname__}/../data/pgn"

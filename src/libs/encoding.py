@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # local imports
 from src.libs.chess_extra import ChessExtra
-from src.libs.uci2class_utils import Uci2ClassUtils
+from src.utils.uci2class_utils import Uci2ClassUtils
 
 
 class Encoding:

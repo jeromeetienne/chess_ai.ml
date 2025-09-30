@@ -10,11 +10,11 @@ from stockfish import Stockfish
 
 # local imports
 from src.libs.encoding import Encoding
-from src.libs.io_model import IoModel
-from src.libs.uci2class_utils import Uci2ClassUtils
+from src.utils.model_utils import ModelUtils
+from src.utils.uci2class_utils import Uci2ClassUtils
 from .libs.chess_player import ChessPlayer
-from .libs.pgn_utils import PGNUtils
-from .libs.termcolor_utils import TermcolorUtils
+from .utils.pgn_utils import PGNUtils
+from .utils.termcolor_utils import TermcolorUtils
 from .libs.chess_extra import ChessExtra
 from .libs.types import opponent_tech_t, color_t
 
@@ -56,7 +56,7 @@ class PlayCommand:
         # Load the model
         input_shape = Encoding.INPUT_SHAPE  # (channels, height, width)
         output_shape = (num_classes,)
-        model = IoModel.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
+        model = ModelUtils.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
         
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")

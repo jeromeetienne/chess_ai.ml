@@ -8,10 +8,8 @@ import chess
 import chess.polyglot
 import numpy as np
 
-from src.libs.uci2class_utils import Uci2ClassUtils
-
-
 # local imports
+from ..utils.uci2class_utils import Uci2ClassUtils
 from .encoding import Encoding
 from .chess_model import ChessModel
 

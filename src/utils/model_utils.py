@@ -3,18 +3,16 @@ import os
 
 # pip imports
 import torch
-import chess.pgn
 
 # local imports
-from .chess_extra import ChessExtra
-from .pgn_utils import PGNUtils
-from .encoding import Encoding
+from ..libs.chess_model import ChessModel
 
-# setup __dirname__
+
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
+data_folder_path = os.path.join(__dirname__, "../../data")
 
 
-class Utils:
+class ModelUtils:
     @staticmethod
     def model_summary(model: torch.nn.Module) -> str:
         """
@@ -50,12 +48,16 @@ class Utils:
         return "\n".join(output)
 
     @staticmethod
-    def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor) -> str:
-            summary = f"""Dataset Summary:
-- Total positions: {len(boards_tensor):,}
-- Input shape: {boards_tensor.shape[1:]} (Channels, Height, Width)
-- Output shape: {moves_tensor.shape[1:]} (Scalar class index)
-"""
-            # FIXME the output share is super crappy
-            return summary
+    def save_model(model: ChessModel, folder_path: str):
+        # Save the model
+        state_dict_path = f"{folder_path}/model.pth"
+        torch.save(model.state_dict(), state_dict_path)
 
+    @staticmethod
+    def load_model(folder_path: str, input_shape: tuple[int, int, int], output_shape: tuple[int]) -> ChessModel:
+        # Load the model
+        model = ChessModel(input_shape=input_shape, output_shape=output_shape)
+        model_path = f"{folder_path}/model.pth"
+        model.load_state_dict(torch.load(model_path))
+
+        return model

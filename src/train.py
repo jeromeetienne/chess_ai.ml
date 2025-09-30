@@ -17,10 +17,9 @@ import matplotlib.pyplot as plt
 from .libs.chess_dataset import ChessDataset
 from .libs.chess_model import ChessModel
 from .libs.early_stopper import EarlyStopper
-from .libs.utils import Utils
-from .libs.io_dataset import IoDataset
-from .libs.io_model import IoModel
-from .libs.uci2class_utils import Uci2ClassUtils
+from .utils.dataset_utils import DatasetUtils
+from .utils.model_utils import ModelUtils
+from .utils.uci2class_utils import Uci2ClassUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -65,7 +64,7 @@ class TrainCommand:
 
 # Model Summary
 ```
-{Utils.model_summary(model)}
+{ModelUtils.model_summary(model)}
 ```
         """
         report_path = f"{output_folder_path}/TRAINING_REPORT.md"
@@ -143,15 +142,15 @@ class TrainCommand:
         #
 
         # sanity check: ensure dataset exists else exit
-        if not IoDataset.has_dataset(output_folder_path):
+        if not DatasetUtils.has_dataset(output_folder_path):
             print("Dataset not found. Please create a new one.")
             sys.exit(1)
 
 
 
         # Load the dataset
-        boards_tensor, moves_tensor = IoDataset.load_dataset(folder_path=output_folder_path)
-        print(Utils.dataset_summary(boards_tensor, moves_tensor))
+        boards_tensor, moves_tensor = DatasetUtils.load_dataset(folder_path=output_folder_path)
+        print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))
 
 
         uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
@@ -197,7 +196,7 @@ class TrainCommand:
         ###############################################################################
         # Display model summary
 
-        print(Utils.model_summary(model))
+        print(ModelUtils.model_summary(model))
 
         ###############################################################################
         # Training
@@ -235,7 +234,7 @@ class TrainCommand:
             # honor must_save: Save the model if validation loss improved
             if must_save:
                 # Save the model
-                IoModel.save_model(model, folder_path=output_folder_path)
+                ModelUtils.save_model(model, folder_path=output_folder_path)
 
                 # Save training report
                 TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, validation_loss, model)
