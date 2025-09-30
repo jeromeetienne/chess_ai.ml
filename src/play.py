@@ -4,19 +4,21 @@ import typing
 
 # pip imports
 import chess
+import chess.polyglot
 from stockfish import Stockfish
 
 
 # local imports
 from src.libs.encoding import Encoding
-from .libs.chessbotml_player import ChessbotMLPlayer
+from .libs.chess_player import ChessPlayer
 from .libs.io_utils import IOUtils
 from .libs.pgn_utils import PGNUtils
 from .libs.termcolor_utils import TermcolorUtils
 from .libs.chess_extra import ChessExtra
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = f"{__dirname__}/../output/"
+output_folder_path = os.path.join(__dirname__, "..", "output")
+data_folder_path = os.path.join(__dirname__, "..", "data")
 
 # define the opponent PYTHON type
 opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
@@ -61,7 +63,11 @@ class PlayCommand:
         # create the reverse mapping
         classindex_to_uci = IOUtils.classindex_to_uci_inverse_mapping(uci_to_classindex)
 
-        chatbotml_player = ChessbotMLPlayer(model=model, classindex_to_uci=classindex_to_uci)
+        # Read the polyglot opening book
+        polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
+        polyglot_reader = chess.polyglot.open_reader(polyglot_path)
+
+        chess_player = ChessPlayer(model=model, classindex_to_uci=classindex_to_uci, polyglot_reader=polyglot_reader)
 
 
         ###############################################################################
@@ -108,7 +114,7 @@ class PlayCommand:
             # predict the move depending who is it to play. chessbotml or opponent (human or stockfish)
             if player_type == "chessbotml":
                 # predict the best move
-                best_move = chatbotml_player.predict_next_move(board)
+                best_move = chess_player.predict_next_move(board)
 
                 if best_move is None:
                     # raise an error if no legal moves are available...
@@ -150,7 +156,7 @@ class PlayCommand:
             print(ChessExtra.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 
             # display the post-move board
-            in_opening_str = " (in opening book)" if chatbotml_player.is_in_opening_book(board) else ""
+            in_opening_str = " (in opening book)" if ChessExtra.is_in_opening_book(board, polyglot_reader) else ""
             print(f"Move {board.fullmove_number} played by {turn_color} ({player_type}): {TermcolorUtils.cyan(best_move)} {in_opening_str}")
 
             ###############################################################################

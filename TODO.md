@@ -1,5 +1,5 @@
 # TODO
-- whem building dataset, drop position which are in the opening phase
+- DONE whem building dataset, drop position which are in the opening phase
 - create a model which has only white turn
   - and another for black turn
   - NOTE: would allow to know how much better the model would be if it see only one side of the board

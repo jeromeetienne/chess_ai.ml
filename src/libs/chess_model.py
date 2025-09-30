@@ -35,14 +35,19 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # dropoutProbability = 0.2
+        # dropoutProbability = 0.5
         # conv1_out_channels = 64
         # conv2_out_channels = 128
         # fc_intermediate_size = 1024
 
-        dropoutProbability = 0.2
-        conv1_out_channels = 16
-        conv2_out_channels = 32
+        # dropoutProbability = 0.2
+        # conv1_out_channels = 16
+        # conv2_out_channels = 32
+        # fc_intermediate_size = 256
+
+        dropoutProbability = 0.1
+        conv1_out_channels = 8
+        conv2_out_channels = 16
         fc_intermediate_size = 256
 
         self.conv_1 = nn.Conv2d(input_channels, conv1_out_channels, kernel_size=3, padding=1)

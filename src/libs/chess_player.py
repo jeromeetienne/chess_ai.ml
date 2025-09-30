@@ -15,17 +15,14 @@ from .chess_model import ChessModel
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
-class ChessbotMLPlayer:
-    def __init__(self, model: ChessModel, classindex_to_uci: dict[int, str]):
+class ChessPlayer:
+    def __init__(self, model: ChessModel, classindex_to_uci: dict[int, str], polyglot_reader: chess.polyglot.MemoryMappedReader|None = None):
+        """
+        Initialize the ChessbotMLPlayer with the given model, class index to UCI mapping, and optional polyglot reader.
+        """
         self._model = model
         self._classindex_to_uci = classindex_to_uci
-
-        # 479,333
-        # Load polyglot opening book
-        # polyglot_path = os.path.join(__dirname__, "../../data/polyglot/gm2001.bin")
-        # polyglot_path = os.path.join(__dirname__, "../../data/polyglot/komodo.bin")
-        polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
-        self._polyglot_reader = chess.polyglot.open_reader(polyglot_path)
+        self._polyglot_reader = polyglot_reader
 
     def predict_next_move(self, board: chess.Board) -> str | None:
         """
@@ -56,6 +53,10 @@ class ChessbotMLPlayer:
             str | None: The predicted best move in UCI format, or None if no opening move is found.
         """
         move_uci: str | None = None
+
+        if self._polyglot_reader is None:
+            return None
+
         try:
             opening_entry = self._polyglot_reader.weighted_choice(board)
             move_uci = opening_entry.move.uci()
@@ -63,20 +64,6 @@ class ChessbotMLPlayer:
             move_uci = None  # No opening entry found.
 
         return move_uci
-
-    def is_in_opening_book(self, board: chess.Board) -> bool:
-        """
-        Check if the given board state is out of the opening book.
-        Args:
-            board (chess.Board): The current state of the chess board.
-        Returns:
-            bool: True if the board state is in the opening book, False otherwise.
-        """
-        try:
-            self._polyglot_reader.weighted_choice(board)
-            return True  # Found a move in the opening book
-        except IndexError:
-            return False  # No move found in the opening book
 
     ###############################################################################
     #   machine learning based move prediction

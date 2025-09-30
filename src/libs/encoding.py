@@ -225,7 +225,8 @@ class Encoding:
 
     @staticmethod
     def games_to_tensor(
-        games: list[chess.pgn.Game]
+        games: list[chess.pgn.Game],
+        polyglot_reader: chess.polyglot.MemoryMappedReader | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
         """
         Converts a list of chess games into boards tensor. Skip positions that are in the opening book.
@@ -245,31 +246,43 @@ class Encoding:
         ###############################################################################
         #   Count total positions
         #
-        position_count = 0
+        position_max_count = 0
         for game in games:
             game_move_count = len(list(game.mainline_moves()))
-            position_count += game_move_count
+            position_max_count += game_move_count
 
         ###############################################################################
         #   Encode boards and moves
         #
-        boards_tensor = torch.zeros((position_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
+        boards_tensor = torch.zeros((position_max_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
         moves_uci = []
-        board_index = 0
+        position_index = 0
         for game in tqdm(games, ncols=80, desc="Encoding", unit="games"):
             board = game.board()
             for move in game.mainline_moves():
+                # Play this move on the board to get to the next position
+                board.push(move)
+
+                # TMP: skip positions where it is black to play
+                # if board.turn == chess.BLACK:
+                #     continue
+
+                # skip positions that are in the opening book
+                if polyglot_reader is not None and ChessExtra.is_in_opening_book(board, polyglot_reader):
+                    continue
+
                 # encode the current board position
                 board_tensor = Encoding.board_to_tensor(board)
-                boards_tensor[board_index] = board_tensor
+                boards_tensor[position_index] = board_tensor
 
                 # append the best move in UCI format
                 moves_uci.append(move.uci())
 
-                # Play this move on the board to get to the next position
-                board.push(move)
                 # Update the board index
-                board_index += 1
+                position_index += 1
+
+        # truncate boards_tensor to the actual number of positions encoded
+        boards_tensor = boards_tensor[:position_index, :, :, :]
 
         # Create a mapping from UCI move strings to class indices
         uci_to_classindex = {move_uci: idx for idx, move_uci in enumerate(set(moves_uci))}

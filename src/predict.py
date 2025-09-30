@@ -6,14 +6,13 @@ import torch
 import chess
 
 # local imports
-from .libs.chessbotml_player import ChessbotMLPlayer
+from .libs.chess_player import ChessPlayer
 from .libs.io_utils import IOUtils
 from .libs.pgn_utils import PGNUtils
 from .libs.encoding import Encoding
-from .libs.utils import Utils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = f"{__dirname__}/../output/"
+output_folder_path = os.path.join(__dirname__, "..", "output")
 
 class PredictCommand:
     @staticmethod
@@ -42,7 +41,7 @@ class PredictCommand:
         # create the reverse mapping
         classindex_to_uci: dict[int, str] = {v: k for k, v in uci_to_classindex.items()}
 
-        chatbotml_player = ChessbotMLPlayer(model=model, classindex_to_uci=classindex_to_uci)
+        chess_player = ChessPlayer(model=model, classindex_to_uci=classindex_to_uci)
 
         ###############################################################################
         # 3. Use the ```predict_move``` function to get the best move and its probabilities for a given board state:
@@ -55,7 +54,7 @@ class PredictCommand:
 
         while True:
             # predict the best move
-            best_move = chatbotml_player.predict_next_move(board)
+            best_move = chess_player.predict_next_move(board)
 
             if best_move is None:
                 # raise an error if no legal moves are available...

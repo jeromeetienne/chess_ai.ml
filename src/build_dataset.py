@@ -16,8 +16,8 @@ from .libs.io_utils import IOUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = f"{__dirname__}/../output"
-data_folder_path = f"{__dirname__}/../data"
+output_folder_path = os.path.join(__dirname__, "..", "output")
+data_folder_path = os.path.join(__dirname__, "..", "data")
 class DatasetBuilderCommand:
     ###############################################################################
     # Create Dataset
@@ -93,7 +93,8 @@ class DatasetBuilderCommand:
         polyglot_path = os.path.join(data_folder_path, "polyglot/lichess_pro_books/lpb-allbook.bin")
         polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
-        boards_tensor, moves_tensor, uci_to_classindex = Encoding.games_to_tensor(games)
+        # Convert games to tensors
+        boards_tensor, moves_tensor, uci_to_classindex = Encoding.games_to_tensor(games, polyglot_reader=polyglot_reader)
 
         # Save the dataset for later
         IOUtils.save_dataset(boards_tensor, moves_tensor, uci_to_classindex, folder_path=output_folder_path)
