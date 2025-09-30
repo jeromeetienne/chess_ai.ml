@@ -22,8 +22,9 @@ class PredictCommand:
         #
 
         # Load the mapping
-        uci_to_classindex = IOUtils.load_uci_to_classindex(folder_path=output_folder_path)
-        num_classes = len(uci_to_classindex)
+        uci2class_white = IOUtils.uci2class_load(chess.WHITE)
+        num_classes = len(uci2class_white)
+
 
         # Load the model
         input_shape = Encoding.INPUT_SHAPE  # (channels, height, width)

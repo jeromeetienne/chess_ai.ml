@@ -94,14 +94,14 @@ class DatasetBuilderCommand:
         polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
         # Convert games to tensors
-        boards_tensor, moves_tensor, uci_to_classindex = Encoding.games_to_tensor(games, polyglot_reader=polyglot_reader)
+        boards_tensor, moves_tensor = Encoding.games_to_tensor(games, polyglot_reader=polyglot_reader)
 
         # Save the dataset for later
-        IOUtils.save_dataset(boards_tensor, moves_tensor, uci_to_classindex, folder_path=output_folder_path)
+        IOUtils.save_dataset(boards_tensor, moves_tensor, folder_path=output_folder_path)
 
         # display elapsed time
         dataset_creation_elapsed_time = time.time() - dataset_creation_start_time
         print(f"Dataset creation/loading time: {dataset_creation_elapsed_time:.2f} seconds")
 
         # Dataset creation stats
-        print(Utils.dataset_summary(boards_tensor, moves_tensor, uci_to_classindex))
+        print(Utils.dataset_summary(boards_tensor, moves_tensor))

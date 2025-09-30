@@ -15,14 +15,11 @@ from .libs.io_utils import IOUtils
 from .libs.pgn_utils import PGNUtils
 from .libs.termcolor_utils import TermcolorUtils
 from .libs.chess_extra import ChessExtra
+from .libs.types import opponent_tech_t, color_t
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
 data_folder_path = os.path.join(__dirname__, "..", "data")
-
-# define the opponent PYTHON type
-opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
-color_t = typing.Literal["white", "black"]
 
 class PlayCommand:
 
@@ -52,22 +49,19 @@ class PlayCommand:
         #
 
         # Load the mapping
-        uci_to_classindex = IOUtils.load_uci_to_classindex(folder_path=output_folder_path)
-        num_classes = len(uci_to_classindex)
+        uci2class_white = IOUtils.uci2class_load(chess.WHITE)
+        num_classes = len(uci2class_white)
 
         # Load the model
         input_shape = Encoding.INPUT_SHAPE  # (channels, height, width)
         output_shape = (num_classes,)
         model = IOUtils.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
         
-        # create the reverse mapping
-        classindex_to_uci = IOUtils.classindex_to_uci_inverse_mapping(uci_to_classindex)
-
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
         polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
-        chess_player = ChessPlayer(model=model, classindex_to_uci=classindex_to_uci, polyglot_reader=polyglot_reader)
+        chess_player = ChessPlayer(model=model, chess_color=chess.WHITE, polyglot_reader=polyglot_reader)
 
 
         ###############################################################################

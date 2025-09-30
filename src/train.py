@@ -5,6 +5,7 @@ import time
 import typing
 
 # pip imports
+import chess
 import tqdm
 import torch
 import torch.nn as nn
@@ -144,11 +145,15 @@ class TrainCommand:
             print("Dataset not found. Please create a new one.")
             sys.exit(1)
 
-        # Load the dataset
-        boards_tensor, moves_tensor, uci_to_classindex = IOUtils.load_dataset(folder_path=output_folder_path)
-        print(Utils.dataset_summary(boards_tensor, moves_tensor, uci_to_classindex))
 
-        num_classes = len(uci_to_classindex)
+
+        # Load the dataset
+        boards_tensor, moves_tensor = IOUtils.load_dataset(folder_path=output_folder_path)
+        print(Utils.dataset_summary(boards_tensor, moves_tensor))
+
+
+        uci2class_white = IOUtils.uci2class_load(chess_color=chess.WHITE)
+        num_classes = len(uci2class_white)
 
         ###############################################################################
         # Prepare data loaders

@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 # local imports
 from src.libs.chess_extra import ChessExtra
+from src.libs.io_utils import IOUtils
 
 
 class Encoding:
@@ -182,30 +183,30 @@ class Encoding:
         board_tensor.copy_(rotated_tensor)
         return board_tensor
 
-    @staticmethod
-    def move_to_tensor(move_uci: str, uci_to_classindex: dict[str, int]) -> torch.Tensor:
-        """
-        Converts a move in UCI string format to a scalar tensor representing its class index.
+    # @staticmethod
+    # def move_to_tensor(move_uci: str, uci_to_classindex: dict[str, int]) -> torch.Tensor:
+    #     """
+    #     Converts a move in UCI string format to a scalar tensor representing its class index.
 
-        Args:
-            move_uci (str): The move in UCI (Universal Chess Interface) string format (e.g., 'e2e4').
-            uci_to_classindex (dict[str, int]): A mapping from UCI move strings to their corresponding class indices.
+    #     Args:
+    #         move_uci (str): The move in UCI (Universal Chess Interface) string format (e.g., 'e2e4').
+    #         uci_to_classindex (dict[str, int]): A mapping from UCI move strings to their corresponding class indices.
 
-        Returns:
-            torch.Tensor: A scalar tensor containing the class index of the move, with dtype specified by Encoding.MOVE_DTYPE.
+    #     Returns:
+    #         torch.Tensor: A scalar tensor containing the class index of the move, with dtype specified by Encoding.MOVE_DTYPE.
 
-        Raises:
-            KeyError: If the provided move_uci is not found in the uci_to_classindex mapping.
-        """
-        # convert move in UCI format to class index
-        class_index = uci_to_classindex[move_uci]
-        # convert class index to tensor
-        # moves_tensor_dtype = EncodingUtils.__numpy_dtype_to_torch(EncodingUtils.MOVE_DTYPE)
-        move_tensor = torch.tensor(class_index, dtype=Encoding.MOVE_DTYPE)
-        return move_tensor
+    #     Raises:
+    #         KeyError: If the provided move_uci is not found in the uci_to_classindex mapping.
+    #     """
+    #     # convert move in UCI format to class index
+    #     class_index = uci_to_classindex[move_uci]
+    #     # convert class index to tensor
+    #     # moves_tensor_dtype = EncodingUtils.__numpy_dtype_to_torch(EncodingUtils.MOVE_DTYPE)
+    #     move_tensor = torch.tensor(class_index, dtype=Encoding.MOVE_DTYPE)
+    #     return move_tensor
 
-    @staticmethod
-    def move_from_tensor(move_tensor: torch.Tensor, classindex_to_uci: dict[int, str]) -> str:
+    # @staticmethod
+    # def move_from_tensor(move_tensor: torch.Tensor, classindex_to_uci: dict[int, str]) -> str:
         """
         Converts a scalar move tensor representing a class index into its corresponding UCI move string.
         Args:
@@ -227,7 +228,7 @@ class Encoding:
     def games_to_tensor(
         games: list[chess.pgn.Game],
         polyglot_reader: chess.polyglot.MemoryMappedReader | None = None,
-    ) -> tuple[torch.Tensor, torch.Tensor, dict[str, int]]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Converts a list of chess games into boards tensor. Skip positions that are in the opening book.
 
@@ -238,7 +239,7 @@ class Encoding:
             tuple:
                 - torch.Tensor: **boards_tensor** A tensor containing encoded board positions with shape (num_positions, *INPUT_SHAPE).
                 - torch.Tensor: **moves_tensor** A tensor of class indices representing the best move for each position.
-                - dict[str, int]: **uci_to_classindex** A mapping from UCI move strings to class indices.
+
         The function iterates through all positions in the provided games, encodes each board state into a tensor,
         and collects the best move in UCI format. It then creates a mapping from unique UCI moves to class indices,
         encodes the moves as class indices, and returns the board tensors, move tensors, and the mapping.
@@ -254,18 +255,18 @@ class Encoding:
         ###############################################################################
         #   Encode boards and moves
         #
+
+        uci2class_white = IOUtils.uci2class_load(chess_color=chess.WHITE)
+        uci2class_black = IOUtils.uci2class_load(chess_color=chess.WHITE)
+        
         boards_tensor = torch.zeros((position_max_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
-        moves_uci = []
+        moves_tensor = torch.zeros((position_max_count,), dtype=Encoding.MOVE_DTYPE)
         position_index = 0
         for game in tqdm(games, ncols=80, desc="Encoding", unit="games"):
             board = game.board()
             for move in game.mainline_moves():
                 # Play this move on the board to get to the next position
                 board.push(move)
-
-                # TMP: skip positions where it is black to play
-                # if board.turn == chess.BLACK:
-                #     continue
 
                 # skip positions that are in the opening book
                 if polyglot_reader is not None and ChessExtra.is_in_opening_book(board, polyglot_reader):
@@ -275,24 +276,17 @@ class Encoding:
                 board_tensor = Encoding.board_to_tensor(board)
                 boards_tensor[position_index] = board_tensor
 
-                # append the best move in UCI format
-                moves_uci.append(move.uci())
-
+                # encode the best move in UCI format
+                moves_tensor[position_index] = uci2class_white[move.uci()] if board.turn == chess.WHITE else uci2class_black[move.uci()]
+ 
                 # Update the board index
                 position_index += 1
 
         # truncate boards_tensor to the actual number of positions encoded
         boards_tensor = boards_tensor[:position_index, :, :, :]
 
-        # Create a mapping from UCI move strings to class indices
-        uci_to_classindex = {move_uci: idx for idx, move_uci in enumerate(set(moves_uci))}
-
-        # Encode moves as class indices
-        moves_array = [uci_to_classindex[move] for move in moves_uci]
-        moves_tensor = torch.tensor(moves_array, dtype=Encoding.MOVE_DTYPE)
-
         # return the boards, moves and the mapping
-        return boards_tensor, moves_tensor, uci_to_classindex
+        return boards_tensor, moves_tensor
 
 
 if __name__ == "__main__":
