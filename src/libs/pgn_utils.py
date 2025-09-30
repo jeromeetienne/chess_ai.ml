@@ -26,28 +26,6 @@ class PGNUtils:
         pgn_file_paths.sort()
 
         return pgn_file_paths
-    
-    @staticmethod
-    def load_games_from_pgn(file_path: str, max_games: int = 0) -> list[chess.pgn.Game]:
-        """
-        Load all games from a PGN file.
-
-        Arguments:
-            file_path (str): Path to the PGN file.
-            max_games (int): Maximum number of games to load. If 0, load all games.
-        """
-
-        games: list[chess.pgn.Game] = []
-        with open(file_path, 'r') as pgn_file:
-            while True:
-                if max_games != 0 and len(games) >= max_games:
-                    break
-                game: chess.pgn.Game|None = chess.pgn.read_game(pgn_file)
-                if game is None:
-                    break
-                games.append(game)
-
-        return games
 
     @staticmethod
     def board_to_pgn(board: chess.Board, white_player: str = "Unknown", black_player: str = "Unknown") -> str:
