@@ -1,4 +1,6 @@
 # TODO
+- create a model which has only white turn
+  - and another for black turn
 - create a new class called encoding.py with a unit test, and then use it everywhere in the code
   - in encoding, if turn is black, flip the board so that always the side to play is at the bottom
   - it will make learning easier

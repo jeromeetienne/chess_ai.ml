@@ -34,10 +34,10 @@ class Encoding:
 
         TURN = 14
         FULLMOVE_NUMBER = 15
-        ACTIVE_KINGSIDE_CASTLING_RIGHTS = 16
-        ACTIVE_QUEENSIDE_CASTLING_RIGHTS = 17
-        OPPONENT_KINGSIDE_CASTLING_RIGHTS = 18
-        OPPONENT_QUEENSIDE_CASTLING_RIGHTS = 19
+        WHITE_KINGSIDE_CASTLING_RIGHTS = 16
+        WHITE_QUEENSIDE_CASTLING_RIGHTS = 17
+        BLACK_KINGSIDE_CASTLING_RIGHTS = 18
+        BLACK_QUEENSIDE_CASTLING_RIGHTS = 19
         NO_PROGRESS_COUNTER = 20
 
         # Total planes
@@ -60,7 +60,7 @@ class Encoding:
         # Populate first 12 8x8 boards (where pieces are)
         for square, piece in board.piece_map().items():
             row, col = divmod(square, 8)
-            piece_color = 0 if piece.color else 6
+            piece_color = 0 if piece.color == chess.WHITE else 6
             piece_type = piece.piece_type - 1
             board_tensor[piece_color + piece_type, row, col] = 1
 
@@ -82,15 +82,13 @@ class Encoding:
         # Total move count
         board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
 
-        # # Active player castling rights
-        active_color = board.turn
-        board_tensor[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(active_color)
-        board_tensor[Encoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(active_color)
-
         # Opponent player castling rights
-        opponent_color = not board.turn
-        board_tensor[Encoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(opponent_color)
-        board_tensor[Encoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(opponent_color)
+        board_tensor[Encoding.PLANE.WHITE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.WHITE)
+        board_tensor[Encoding.PLANE.WHITE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.WHITE)
+
+        # Active player castling rights
+        board_tensor[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.BLACK)
+        board_tensor[Encoding.PLANE.BLACK_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.BLACK)
 
         # No-progress counter
         board_tensor[Encoding.PLANE.NO_PROGRESS_COUNTER, :, :] = board.halfmove_clock
@@ -145,8 +143,10 @@ class Encoding:
         # set fullmove number
         board.fullmove_number = int(board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, 0, 0].item())
         # set castling rights
+        # TMP: disable castling rights for now
+        board.set_castling_fen('-')
         # FIXME this seems fragile ... check this out
-        # if board_tensor[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+        # if board_tensor[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
         #     if board.turn == chess.WHITE:
         #         board.castling_rights |= chess.BB_H1
         #     else:
@@ -158,6 +158,9 @@ class Encoding:
         #         board.castling_rights |= chess.BB_H8
         # set halfmove clock
         board.halfmove_clock = int(board_tensor[19, 0, 0].item())
+
+
+        assert board.is_valid(), "Reconstructed board is not valid"
 
         return board
 

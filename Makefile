@@ -14,6 +14,9 @@ full_pipeline: clean build_dataset train predict play ## run the full pipeline
 build_dataset: ## build the dataset
 	./bin/build_dataset.py
 
+build_evals: ## build the evals for the dataset
+	./bin/build_evals.py
+
 train: ## train the model
 	./bin/train.py
 

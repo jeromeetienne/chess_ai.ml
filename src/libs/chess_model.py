@@ -35,24 +35,31 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # dropoutProbability = 0.5
-        dropoutProbability = 0.3
+        # dropoutProbability = 0.2
+        # conv1_out_channels = 64
+        # conv2_out_channels = 128
+        # fc_intermediate_size = 1024
 
-        self.conv_1 = nn.Conv2d(input_channels, 64, kernel_size=3, padding=1)
-        self.bn_1 = nn.BatchNorm2d(64)
+        dropoutProbability = 0.25
+        conv1_out_channels = 32
+        conv2_out_channels = 64
+        fc_intermediate_size = 256
+
+        self.conv_1 = nn.Conv2d(input_channels, conv1_out_channels, kernel_size=3, padding=1)
+        self.bn_1 = nn.BatchNorm2d(conv1_out_channels)
         self.dropout2d_1 = nn.Dropout2d(dropoutProbability)
 
-        self.conv_2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.bn_2 = nn.BatchNorm2d(128)
+        self.conv_2 = nn.Conv2d(conv1_out_channels, conv2_out_channels, kernel_size=3, padding=1)
+        self.bn_2 = nn.BatchNorm2d(conv2_out_channels)
         self.dropout2d_2 = nn.Dropout2d(dropoutProbability)
 
         self.flatten = nn.Flatten()
         self.leaky_relu = nn.LeakyReLU()
 
-        self.fc1 = nn.Linear(input_height * input_width * 128, 256)
-        self.bn_fc1 = nn.BatchNorm1d(256)
+        self.fc1 = nn.Linear(input_height * input_width * conv2_out_channels, fc_intermediate_size)
+        self.bn_fc1 = nn.BatchNorm1d(fc_intermediate_size)
         self.dropout_1 = nn.Dropout(dropoutProbability)
-        self.fc2 = nn.Linear(256, output_width)
+        self.fc2 = nn.Linear(fc_intermediate_size, output_width)
 
         # Initialize weights
         nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')

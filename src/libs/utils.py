@@ -35,7 +35,7 @@ class Utils:
 
         games: list[chess.pgn.Game] = []
         for file_index, pgn_file_path in enumerate(pgn_file_paths):
-            print(f"Parsing PGN file {pgn_file_path} ...", end="")
+            print(f"Parsing PGN file {pgn_file_path} ...", end="", flush=True)
             new_games = PGNUtils.load_games_from_pgn(f"{pgn_folder_path}/{pgn_file_path}")
             games.extend(new_games)
             print(f" {len(new_games)} games")
