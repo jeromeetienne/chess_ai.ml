@@ -50,8 +50,8 @@ class Encoding:
 
         assert Encoding.INPUT_SHAPE == (21, 8, 8), f"INPUT_SHAPE must be (21, 8, 8), got {Encoding.INPUT_SHAPE}"
 
-        # create an empty tensor
-        board_tensor = torch.zeros(Encoding.PLANE.PLANE_COUNT, 8, 8, dtype=Encoding.BOARD_DTYPE)
+        # create an empty tensor - Use numpy first, it is 3-4 faster than torch for this
+        board_numpy = np.zeros(Encoding.INPUT_SHAPE, dtype=np.uint8)
 
         ###############################################################################
         #   Piece planes
@@ -62,40 +62,41 @@ class Encoding:
             row, col = divmod(square, 8)
             piece_color = 0 if piece.color == chess.WHITE else 6
             piece_type = piece.piece_type - 1
-            board_tensor[piece_color + piece_type, row, col] = 1
+            board_numpy[piece_color + piece_type, row, col] = 1
 
         ###############################################################################
         #   Repetition planes
         #
 
         # repetition_planes = np.zeros((repetition_plane_count, 8, 8))
-        board_tensor[Encoding.PLANE.REPETITION_2, :, :] = board.is_repetition(2)
-        board_tensor[Encoding.PLANE.REPETITION_3, :, :] = board.is_repetition(3)
+        board_numpy[Encoding.PLANE.REPETITION_2, :, :] = board.is_repetition(2)
+        board_numpy[Encoding.PLANE.REPETITION_3, :, :] = board.is_repetition(3)
 
         ###############################################################################
         #   Metadata planes
         #
 
         # Active player color
-        board_tensor[Encoding.PLANE.TURN, :, :] = int(board.turn)  # 1 for white, 0 for black
+        board_numpy[Encoding.PLANE.TURN, :, :] = int(board.turn)  # 1 for white, 0 for black
 
         # Total move count
-        board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
+        board_numpy[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
 
-        # Opponent player castling rights
-        board_tensor[Encoding.PLANE.WHITE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.WHITE)
-        board_tensor[Encoding.PLANE.WHITE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.WHITE)
+        # White player castling rights
+        board_numpy[Encoding.PLANE.WHITE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.WHITE)
+        board_numpy[Encoding.PLANE.WHITE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.WHITE)
 
-        # Active player castling rights
-        board_tensor[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.BLACK)
-        board_tensor[Encoding.PLANE.BLACK_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.BLACK)
+        # Black player castling rights
+        board_numpy[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.BLACK)
+        board_numpy[Encoding.PLANE.BLACK_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.BLACK)
 
         # No-progress counter
-        board_tensor[Encoding.PLANE.NO_PROGRESS_COUNTER, :, :] = board.halfmove_clock
+        board_numpy[Encoding.PLANE.NO_PROGRESS_COUNTER, :, :] = board.halfmove_clock
 
         ###############################################################################
         #   Return the board tensor
         #
+        board_tensor = torch.tensor(board_numpy, dtype=Encoding.BOARD_DTYPE)
         return board_tensor
 
     @staticmethod
@@ -133,7 +134,6 @@ class Encoding:
                     piece = chess.Piece.from_symbol(piece_symbol)
                     board.set_piece_at(square, piece)
 
-
         ###############################################################################
         #   Parse Metadata Planes
         #
@@ -144,7 +144,7 @@ class Encoding:
         board.fullmove_number = int(board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, 0, 0].item())
         # set castling rights
         # TMP: disable castling rights for now
-        board.set_castling_fen('-')
+        board.set_castling_fen("-")
         # FIXME this seems fragile ... check this out
         # if board_tensor[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
         #     if board.turn == chess.WHITE:
@@ -158,7 +158,6 @@ class Encoding:
         #         board.castling_rights |= chess.BB_H8
         # set halfmove clock
         board.halfmove_clock = int(board_tensor[19, 0, 0].item())
-
 
         assert board.is_valid(), "Reconstructed board is not valid"
 
