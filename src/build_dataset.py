@@ -32,7 +32,7 @@ class DatasetBuilderCommand:
         ###############################################################################
         # Load PGN files and parse games
         #
-        pgn_file_paths = PGNUtils.all_pgn_file_paths()
+        pgn_file_paths = PGNUtils.get_pgn_paths()
 
         # sort files alphabetically to ensure consistent order
         pgn_file_paths.sort()

@@ -36,7 +36,20 @@ class DatasetUtils:
         moves_path = f"{folder_path}/dataset_moves.pt"
         torch.save(boards_tensor, boards_path)
         torch.save(moves_tensor, moves_path)
-    
+
+    @staticmethod
+    def load_dataset_tensor(tensors_folder_path: str, basename_prefix: str) -> tuple[torch.Tensor, torch.Tensor]:
+        # load the tensors
+        boards_path = f"{tensors_folder_path}/{basename_prefix}_boards_tensor.pt"
+        boards_tensor = torch.load(boards_path)
+        # load the moves tensor
+        moves_path = f"{tensors_folder_path}/{basename_prefix}_moves_tensor.pt"
+        moves_tensor = torch.load(moves_path)
+        # ensure they have the same number of positions
+        assert boards_tensor.shape[0] == moves_tensor.shape[0], f"boards_tensor has {boards_tensor.shape[0]} positions but moves_tensor has {moves_tensor.shape[0]} positions. basename_prefix={basename_prefix}"
+        # return the dataset
+        return boards_tensor, moves_tensor
+
     @staticmethod
     def load_dataset(tensors_folder_path: str, max_file_count: int = 15) -> tuple[torch.Tensor, torch.Tensor]:
         # gather all tensor file paths
@@ -71,13 +84,6 @@ class DatasetUtils:
 
         # return the dataset
         return boards_tensor, moves_tensor
-
-    @staticmethod
-    def has_dataset(folder_path: str) -> bool:
-        boards_path = f"{folder_path}/dataset_boards.pt"
-        moves_path = f"{folder_path}/dataset_moves.pt"
-        dataset_exists = os.path.exists(boards_path) and os.path.exists(moves_path)
-        return dataset_exists
 
     @staticmethod
     def games_to_tensor(

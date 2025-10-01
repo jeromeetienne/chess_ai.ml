@@ -12,7 +12,7 @@ pgn_folder_path = os.path.join(data_folder_path, "pgn")
 
 class PGNUtils:
     @staticmethod
-    def all_pgn_file_paths() -> list[str]:
+    def get_pgn_paths() -> list[str]:
         """
         Return a list of all PGN file paths in the specified folder.
         The list is sorted alphabetically.
@@ -21,15 +21,11 @@ class PGNUtils:
             folder_path (str): Path to the folder containing PGN files.
         """
         
-        pgn_file_paths: list[str] = []
-        for basename in os.listdir(pgn_folder_path):
-            if basename.endswith(".pgn"):
-                file_path = os.path.join(pgn_folder_path, basename)
-                pgn_file_paths.append(file_path)
-        # sort the list
-        pgn_file_paths.sort()
+        basenames = [basename for basename in os.listdir(pgn_folder_path) if basename.endswith(".pgn")]
+        pgn_paths = [os.path.join(pgn_folder_path, basename) for basename in basenames]
+        pgn_paths.sort()
 
-        return pgn_file_paths
+        return pgn_paths
 
     @staticmethod
     def parse_pgn_file(file_path: str) -> list[chess.pgn.Game]:
