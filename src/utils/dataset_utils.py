@@ -20,13 +20,11 @@ data_folder_path = os.path.join(__dirname__, "../../data")
 class DatasetUtils:
     @staticmethod
     def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor) -> str:
-            uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)  # ensure the mappings are loaded
             summary = f"""Dataset Summary:
 - Total positions: {len(boards_tensor):,}
 - Input shape: {Encoding.BOARD_DTYPE} (Channels, Height, Width)
 - Output shape: {Encoding.MOVE_DTYPE} (Scalar class index)
 """
-            # FIXME the output share is super crappy
             return summary
 
     @staticmethod

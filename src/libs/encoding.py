@@ -11,6 +11,7 @@ from src.libs.chess_extra import ChessExtra
 from src.utils.uci2class_utils import Uci2ClassUtils
 
 
+
 class Encoding:
 
     INPUT_SHAPE = (21, 8, 8)  # (channels, height, width)
@@ -224,6 +225,12 @@ class Encoding:
         move_uci = classindex_to_uci[int(move_tensor.item())]
         return move_uci
 
+    @staticmethod
+    def moves_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
+        class2uci = Uci2ClassUtils.get_class2uci(color)
+        class_index = int(moves_tensor.item())
+        move_uci = class2uci[class_index]
+        return move_uci
 
 if __name__ == "__main__":
     ###############################################################################
