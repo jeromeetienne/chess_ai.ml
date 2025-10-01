@@ -35,7 +35,7 @@ class DatasetUtils:
         moves_path = f"{folder_path}/dataset_moves.pt"
         torch.save(boards_tensor, boards_path)
         torch.save(moves_tensor, moves_path)
-
+    
     @staticmethod
     def load_dataset(folder_path: str) -> tuple[torch.Tensor, torch.Tensor]:
         # setup paths
@@ -93,7 +93,7 @@ class DatasetUtils:
         boards_tensor = torch.zeros((position_max_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
         moves_tensor = torch.zeros((position_max_count,), dtype=Encoding.MOVE_DTYPE)
         position_index = 0
-        for game in tqdm(games, ncols=80, desc="Encoding", unit="games"):
+        for game in games:
             board = game.board()
             for move in game.mainline_moves():
                 # Play this move on the board to get to the next position
