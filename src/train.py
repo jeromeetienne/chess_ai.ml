@@ -24,6 +24,8 @@ from .utils.uci2class_utils import Uci2ClassUtils
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
+data_folder_path = os.path.join(__dirname__, "..", "data")
+tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 
 
 class TrainCommand:
@@ -132,7 +134,7 @@ class TrainCommand:
     # Train a chess model using PyTorch.
     ###############################################################################
     @staticmethod
-    def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7):
+    def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7, max_file_count: int = 15):
 
         # set random seed for reproducibility
         # torch.manual_seed(42)
@@ -141,15 +143,9 @@ class TrainCommand:
         # Load Dataset
         #
 
-        # sanity check: ensure dataset exists else exit
-        if not DatasetUtils.has_dataset(output_folder_path):
-            print("Dataset not found. Please create a new one.")
-            sys.exit(1)
-
         # Load the dataset
-        boards_tensor, moves_tensor = DatasetUtils.load_dataset(folder_path=output_folder_path)
+        boards_tensor, moves_tensor = DatasetUtils.load_dataset(tensors_folder_path=tensors_folder_path, max_file_count=max_file_count)
         print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))
-
 
         uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
         num_classes = len(uci2class_white)
@@ -178,8 +174,8 @@ class TrainCommand:
         # print(f"Pytorch computes on {device} device")
 
         # Model Initialization
-        input_shape: tuple[int, int, int] = typing.cast(tuple[int,int,int],boards_tensor.shape[1:])  # (channels, height, width)
-        output_shape = (num_classes, )
+        input_shape: tuple[int, int, int] = typing.cast(tuple[int, int, int], boards_tensor.shape[1:])  # (channels, height, width)
+        output_shape = (num_classes,)
         model = ChessModel(input_shape=input_shape, output_shape=output_shape).to(device)
 
         # use cross entropy loss for multi-class classification
@@ -187,7 +183,7 @@ class TrainCommand:
         # use Adam optimizer to update model weights
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
         # Add a learning rate scheduler to reduce LR over time
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, threshold=0.1)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3, threshold=0.1)
         # Initialize early stopper to stop training if no improvement for 'patience' epochs
         early_stopper = EarlyStopper(patience=10, threshold=0.01)
 
@@ -221,13 +217,12 @@ class TrainCommand:
             # Check for early stopping
             must_stop, must_save = early_stopper.early_stop(validation_loss)
 
-            # Print epoch summary            
+            # Print epoch summary
             print(
                 f"Epoch {epoch_index + 1}/{num_epochs}, lr={scheduler.get_last_lr()[0]} Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}"
             )
             # Plot training and validation loss
             TrainCommand.plot_losses(train_losses, validation_losses)
-
 
             # honor must_save: Save the model if validation loss improved
             if must_save:

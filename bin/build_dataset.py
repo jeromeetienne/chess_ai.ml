@@ -22,4 +22,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    DatasetBuilderCommand.build_dataset_new(max_files_count=args.max_files_count)
+    DatasetBuilderCommand.build_dataset(max_files_count=args.max_files_count)

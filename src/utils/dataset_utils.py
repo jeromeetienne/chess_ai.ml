@@ -20,10 +20,11 @@ data_folder_path = os.path.join(__dirname__, "../../data")
 class DatasetUtils:
     @staticmethod
     def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor) -> str:
+            uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)  # ensure the mappings are loaded
             summary = f"""Dataset Summary:
 - Total positions: {len(boards_tensor):,}
-- Input shape: {boards_tensor.shape[1:]} (Channels, Height, Width)
-- Output shape: {moves_tensor.shape[1:]} (Scalar class index)
+- Input shape: {Encoding.BOARD_DTYPE} (Channels, Height, Width)
+- Output shape: {Encoding.MOVE_DTYPE} (Scalar class index)
 """
             # FIXME the output share is super crappy
             return summary
@@ -37,13 +38,36 @@ class DatasetUtils:
         torch.save(moves_tensor, moves_path)
     
     @staticmethod
-    def load_dataset(folder_path: str) -> tuple[torch.Tensor, torch.Tensor]:
-        # setup paths
-        boards_path = f"{folder_path}/dataset_boards.pt"
-        moves_path = f"{folder_path}/dataset_moves.pt"
-        # load files
-        boards_tensor = torch.load(boards_path)
-        moves_tensor = torch.load(moves_path)
+    def load_dataset(tensors_folder_path: str, max_file_count: int = 15) -> tuple[torch.Tensor, torch.Tensor]:
+        # gather all tensor file paths
+        basenames = os.listdir(tensors_folder_path)
+        basenames.sort()
+        boards_file_paths = [os.path.join(tensors_folder_path, basename) for basename in basenames if basename.endswith("_boards_tensor.pt")]
+        moves_file_paths = [os.path.join(tensors_folder_path, basename) for basename in basenames if basename.endswith("_moves_tensor.pt")]
+
+        # honor the max_file_count limit
+        if max_file_count != 0:
+            boards_file_paths = boards_file_paths[:max_file_count]
+            moves_file_paths = moves_file_paths[:max_file_count]
+
+        # load all tensors
+        boards_tensors = []
+        moves_tensors = []
+        for boards_file_path, moves_file_path in zip(boards_file_paths, moves_file_paths):
+            _boards_tensor = torch.load(boards_file_path)
+            _moves_tensor = torch.load(moves_file_path)
+            boards_tensors.append(_boards_tensor)
+            moves_tensors.append(_moves_tensor)
+            
+        # Count total positions
+        position_max_count = sum([boards_tensor.shape[0] for boards_tensor in boards_tensors])
+        move_max_count = sum([moves_tensor.shape[0] for moves_tensor in moves_tensors])
+        assert position_max_count == move_max_count, f"boards_tensor has {position_max_count} positions but moves_tensor has {move_max_count} positions"
+        print(f"Loading dataset from {len(boards_file_paths)} files, total {position_max_count:,} positions")
+
+        # concatenate all tensors
+        boards_tensor = torch.cat(boards_tensors, dim=0)
+        moves_tensor = torch.cat(moves_tensors, dim=0)
 
         # return the dataset
         return boards_tensor, moves_tensor
@@ -115,6 +139,7 @@ class DatasetUtils:
 
         # truncate boards_tensor to the actual number of positions encoded
         boards_tensor = boards_tensor[:position_index, :, :, :]
+        moves_tensor = moves_tensor[:position_index]
 
         # return the boards, moves and the mapping
         return boards_tensor, moves_tensor
