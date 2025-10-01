@@ -216,6 +216,11 @@ class ChessExtra:
 
     @staticmethod
     def all_unique_moves() -> set[str]:
+        """
+        Count all possible moves for all piece types on an empty chess board.
+        
+        FIXME everybody say it is 1972. but i count only 1968. Where are the missing 4 !
+        """
 
         total_unique_moves = set()
 
@@ -225,15 +230,10 @@ class ChessExtra:
         for piece_type in piece_types:
             # print(f"Counting moves for piece type: {piece_type}")
             turn = chess.WHITE if piece_type.isupper() else chess.BLACK
-            unique_moves = ChessExtra.piece_unique_moves(piece_type, turn)
-            # update totals count
-            # old_unique_count = len(total_unique_moves)
-            total_unique_moves.update(unique_moves)
-            # new_unique_count = len(total_unique_moves)
-            # print(f"Piece: {piece_type}, New Unique moves: {new_unique_count - old_unique_count}, Total Unique moves: {new_unique_count}")
-            # print(f'has castling moves: {"e1g1" in unique_moves or "e1c1" in unique_moves or "e8g8" in unique_moves or "e8c8" in unique_moves}  ')
-
-        # print(f"Total unique moves: {len(total_unique_moves)}")
+            # get unique moves for this piece type
+            piece_unique_moves = ChessExtra.piece_unique_moves(piece_type, turn)
+            # update the total unique moves set
+            total_unique_moves.update(piece_unique_moves)
 
         return total_unique_moves
 
