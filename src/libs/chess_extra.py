@@ -135,7 +135,7 @@ class ChessExtra:
             border_bottom_line = " " + "└" + "─" * (board_width * 3) + "┘"
             board_lines = [border_top_line] + board_lines + [border_bottom_line]
             # Add the column letters at the bottom
-            column_letters = "   A  B  C  D  E  F  G  H  " if not flip_board else "   H  G  F  E  D  C  B  A  "
+            column_letters = "   a  b  c  d  e  f  g  h  " if not flip_board else "   h  g  f  e  d  c  b  a  "
             board_lines.append(column_letters)
 
         # add a line "Turn: White" or "Turn: Black" on top of the board
@@ -145,7 +145,7 @@ class ChessExtra:
         return "\n".join(board_lines)
 
     @staticmethod
-    def piece_unique_moves(piece_symbol: str, turn: chess.Color) -> set[str]:
+    def __piece_unique_moves(piece_symbol: str, turn: chess.Color) -> set[str]:
         """
         Count all possible moves for a given piece type on an empty chess board.
         """
@@ -231,7 +231,7 @@ class ChessExtra:
             # print(f"Counting moves for piece type: {piece_type}")
             turn = chess.WHITE if piece_type.isupper() else chess.BLACK
             # get unique moves for this piece type
-            piece_unique_moves = ChessExtra.piece_unique_moves(piece_type, turn)
+            piece_unique_moves = ChessExtra.__piece_unique_moves(piece_type, turn)
             # update the total unique moves set
             total_unique_moves.update(piece_unique_moves)
 
