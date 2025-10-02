@@ -1,4 +1,8 @@
 # TODO
+- check_dataset: go thru all the board in the dataset and check it is equal to the pgn
+  - compare fen by string
+  - display evaluation too
+  - allow to specify a game + move index - would help push it in chess.com
 - DONE whem building dataset, drop position which are in the opening phase
 - create a model which has only white turn
   - and another for black turn

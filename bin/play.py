@@ -23,11 +23,11 @@ if __name__ == "__main__":
     ###############################################################################
     #   Parse command line arguments
     #
-    parser = argparse.ArgumentParser(
+    argParser = argparse.ArgumentParser(
         description="Play a game of chess between ChessBotML and an opponent (human or Stockfish).",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument(
+    argParser.add_argument(
         "--color",
         "-c",
         type=str,
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         default="random",
         help="The color for ChessBotML (white or black). Default is random.",
     )
-    parser.add_argument(
+    argParser.add_argument(
         "--opponent",
         "-o",
         type=str,
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         default="stockfish",
         help="The type of opponent (human or stockfish). Default is stockfish.",
     )
-    parser.add_argument(
+    argParser.add_argument(
         "--stockfish-elo",
         "-e",
         "-elo",
@@ -51,20 +51,20 @@ if __name__ == "__main__":
         default=10,
         help="The ELO rating for Stockfish (if opponent is stockfish). Default is 1350.",
     )
-    parser.add_argument(
+    argParser.add_argument(
         "--stockfish-depth",
         "-D",
         type=int,
         default=1,
         help="The search depth for Stockfish (if opponent is stockfish). Default is 10.",
     )
-    parser.add_argument(
+    argParser.add_argument(
         "--debug",
         "-d",
         action="store_true",
         help="Enable debug mode.",
     )
-    args = parser.parse_args()
+    args = argParser.parse_args()
 
     if args.debug is True:
         print(f"Arguments: {args}")

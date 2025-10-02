@@ -10,6 +10,7 @@ import time
 import torch
 import chess.engine
 import psutil
+import argparse
 
 
 # local imports
@@ -191,4 +192,7 @@ async def main():
 #   Main entry point
 #
 if __name__ == "__main__":
+    argParser = argparse.ArgumentParser(description="Build evaluation tensors for chess positions using Stockfish engine.")
+    args = argParser.parse_args()
+
     asyncio.run(main())

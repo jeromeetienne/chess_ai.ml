@@ -7,6 +7,9 @@ clean_output: ## clean output directory
 clean_pgn_tensors: ## clean pgn tensors
 	rm -f ./data/pgn_tensors/*
 
+check_dataset: ## check dataset integrity
+	./bin/check_dataset.py
+
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py
 

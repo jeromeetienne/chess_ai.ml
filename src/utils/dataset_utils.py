@@ -12,9 +12,11 @@ from tqdm import tqdm
 from ..libs.chess_extra import ChessExtra
 from ..libs.encoding import Encoding
 from .uci2class_utils import Uci2ClassUtils
+from .pgn_utils import PGNUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
+tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 
 
 class DatasetUtils:
@@ -104,7 +106,7 @@ class DatasetUtils:
         encodes the moves as class indices, and returns the board tensors, move tensors, and the mapping.
         """
         ###############################################################################
-        #   Count total positions
+        #   Count total positions - needed to preallocate the tensors
         #
         position_max_count = 0
         for game in games:
@@ -115,9 +117,6 @@ class DatasetUtils:
         #   Encode boards and moves
         #
 
-        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
-        uci2class_black = Uci2ClassUtils.get_uci2class(chess.BLACK)
-        
         boards_tensor = torch.zeros((position_max_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
         moves_tensor = torch.zeros((position_max_count,), dtype=Encoding.MOVE_DTYPE)
         position_index = 0
@@ -136,8 +135,9 @@ class DatasetUtils:
                 boards_tensor[position_index] = board_tensor
 
                 # encode the best move in UCI format
-                moves_tensor[position_index] = uci2class_white[move.uci()] if board.turn == chess.WHITE else uci2class_black[move.uci()]
- 
+                uci2class = Uci2ClassUtils.get_uci2class(board.turn)
+                moves_tensor[position_index] = uci2class[move.uci()]
+
                 # Update the board index
                 position_index += 1
 
@@ -148,3 +148,77 @@ class DatasetUtils:
         # return the boards, moves and the mapping
         return boards_tensor, moves_tensor
 
+
+    @staticmethod
+    def check_tensor_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader | None, verbose: bool = False) -> int:
+        pgn_basename = os.path.basename(pgn_path).replace(".pgn", "")
+
+
+        print(f'Loading tensors for {pgn_basename}')
+        boards_tensor, moves_tensor = DatasetUtils.load_dataset_tensor(tensor_folder_path, pgn_basename)
+
+        ###############################################################################
+        #   convert the pgn games in boards and moves, skipping the opening book positions
+
+        print(f'Parsing {pgn_basename} - {len(boards_tensor)} positions')
+
+        # parse the pgn file
+        pgn_games = PGNUtils.parse_pgn_file(pgn_path)
+
+        # Go thru all the moves of the game, and store the board and move if the position is not in the opening book
+        pgn_boards: list[chess.Board] = []
+        pgn_moves: list[chess.Move] = []
+        for game in pgn_games:
+            board = chess.Board()
+            for move in game.mainline_moves():
+                board.push(move)
+                # skip if the position is in the opening book
+                if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
+                    continue
+                # append the board in pgn_boards
+                pgn_boards.append(board.copy())
+                # append the move in pgn_moves
+                move_copy = chess.Move(move.from_square, move.to_square, promotion=move.promotion)
+                pgn_moves.append(move_copy)
+
+        ###############################################################################
+        #   Load the tensors for this pgn file
+        #
+
+        assert len(pgn_boards) == len(boards_tensor), f"len(pgn_boards)={len(pgn_boards)} != len(boards_tensor)={len(boards_tensor)}"
+        assert len(pgn_moves) == len(moves_tensor), f"len(pgn_moves)={len(pgn_moves)} != len(moves_tensor)={len(moves_tensor)}"
+
+        if verbose:
+            print(f"Comparing {len(pgn_boards)} positions between tensors and PGN")
+
+        # convert boards_tensor and moves_tensor to chess.Board and chess.Move
+        difference_count = 0
+        for i in range(boards_tensor.shape[0]):
+            pgn_board = pgn_boards[i]
+            tensor_board = Encoding.board_from_tensor(boards_tensor[i])
+
+            # Check if the board positions are equal using FEN
+            board_is_equal = pgn_board.board_fen() == tensor_board.board_fen()
+            if not board_is_equal:
+                difference_count += 1
+                if verbose:
+                    print(f"Boards are not equal at index {i}")
+                    print(f"pgn_board.fen()   = {pgn_board.fen()}")
+                    print(f"tensor_board.fen()= {tensor_board.fen()}")
+
+            pgn_move = pgn_moves[i]
+            move_uci = Encoding.move_uci_from_tensor(moves_tensor[i], tensor_board.turn)
+            tensor_move = chess.Move.from_uci(move_uci)
+
+            if pgn_move != tensor_move:
+                difference_count += 1
+                if verbose:
+                    print(f"Moves are not equal at index {i}")
+                    print(f"pgn_move   = {pgn_move}")
+                    print(f"tensor_move= {tensor_move}")
+
+            if verbose and i%100 == 0:
+                print(".", end="", flush=True)
+
+
+        return difference_count

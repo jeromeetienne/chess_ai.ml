@@ -36,12 +36,13 @@ class Encoding:
         REPETITION_3 = 13
 
         TURN = 14
-        FULLMOVE_NUMBER = 15
-        WHITE_KINGSIDE_CASTLING_RIGHTS = 16
-        WHITE_QUEENSIDE_CASTLING_RIGHTS = 17
-        BLACK_KINGSIDE_CASTLING_RIGHTS = 18
-        BLACK_QUEENSIDE_CASTLING_RIGHTS = 19
-        NO_PROGRESS_COUNTER = 20
+        WHITE_KINGSIDE_CASTLING_RIGHTS = 15
+        WHITE_QUEENSIDE_CASTLING_RIGHTS = 16
+        BLACK_KINGSIDE_CASTLING_RIGHTS = 17
+        BLACK_QUEENSIDE_CASTLING_RIGHTS = 18
+
+        HALF_MOVE_CLOCK = 19
+        FULLMOVE_NUMBER = 20
 
         # Total planes
         PLANE_COUNT = 21
@@ -82,9 +83,6 @@ class Encoding:
         # Active player color
         board_numpy[Encoding.PLANE.TURN, :, :] = int(board.turn)  # 1 for white, 0 for black
 
-        # Total move count
-        board_numpy[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
-
         # White player castling rights
         board_numpy[Encoding.PLANE.WHITE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.WHITE)
         board_numpy[Encoding.PLANE.WHITE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.WHITE)
@@ -93,13 +91,21 @@ class Encoding:
         board_numpy[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(chess.BLACK)
         board_numpy[Encoding.PLANE.BLACK_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(chess.BLACK)
 
-        # No-progress counter
-        board_numpy[Encoding.PLANE.NO_PROGRESS_COUNTER, :, :] = board.halfmove_clock
+        # Half-move clock
+        board_numpy[Encoding.PLANE.HALF_MOVE_CLOCK, :, :] = board.halfmove_clock
+
+        # Full move number
+        board_numpy[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
+
+
 
         ###############################################################################
         #   Return the board tensor
         #
         board_tensor = torch.tensor(board_numpy, dtype=Encoding.BOARD_DTYPE)
+
+        
+
         return board_tensor
 
     @staticmethod
@@ -146,19 +152,18 @@ class Encoding:
         # set fullmove number
         board.fullmove_number = int(board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, 0, 0].item())
         # set castling rights
-        # TMP: disable castling rights for now
-        board.set_castling_fen("-")
-        # FIXME this seems fragile ... check this out
-        # if board_tensor[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
-        #     if board.turn == chess.WHITE:
-        #         board.castling_rights |= chess.BB_H1
-        #     else:
-        #         board.castling_rights |= chess.BB_A8
-        # if board_tensor[15, 0, 0].item():
-        #     if board.turn == chess.WHITE:
-        #         board.castling_rights |= chess.BB_A1
-        #     else:
-        #         board.castling_rights |= chess.BB_H8
+        castling_fen = ""
+        if board_tensor[Encoding.PLANE.WHITE_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+            castling_fen += "K"
+        if board_tensor[Encoding.PLANE.WHITE_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
+            castling_fen += "Q"
+        if board_tensor[Encoding.PLANE.BLACK_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+            castling_fen += "k"
+        if board_tensor[Encoding.PLANE.BLACK_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
+            castling_fen += "q"
+        if castling_fen == "":
+            castling_fen = "-"
+        board.set_castling_fen(castling_fen)
         # set halfmove clock
         board.halfmove_clock = int(board_tensor[19, 0, 0].item())
 
@@ -226,7 +231,7 @@ class Encoding:
         return move_uci
 
     @staticmethod
-    def moves_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
+    def move_uci_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
         class2uci = Uci2ClassUtils.get_class2uci(color)
         class_index = int(moves_tensor.item())
         move_uci = class2uci[class_index]

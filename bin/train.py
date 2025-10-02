@@ -11,17 +11,17 @@ from src.train import TrainCommand
 #
 if __name__ == "__main__":
     # Parse command line arguments
-    parser = argparse.ArgumentParser(
+    argParser = argparse.ArgumentParser(
         description="Train a chess model using PyTorch.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--num_epochs", type=int, default=100, help="Number of training epochs")
-    parser.add_argument("--batch_size", "-bs", type=int, default=2048, help="Batch size for training")
-    parser.add_argument("--train_test_split_ratio", "-ts", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
-    parser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")
-    parser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
-    args = parser.parse_args()
+    argParser.add_argument("--num_epochs", type=int, default=100, help="Number of training epochs")
+    argParser.add_argument("--batch_size", "-bs", type=int, default=2048, help="Batch size for training")
+    argParser.add_argument("--train_test_split_ratio", "-ts", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
+    argParser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
+    argParser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")
+    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
+    args = argParser.parse_args()
 
     if args.debug:
         print(f"Arguments: {args}")

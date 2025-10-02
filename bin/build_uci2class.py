@@ -6,6 +6,7 @@ import json
 
 # pip imports
 import chess
+import argparse
 
 # local imports
 from src.libs.chess_extra import ChessExtra
@@ -13,7 +14,13 @@ from src.libs.chess_extra import ChessExtra
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.abspath(os.path.join(__dirname__, "..", "data"))
 
+###############################################################################
+#   Main entry point
+#
 if __name__ == "__main__":
+    argParser = argparse.ArgumentParser(description="Build UCI to class index mappings for white and black pieces.")
+    args = argParser.parse_args()
+
     all_moves_uci = ChessExtra.all_unique_moves()
 
     # sort the moves
