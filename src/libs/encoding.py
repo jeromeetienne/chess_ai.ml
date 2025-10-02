@@ -41,7 +41,7 @@ class Encoding:
         OPPONENT_KINGSIDE_CASTLING_RIGHTS = 17
         OPPONENT_QUEENSIDE_CASTLING_RIGHTS = 18
 
-        HALF_MOVE_CLOCK = 19
+        HALFMOVE_CLOCK = 19
         FULLMOVE_NUMBER = 20
 
         # Total planes
@@ -95,7 +95,7 @@ class Encoding:
         board_numpy[Encoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(opponent_color)
 
         # Half-move clock
-        board_numpy[Encoding.PLANE.HALF_MOVE_CLOCK, :, :] = board.halfmove_clock
+        board_numpy[Encoding.PLANE.HALFMOVE_CLOCK, :, :] = board.halfmove_clock
 
         # Full move number
         board_numpy[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
@@ -182,7 +182,7 @@ class Encoding:
             castling_fen = "-"
         board.set_castling_fen(castling_fen)
         # set halfmove clock
-        board.halfmove_clock = int(board_tensor[19, 0, 0].item())
+        board.halfmove_clock = int(board_tensor[Encoding.PLANE.HALFMOVE_CLOCK, 0, 0].item())
 
         assert board.is_valid(), "Reconstructed board is not valid"
 
