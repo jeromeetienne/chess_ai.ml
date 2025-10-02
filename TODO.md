@@ -1,4 +1,11 @@
 # TODO
+- use this pgn... it has the position from stockfish and its evaluation
+  - https://huggingface.co/datasets/official-stockfish/fishtest_pgns
+  - large files. split them
+  - read it thru the usual build_dataset.py
+  - do a special `build_evals.py` for it
+  - `build_evals_stockfish.py`
+  - `build_evals_pgn.py`
 - in the model, 
   - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - https://gemini.google.com/app/cdfdec954e81eaff
   - add a dropout layer only after fully connected layer
