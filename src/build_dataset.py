@@ -57,12 +57,10 @@ class DatasetBuilderCommand:
             boards_file_path = os.path.join(tensors_folder_path, f"{basename}_boards_tensor.pt")
             moves_file_path = os.path.join(tensors_folder_path, f"{basename}_moves_tensor.pt")
 
-
             # Skip if files already exist
             if os.path.exists(boards_file_path) and os.path.exists(moves_file_path):
                 print(f"{basename}.pgn already got a boards and moves tensor files, skipping.")
                 continue
-
 
             time_start = time.perf_counter()
 

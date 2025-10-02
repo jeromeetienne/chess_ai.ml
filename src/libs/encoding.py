@@ -67,9 +67,9 @@ class Encoding:
         # Populate first 12 8x8 boards (where pieces are)
         for square, piece in board.piece_map().items():
             rank, file = divmod(square, 8)
-            if piece.color == chess.BLACK:
-                rank = 7 - rank
-                file = 7 - file
+            # flip rank and file if black to move
+            rank = rank if active_color == chess.WHITE else 7 - rank
+            file = file if active_color == chess.WHITE else 7 - file
             piece_color = 0 if piece.color == active_color else 6
             piece_type = piece.piece_type - 1
             board_numpy[piece_color + piece_type, rank, file] = 1
@@ -138,6 +138,9 @@ class Encoding:
 
                     # piece_count = 6 for unique pieces (P, N, B, R, Q, K)
                     piece_count = len(chess.PIECE_TYPES)
+                    # flip rank and file if black to move
+                    rank = rank if active_color == chess.WHITE else 7 - rank
+                    file = file if active_color == chess.WHITE else 7 - file
                     # compute square
                     square = chess.square(file, rank)
                     # compute piece color
@@ -185,7 +188,7 @@ class Encoding:
             castling_fen = "-"
         board.set_castling_fen(castling_fen)
         # set halfmove clock
-        board.halfmove_clock = int(board_tensor[19, 0, 0].item())
+        board.halfmove_clock = int(board_tensor[Encoding.PLANE.HALF_MOVE_CLOCK, 0, 0].item())
 
         assert board.is_valid(), "Reconstructed board is not valid"
 
@@ -279,14 +282,17 @@ if __name__ == "__main__":
     #
     board = chess.Board()
     board.push(chess.Move.from_uci("e2e4"))
-    move = chess.Move.from_uci("h7h6")
+    board.push(chess.Move.from_uci("d7d5"))
+    move = chess.Move.from_uci("h2h4")
     print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
 
     board_tensor = Encoding.board_to_tensor(board)
     move_tensor = Encoding.move_to_tensor(move.uci(), board.turn)
 
+    print(f'move_tensor: {move_tensor}')
 
     reconstructed_board = Encoding.board_from_tensor(board_tensor)
     reconstructed_move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
     reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
+
     print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}\n{reconstructed_board}")

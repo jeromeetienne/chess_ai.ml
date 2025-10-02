@@ -164,7 +164,6 @@ class DatasetUtils:
                 # push the move to the board
                 board.push(move)
 
-
                 # skip if the position is in the opening book
                 if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
                     continue
