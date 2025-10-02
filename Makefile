@@ -7,6 +7,8 @@ clean_output: ## clean output directory
 clean_pgn_tensors: ## clean pgn tensors
 	rm -f ./data/pgn_tensors/*
 
+clean: clean_output clean_pgn_tensors ## clean all generated files
+
 check_dataset: ## check dataset integrity
 	./bin/check_dataset.py
 
