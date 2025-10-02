@@ -34,9 +34,6 @@ class DatasetBuilderCommand:
         #
         pgn_file_paths = PGNUtils.get_pgn_paths()
 
-        # sort files alphabetically to ensure consistent order
-        pgn_file_paths.sort()
-
         # truncate file_pgn_paths to max_files_count
         if max_files_count > 0:
             pgn_file_paths = pgn_file_paths[:max_files_count]

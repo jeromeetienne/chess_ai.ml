@@ -9,16 +9,16 @@ clean_pgn_tensors: ## clean pgn tensors
 
 clean: clean_output clean_pgn_tensors ## clean all generated files
 
-check_dataset: ## check dataset integrity
-	./bin/check_dataset.py
 
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py
 
-full_pipeline: clean build_dataset train play ## run the full pipeline
+full_pipeline: clean build_dataset check_dataset train play ## run the full pipeline
 
 .PHONY: help clean build_dataset train play full_pipeline
 
+check_dataset: ## check dataset integrity
+	./bin/check_dataset.py -fc 2
 
 build_dataset: ## build the dataset
 	./bin/build_dataset.py
