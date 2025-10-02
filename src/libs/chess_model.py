@@ -53,10 +53,10 @@ class ChessModelConv2d(nn.Module):
         # conv2_out_channels = 32
         # fc_intermediate_size = 256
 
-        dropoutProbability = 0.0
-        conv1_out_channels = 8
-        conv2_out_channels = 16
-        fc_intermediate_size = 256
+        # dropoutProbability = 0.0
+        # conv1_out_channels = 8
+        # conv2_out_channels = 16
+        # fc_intermediate_size = 256
 
         self.conv_layers = nn.Sequential(
             nn.Conv2d(input_channels, conv1_out_channels, kernel_size=3, padding=1),
@@ -123,7 +123,7 @@ class ChessModelResNet_ResidualBlock(nn.Module):
 
     def forward(self, x):
         # Store the original input for the skip connection
-        residual = x
+        identity = x
 
         # First convolutional layer
         out = self.conv1(x)
@@ -135,7 +135,7 @@ class ChessModelResNet_ResidualBlock(nn.Module):
         out = self.bn2(out)
 
         # Add the residual (skip connection)
-        out += residual
+        out += identity
         out = F.relu(out)
 
         return out
@@ -152,54 +152,64 @@ class ChessModelResNet(nn.Module):
 
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
-        resblock_count = 8
-        resblock_channels = 64
-        # resblock_channels = 128
-        fc_intermediate_size = 512
-        dropoutProbability = 0.2
+        fc_intermediate_size = 256
 
         super().__init__()
 
-        # Input convolution (expand feature space)
-        self.input_conv = nn.Sequential(
-            # layer
-            nn.Conv2d(input_channels, resblock_channels, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(resblock_channels),
+        # Residual tower
+        self.res_blocks1 = nn.Sequential(
+            nn.Conv2d(input_channels, 64, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
+            ChessModelResNet_ResidualBlock(64),
+            ChessModelResNet_ResidualBlock(64),
         )
 
         # Residual tower
-        self.res_blocks = nn.Sequential(
-            # Add multiple residual blocks
-            *[ChessModelResNet_ResidualBlock(resblock_channels) for _ in range(resblock_count)],
-            # a final conv layer to reduce channels before the classifier
-            nn.Conv2d(resblock_channels, 64, kernel_size=1, bias=False),
-            nn.BatchNorm2d(64),
+        self.res_blocks2 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
+            ChessModelResNet_ResidualBlock(128),
+            ChessModelResNet_ResidualBlock(128),
         )
+        # # Residual tower
+        # self.res_blocks3 = nn.Sequential(
+        #     nn.Conv2d(128, 256, kernel_size=3, padding=1, bias=False),
+        #     nn.BatchNorm2d(256),
+        #     nn.ReLU(),
+        #     ChessModelResNet_ResidualBlock(256),
+        #     ChessModelResNet_ResidualBlock(256),
+        # )
 
         # classifier
-        self.fc = nn.Sequential(
+        self.classifier = nn.Sequential(
+            # fully connected layers
             nn.Flatten(),
-            nn.Linear(64 * 8 * 8, fc_intermediate_size),
+            nn.Linear(128 * 8 * 8, fc_intermediate_size),
             nn.ReLU(),
-            nn.Dropout(dropoutProbability),
+            # nn.Dropout(0.2),
             # Final classifier layer
             nn.Linear(fc_intermediate_size, output_width),
         )
+
+        # self.classifier = nn.Sequential(
+        #       # Global average pooling + classifier
+        #     nn.AdaptiveAvgPool2d((1, 1)),
+        #     nn.Flatten(),
+        #     nn.Linear(64, output_width)
+        # )
 
     def forward(self, x):
         # x: (batch, 21, 8, 8)
         x = x.to(torch.float32)
 
-        # Initial processing
-        x = self.input_conv(x)
-
-        # Pass through residual blocks
-        x = self.res_blocks(x)
+        x = self.res_blocks1(x)
+        x = self.res_blocks2(x)
+        # x = self.res_blocks3(x)
 
         # Final classification layer
-        x = self.fc(x)
+        x = self.classifier(x)
         return x
 
 
@@ -208,6 +218,6 @@ class ChessModelResNet(nn.Module):
 # 	 ChessModel class that wraps the original ChessModel
 ###############################################################################
 ###############################################################################
-class ChessModel(ChessModelConv2d):
+class ChessModel(ChessModelResNet):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
         super(ChessModel, self).__init__(input_shape, output_shape)
