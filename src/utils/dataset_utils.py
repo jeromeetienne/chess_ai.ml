@@ -9,10 +9,10 @@ import chess.polyglot
 from tqdm import tqdm
 
 # local imports
-from ..libs.chess_extra import ChessExtra
-from ..libs.encoding import Encoding
-from .uci2class_utils import Uci2ClassUtils
-from .pgn_utils import PGNUtils
+from src.libs.chess_extra import ChessExtra
+from src.libs.encoding import Encoding
+from src.utils.uci2class_utils import Uci2ClassUtils
+from src.utils.pgn_utils import PGNUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
@@ -234,3 +234,27 @@ class DatasetUtils:
 
 
         return difference_count
+
+if __name__ == "__main__":
+    ###############################################################################
+    #   Example usage
+    #
+    board = chess.Board()
+    board.push(chess.Move.from_uci("e2e4"))
+    # board.push(chess.Move.from_uci("d7d5"))
+    # move = chess.Move.from_uci("h2h4")
+
+    move = chess.Move.from_uci("d7d5")
+
+    print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
+
+    board_tensor = Encoding.board_to_tensor(board)
+    move_tensor = Encoding.move_to_tensor(move.uci(), board.turn)
+
+    print(f'move_tensor: {move_tensor}')
+
+    reconstructed_board = Encoding.board_from_tensor(board_tensor)
+    reconstructed_move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
+    reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
+
+    print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}\n{reconstructed_board}")
