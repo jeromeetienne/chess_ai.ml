@@ -66,10 +66,14 @@ class Encoding:
 
         # Populate first 12 8x8 boards (where pieces are)
         for square, piece in board.piece_map().items():
-            row, col = divmod(square, 8)
-            piece_color = 0 if piece.color == board.turn else 6
+            rank, file = divmod(square, 8)
+            # flip rank and file if black to move
+            rank = rank if active_color == chess.WHITE else 7 - rank
+            file = file if active_color == chess.WHITE else 7 - file
+
+            piece_color = 0 if piece.color == active_color else 6
             piece_type = piece.piece_type - 1
-            board_numpy[piece_color + piece_type, row, col] = 1
+            board_numpy[piece_color + piece_type, rank, file] = 1
 
         ###############################################################################
         #   Repetition planes
@@ -135,8 +139,8 @@ class Encoding:
 
                     # piece_count = 6 for unique pieces (P, N, B, R, Q, K)
                     piece_count = len(chess.PIECE_TYPES)
-                    # compute square
-                    square = chess.square(file, rank)
+                    # compute square - flip file and rank if black to move
+                    square = chess.square(file, rank) if active_color == chess.WHITE else chess.square(7 - file, 7 - rank)
                     # compute piece color
                     piece_color = active_color if board_idx < piece_count else opponent_color
 
@@ -188,23 +192,23 @@ class Encoding:
 
         return board
 
-    @staticmethod
-    def board_tensor_flip(board_tensor: torch.Tensor, in_place: bool = False) -> torch.Tensor:
-        """
-        Flip the board tensor to switch perspective between white and black.
-        This involves rotating the piece planes and swapping the piece colors.
-        """
+    # @staticmethod
+    # def board_tensor_flip(board_tensor: torch.Tensor, in_place: bool = False) -> torch.Tensor:
+    #     """
+    #     Flip the board tensor to switch perspective between white and black.
+    #     This involves rotating the piece planes and swapping the piece colors.
+    #     """
 
-        assert board_tensor.shape == Encoding.INPUT_SHAPE, f"board_tensor shape must be {Encoding.INPUT_SHAPE}, got {board_tensor.shape}"
+    #     assert board_tensor.shape == Encoding.INPUT_SHAPE, f"board_tensor shape must be {Encoding.INPUT_SHAPE}, got {board_tensor.shape}"
 
-        # Rotate all planes by 180 degrees
-        rotated_tensor = torch.flip(input=board_tensor, dims=[1, 2])
+    #     # Rotate all planes by 180 degrees
+    #     rotated_tensor = torch.flip(input=board_tensor, dims=[1, 2])
 
-        if in_place == False:
-            return rotated_tensor
+    #     if in_place == False:
+    #         return rotated_tensor
 
-        board_tensor.copy_(rotated_tensor)
-        return board_tensor
+    #     board_tensor.copy_(rotated_tensor)
+    #     return board_tensor
 
     # @staticmethod
     # def move_to_tensor(move_uci: str, uci_to_classindex: dict[str, int]) -> torch.Tensor:
@@ -230,22 +234,22 @@ class Encoding:
 
     # @staticmethod
     # def move_from_tensor(move_tensor: torch.Tensor, classindex_to_uci: dict[int, str]) -> str:
-        """
-        Converts a scalar move tensor representing a class index into its corresponding UCI move string.
-        Args:
-            move_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
-            classindex_to_uci (dict[int, str]): A mapping from class indices to UCI move strings.
-        Returns:
-            str: The UCI string representation of the move.
-        Raises:
-            AssertionError: If the input tensor shape is not scalar or if the encoding input shape is not as expected.
-        """
+        # """
+        # Converts a scalar move tensor representing a class index into its corresponding UCI move string.
+        # Args:
+        #     move_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
+        #     classindex_to_uci (dict[int, str]): A mapping from class indices to UCI move strings.
+        # Returns:
+        #     str: The UCI string representation of the move.
+        # Raises:
+        #     AssertionError: If the input tensor shape is not scalar or if the encoding input shape is not as expected.
+        # """
 
-        assert Encoding.INPUT_SHAPE[0] == 16, "not updated to new encoding"
+        # assert Encoding.INPUT_SHAPE[0] == 16, "not updated to new encoding"
 
-        assert move_tensor.shape == (), f"move_tensor shape must be (), got {move_tensor.shape}"
-        move_uci = classindex_to_uci[int(move_tensor.item())]
-        return move_uci
+        # assert move_tensor.shape == (), f"move_tensor shape must be (), got {move_tensor.shape}"
+        # move_uci = classindex_to_uci[int(move_tensor.item())]
+        # return move_uci
 
     @staticmethod
     def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
@@ -275,8 +279,14 @@ if __name__ == "__main__":
     #   Example usage
     #
     board = chess.Board()
+    # board.push(chess.Move.from_uci("e2e4"))
+    # move = chess.Move.from_uci("h7h6")
+
     board.push(chess.Move.from_uci("e2e4"))
-    move = chess.Move.from_uci("h7h6")
+    board.push(chess.Move.from_uci("c7c6"))
+    move = chess.Move.from_uci("a2a3")
+
+
     print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
 
     board_tensor = Encoding.board_to_tensor(board)
@@ -286,4 +296,5 @@ if __name__ == "__main__":
     reconstructed_board = Encoding.board_from_tensor(board_tensor)
     reconstructed_move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
     reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
-    print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}\n{reconstructed_board}")
+    print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}")
+    print(reconstructed_board)

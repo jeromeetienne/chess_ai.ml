@@ -185,6 +185,8 @@ class DatasetUtils:
         difference_count = 0
         for i in range(boards_tensor.shape[0]):
             pgn_board = pgn_boards[i]
+
+            # encode the board
             tensor_board = Encoding.board_from_tensor(boards_tensor[i])
 
             # Check if the board positions are equal using FEN
@@ -196,10 +198,12 @@ class DatasetUtils:
                     print(f"pgn_board.fen()   = {pgn_board.fen()}")
                     print(f"tensor_board.fen()= {tensor_board.fen()}")
 
+            # encode the move
             pgn_move = pgn_moves[i]
             move_uci = Encoding.move_from_tensor(moves_tensor[i], tensor_board.turn)
             tensor_move = chess.Move.from_uci(move_uci)
 
+            # Check if the moves are equal
             if pgn_move != tensor_move:
                 difference_count += 1
                 if verbose:
@@ -219,10 +223,10 @@ if __name__ == "__main__":
     #
     board = chess.Board()
     board.push(chess.Move.from_uci("e2e4"))
-    # board.push(chess.Move.from_uci("d7d5"))
-    # move = chess.Move.from_uci("h2h4")
+    # board.push(chess.Move.from_uci("a7a5"))
+    # move = chess.Move.from_uci("c2c4")
 
-    move = chess.Move.from_uci("d7d5")
+    move = chess.Move.from_uci("h7h5")
 
     print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
 
@@ -235,4 +239,5 @@ if __name__ == "__main__":
     reconstructed_move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
     reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
 
-    print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}\n{reconstructed_board}")
+    print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}")
+    print(reconstructed_board)

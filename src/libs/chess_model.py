@@ -41,12 +41,15 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
+        # dropoutProbability = 0.2
+        # conv1_out_channels = 64
+        # conv2_out_channels = 128
+        # fc_intermediate_size = 1024
+
         dropoutProbability = 0.2
-        conv1_out_channels = 64
-        conv2_out_channels = 128
-        # conv3_out_channels = 128
-        # conv4_out_channels = 128
-        fc_intermediate_size = 1024
+        conv1_out_channels = 32
+        conv2_out_channels = 64
+        fc_intermediate_size = 256
 
         # dropoutProbability = 0.2
         # conv1_out_channels = 16
@@ -66,15 +69,6 @@ class ChessModelConv2d(nn.Module):
             nn.Conv2d(conv1_out_channels, conv2_out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(conv2_out_channels),
             nn.ReLU(),
-            # nn.Dropout2d(dropoutProbability),
-            # nn.Conv2d(conv2_out_channels, conv3_out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(conv3_out_channels),
-            # nn.ReLU(),
-            # # nn.Dropout2d(dropoutProbability),
-            # nn.Conv2d(conv3_out_channels, conv4_out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(conv4_out_channels),
-            # nn.ReLU(),
-            # # nn.Dropout2d(dropoutProbability),
         )
 
         # self.gap_2d = nn.AdaptiveAvgPool2d(output_size=(4, 4))
@@ -158,35 +152,37 @@ class ChessModelResNet(nn.Module):
 
         # Residual tower
         self.res_blocks1 = nn.Sequential(
-            nn.Conv2d(input_channels, 64, kernel_size=3, padding=1, bias=False),
+            nn.Conv2d(input_channels, 32, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            ChessModelResNet_ResidualBlock(32),
+            ChessModelResNet_ResidualBlock(32),
+        )
+
+        # Residual tower
+        self.res_blocks2 = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(),
             ChessModelResNet_ResidualBlock(64),
             ChessModelResNet_ResidualBlock(64),
         )
 
-        # Residual tower
-        self.res_blocks2 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            ChessModelResNet_ResidualBlock(128),
-            ChessModelResNet_ResidualBlock(128),
-        )
-        # # Residual tower
-        # self.res_blocks3 = nn.Sequential(
-        #     nn.Conv2d(128, 256, kernel_size=3, padding=1, bias=False),
-        #     nn.BatchNorm2d(256),
+        # classifier
+        # self.classifier = nn.Sequential(
+        #     nn.Conv2d(64, 2, kernel_size=3, padding=1, bias=False),
+        #     nn.BatchNorm2d(2),
         #     nn.ReLU(),
-        #     ChessModelResNet_ResidualBlock(256),
-        #     ChessModelResNet_ResidualBlock(256),
+        #     # fully connected layers
+        #     nn.Flatten(),
+        #     nn.Linear(2 * 8 * 8, output_width),
+        #     # nn.Dropout(0.2),
         # )
-
         # classifier
         self.classifier = nn.Sequential(
             # fully connected layers
             nn.Flatten(),
-            nn.Linear(128 * 8 * 8, fc_intermediate_size),
+            nn.Linear(64 * 8 * 8, fc_intermediate_size),
             nn.ReLU(),
             # nn.Dropout(0.2),
             # Final classifier layer
