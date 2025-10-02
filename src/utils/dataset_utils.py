@@ -86,6 +86,32 @@ class DatasetUtils:
         return boards_tensor, moves_tensor
 
     @staticmethod
+    def split_game_to_board_move(games: list[chess.pgn.Game], polyglot_reader: chess.polyglot.MemoryMappedReader | None) -> tuple[list[chess.Board], list[chess.Move]]:
+        boards: list[chess.Board] = []
+        moves: list[chess.Move] = []
+        for game in games:
+            board = chess.Board()
+            for move in game.mainline_moves():
+                # backup the board before playing the move
+                board_before = board.copy()
+
+                # push the move to the board
+                board.push(move)
+
+                # skip if the position is in the opening book
+                if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
+                    continue
+
+                # append the board in pgn_boards
+                boards.append(board_before)
+
+                # append the move in pgn_moves
+                move_copy = chess.Move(move.from_square, move.to_square, promotion=move.promotion)
+                moves.append(move_copy)
+
+        return boards, moves
+
+    @staticmethod
     def games_to_tensor(
         games: list[chess.pgn.Game],
         polyglot_reader: chess.polyglot.MemoryMappedReader | None = None,
@@ -105,75 +131,27 @@ class DatasetUtils:
         and collects the best move in UCI format. It then creates a mapping from unique UCI moves to class indices,
         encodes the moves as class indices, and returns the board tensors, move tensors, and the mapping.
         """
-        ###############################################################################
-        #   Count total positions - needed to preallocate the tensors
-        #
-        position_max_count = 0
-        for game in games:
-            game_move_count = len(list(game.mainline_moves()))
-            position_max_count += game_move_count
+        
+        # split the games into boards and moves
+        boards, moves = DatasetUtils.split_game_to_board_move(games, polyglot_reader)
 
-        ###############################################################################
-        #   Encode boards and moves
-        #
 
-        boards_tensor = torch.zeros((position_max_count, *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
-        moves_tensor = torch.zeros((position_max_count,), dtype=Encoding.MOVE_DTYPE)
-        position_index = 0
-        for game in games:
-            board = game.board()
-            for move in game.mainline_moves():
-                # Play this move on the board to get to the next position
-                board.push(move)
+        # create tensors to hold the boards and moves
+        boards_tensor = torch.zeros((len(boards), *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
+        moves_tensor = torch.zeros((len(boards),), dtype=Encoding.MOVE_DTYPE)
 
-                # skip positions that are in the opening book
-                if polyglot_reader is not None and ChessExtra.is_in_opening_book(board, polyglot_reader):
-                    continue
-
+        # iterate through all positions and encode them
+        for position_index, (board, move) in enumerate(zip(boards, moves)):
                 # encode the current board position
                 board_tensor = Encoding.board_to_tensor(board)
                 boards_tensor[position_index] = board_tensor
 
                 # encode the best move in UCI format
-                uci2class = Uci2ClassUtils.get_uci2class(board.turn)
-                moves_tensor[position_index] = uci2class[move.uci()]
+                moves_tensor[position_index] = Encoding.move_to_tensor(move.uci(), board.turn)
 
-                # Update the board index
-                position_index += 1
-
-        # truncate boards_tensor to the actual number of positions encoded
-        boards_tensor = boards_tensor[:position_index, :, :, :]
-        moves_tensor = moves_tensor[:position_index]
 
         # return the boards, moves and the mapping
         return boards_tensor, moves_tensor
-
-    @staticmethod
-    def split_game_to_board_move(games: list[chess.pgn.Game], polyglot_reader: chess.polyglot.MemoryMappedReader | None) -> tuple[list[chess.Board], list[chess.Move]]:
-        boards: list[chess.Board] = []
-        moves: list[chess.Move] = []
-        for game in games:
-            board = chess.Board()
-            for move in game.mainline_moves():
-                # backup the board before playing the move
-                board_before = board.copy()
-
-                # push the move to the board
-                board.push(move)
-
-
-                # skip if the position is in the opening book
-                if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
-                    continue
-
-                # append the board in pgn_boards
-                boards.append(board_before)
-
-                # append the move in pgn_moves
-                move_copy = chess.Move(move.from_square, move.to_square, promotion=move.promotion)
-                moves.append(move_copy)
-
-        return boards, moves
 
     @staticmethod
     def check_tensor_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader | None, verbose: bool = False) -> int:
