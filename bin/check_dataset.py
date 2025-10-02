@@ -24,6 +24,7 @@ tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 #
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser(description="Check the integrity of the dataset by comparing PGN files to their tensor representations.")
+    argParser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output.")
     args = argParser.parse_args()
 
     # Load polyglot opening book
@@ -34,7 +35,7 @@ if __name__ == "__main__":
     #   Check all PGN files against their tensor representations
     #
     for pgn_path in PGNUtils.get_pgn_paths():
-        difference_count = DatasetUtils.check_tensor_from_pgn(pgn_path, polyglot_reader, verbose=True)
+        difference_count = DatasetUtils.check_tensor_from_pgn(pgn_path, polyglot_reader, verbose=args.verbose)
         if difference_count == 0:
             print(f"No differences found for {os.path.basename(pgn_path)}")
         else:

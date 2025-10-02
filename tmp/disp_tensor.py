@@ -1,5 +1,6 @@
 # stdlib imports
 import os
+import sys
 
 # pip imports
 import chess
@@ -9,6 +10,7 @@ import chess.polyglot
 # local imports
 from src.utils.pgn_utils import PGNUtils
 from src.libs.chess_extra import ChessExtra
+from src.libs.encoding import Encoding
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -17,6 +19,18 @@ tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 
 
 if __name__ == "__main__":
+
+    # board = chess.Board('Qn2kb1r/4p1pp/p4p2/6N1/8/2q5/P1P2PPP/R1B1K2R w KQk - 0 16')
+    # board_tensor = Encoding.board_to_tensor(board)
+    # print(board)
+    # print('-'*40)
+    # board_reconstructed = Encoding.board_from_tensor(board_tensor)
+    # print(board_reconstructed)
+
+    # sys.exit(0)
+
+
+
     # Load polyglot opening book
     polyglot_path = os.path.join(data_folder_path, "polyglot/lichess_pro_books/lpb-allbook.bin")
     polyglot_reader = chess.polyglot.open_reader(polyglot_path)

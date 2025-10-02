@@ -1,4 +1,8 @@
 # TODO
+- in the model, 
+  - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - https://gemini.google.com/app/cdfdec954e81eaff
+  - add a dropout layer only after fully connected layer
+  - code model with self.fc_layers = nn.Sequential() pattern https://chatgpt.com/c/68de57d9-67f0-832b-aebb-c8d110effe48
 - change the encoding to be always from the point of view of the side to play
   - active side vs opponent side
 - DONE check_dataset: go thru all the board in the dataset and check it is equal to the pgn

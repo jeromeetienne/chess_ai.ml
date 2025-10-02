@@ -58,6 +58,8 @@ class ChessModelConv2d(nn.Module):
         self.bn_2 = nn.BatchNorm2d(conv2_out_channels)
         self.dropout2d_2 = nn.Dropout2d(dropoutProbability)
 
+        
+
         self.flatten = nn.Flatten()
         self.leaky_relu = nn.LeakyReLU()
 
@@ -75,7 +77,7 @@ class ChessModelConv2d(nn.Module):
         
 
     def forward(self, x):
-        # x shape: (batch_size, 16, 8, 8)
+        # x shape: (batch_size, 21, 8, 8)
         x = x.to(torch.float32)
 
         x = self.conv_1(x)

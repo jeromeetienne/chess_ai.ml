@@ -159,7 +159,7 @@ class DatasetUtils:
         ###############################################################################
         #   convert the pgn games in boards and moves, skipping the opening book positions
 
-        print(f'Parsing {pgn_basename} - {len(boards_tensor)} positions')
+        print(f'Parsing {pgn_basename} - {str(len(boards_tensor)).rjust(5)} positions')
 
         # parse the pgn file
         pgn_games = PGNUtils.parse_pgn_file(pgn_path)
@@ -188,7 +188,7 @@ class DatasetUtils:
         assert len(pgn_moves) == len(moves_tensor), f"len(pgn_moves)={len(pgn_moves)} != len(moves_tensor)={len(moves_tensor)}"
 
         if verbose:
-            print(f"Comparing {len(pgn_boards)} positions between tensors and PGN")
+            print(f"Comparing {str(len(pgn_boards)).rjust(5)} positions between tensors and PGN")
 
         # convert boards_tensor and moves_tensor to chess.Board and chess.Move
         difference_count = 0

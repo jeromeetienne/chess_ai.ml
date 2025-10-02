@@ -20,7 +20,7 @@ if __name__ == "__main__":
     argParser.add_argument("--train_test_split_ratio", "-ts", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
     argParser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
     argParser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")
-    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument("--max-files-count", "-fc", type=int, default=20, help="Maximum number of PGN files to process. 0 for no limit.")
     args = argParser.parse_args()
 
     if args.debug:
