@@ -66,10 +66,13 @@ class Encoding:
 
         # Populate first 12 8x8 boards (where pieces are)
         for square, piece in board.piece_map().items():
-            row, col = divmod(square, 8)
-            piece_color = 0 if piece.color == board.turn else 6
+            rank, file = divmod(square, 8)
+            if piece.color == chess.BLACK:
+                rank = 7 - rank
+                file = 7 - file
+            piece_color = 0 if piece.color == active_color else 6
             piece_type = piece.piece_type - 1
-            board_numpy[piece_color + piece_type, row, col] = 1
+            board_numpy[piece_color + piece_type, rank, file] = 1
 
         ###############################################################################
         #   Repetition planes
@@ -84,11 +87,11 @@ class Encoding:
         #
 
         # Active player color
-        board_numpy[Encoding.PLANE.TURN, :, :] = int(board.turn)  # 1 for white, 0 for black
+        board_numpy[Encoding.PLANE.TURN, :, :] = int(active_color)  # 1 for white, 0 for black
 
         # White player castling rights
-        board_numpy[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(board.turn)
-        board_numpy[Encoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(board.turn)
+        board_numpy[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(active_color)
+        board_numpy[Encoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(active_color)
 
         # Black player castling rights
         board_numpy[Encoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(opponent_color)

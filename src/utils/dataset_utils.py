@@ -123,7 +123,10 @@ class DatasetUtils:
         for game in games:
             board = game.board()
             for move in game.mainline_moves():
-                # Play this move on the board to get to the next position
+                # backup the board before playing the move to 
+                board_before = board.copy()
+
+                # play this move
                 board.push(move)
 
                 # skip positions that are in the opening book
@@ -131,11 +134,11 @@ class DatasetUtils:
                     continue
 
                 # encode the current board position
-                board_tensor = Encoding.board_to_tensor(board)
+                board_tensor = Encoding.board_to_tensor(board_before)
                 boards_tensor[position_index] = board_tensor
 
                 # encode the best move in UCI format
-                uci2class = Uci2ClassUtils.get_uci2class(board.turn)
+                uci2class = Uci2ClassUtils.get_uci2class(board_before.turn)
                 moves_tensor[position_index] = uci2class[move.uci()]
 
                 # Update the board index
@@ -148,6 +151,32 @@ class DatasetUtils:
         # return the boards, moves and the mapping
         return boards_tensor, moves_tensor
 
+    @staticmethod
+    def split_game_to_board_move(games: list[chess.pgn.Game], polyglot_reader: chess.polyglot.MemoryMappedReader | None) -> tuple[list[chess.Board], list[chess.Move]]:
+        boards: list[chess.Board] = []
+        moves: list[chess.Move] = []
+        for game in games:
+            board = chess.Board()
+            for move in game.mainline_moves():
+                # backup the board before playing the move
+                board_before = board.copy()
+
+                # push the move to the board
+                board.push(move)
+
+
+                # skip if the position is in the opening book
+                if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
+                    continue
+
+                # append the board in pgn_boards
+                boards.append(board_before)
+
+                # append the move in pgn_moves
+                move_copy = chess.Move(move.from_square, move.to_square, promotion=move.promotion)
+                moves.append(move_copy)
+
+        return boards, moves
 
     @staticmethod
     def check_tensor_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader | None, verbose: bool = False) -> int:
@@ -164,21 +193,7 @@ class DatasetUtils:
         # parse the pgn file
         pgn_games = PGNUtils.parse_pgn_file(pgn_path)
 
-        # Go thru all the moves of the game, and store the board and move if the position is not in the opening book
-        pgn_boards: list[chess.Board] = []
-        pgn_moves: list[chess.Move] = []
-        for game in pgn_games:
-            board = chess.Board()
-            for move in game.mainline_moves():
-                board.push(move)
-                # skip if the position is in the opening book
-                if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
-                    continue
-                # append the board in pgn_boards
-                pgn_boards.append(board.copy())
-                # append the move in pgn_moves
-                move_copy = chess.Move(move.from_square, move.to_square, promotion=move.promotion)
-                pgn_moves.append(move_copy)
+        pgn_boards, pgn_moves = DatasetUtils.split_game_to_board_move(pgn_games, polyglot_reader)
 
         ###############################################################################
         #   Load the tensors for this pgn file
