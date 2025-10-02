@@ -40,3 +40,4 @@ if __name__ == "__main__":
         else:
             print(f"Found {difference_count} differences for {os.path.basename(pgn_path)}")
 
+

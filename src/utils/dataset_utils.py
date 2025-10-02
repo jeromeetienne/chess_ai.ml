@@ -153,7 +153,6 @@ class DatasetUtils:
     def check_tensor_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader | None, verbose: bool = False) -> int:
         pgn_basename = os.path.basename(pgn_path).replace(".pgn", "")
 
-
         print(f'Loading tensors for {pgn_basename}')
         boards_tensor, moves_tensor = DatasetUtils.load_dataset_tensor(tensor_folder_path, pgn_basename)
 

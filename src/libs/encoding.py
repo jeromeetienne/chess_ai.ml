@@ -97,8 +97,6 @@ class Encoding:
         # Full move number
         board_numpy[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
 
-
-
         ###############################################################################
         #   Return the board tensor
         #
