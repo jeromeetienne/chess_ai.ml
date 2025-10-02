@@ -229,7 +229,14 @@ class Encoding:
         return move_uci
 
     @staticmethod
-    def move_uci_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
+    def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
+        uci2class = Uci2ClassUtils.get_uci2class(color)
+        class_index = uci2class[move_uci]
+        move_tensor = torch.tensor(class_index, dtype=Encoding.MOVE_DTYPE)
+        return move_tensor
+
+    @staticmethod
+    def move_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
         class2uci = Uci2ClassUtils.get_class2uci(color)
         class_index = int(moves_tensor.item())
         move_uci = class2uci[class_index]

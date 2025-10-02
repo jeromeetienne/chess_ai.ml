@@ -1,5 +1,7 @@
 # TODO
-- check_dataset: go thru all the board in the dataset and check it is equal to the pgn
+- change the encoding to be always from the point of view of the side to play
+  - active side vs opponent side
+- DONE check_dataset: go thru all the board in the dataset and check it is equal to the pgn
   - compare fen by string
   - display evaluation too
   - allow to specify a game + move index - would help push it in chess.com

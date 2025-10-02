@@ -206,7 +206,7 @@ class DatasetUtils:
                     print(f"tensor_board.fen()= {tensor_board.fen()}")
 
             pgn_move = pgn_moves[i]
-            move_uci = Encoding.move_uci_from_tensor(moves_tensor[i], tensor_board.turn)
+            move_uci = Encoding.move_from_tensor(moves_tensor[i], tensor_board.turn)
             tensor_move = chess.Move.from_uci(move_uci)
 
             if pgn_move != tensor_move:
