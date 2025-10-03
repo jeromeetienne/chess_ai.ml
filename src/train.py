@@ -11,10 +11,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from torch.utils.data import TensorDataset
+
 import matplotlib.pyplot as plt
 
 # local imports
-from .libs.chess_dataset import ChessDataset
 from .libs.chess_model import ChessModel
 from .libs.early_stopper import EarlyStopper
 from .utils.dataset_utils import DatasetUtils
@@ -159,7 +160,7 @@ class TrainCommand:
         dataset_ratio_test = (1 - train_test_split_ratio) / 2
 
         # Create the datasets for training, validation and testing by splitting the original dataset
-        boards_dataset = ChessDataset(boards_tensor, moves_tensor)
+        boards_dataset = TensorDataset(boards_tensor, moves_tensor)
         train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(
             boards_dataset, [dataset_ratio_train, dataset_ratio_validation, dataset_ratio_test]
         )

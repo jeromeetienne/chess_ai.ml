@@ -6,6 +6,7 @@ from torch.utils.data import Dataset
 
 
 class ChessDataset(Dataset):
+    # TODO could be replaced by `TensorDataset` from torch.utils.data import TensorDataset
     def __init__(self, boards_tensor: torch.Tensor, moves_tensor: torch.Tensor):
         self.boards_tensor = boards_tensor
         self.moves_tensor = moves_tensor
