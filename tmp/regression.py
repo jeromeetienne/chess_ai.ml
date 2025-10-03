@@ -28,30 +28,30 @@ class RegressionModel(nn.Module):
         # Convolutional layers
         self.conv_layers = nn.Sequential(
             # Conv1: Input 21 channels, Output 16 channels. Kernel size 3x3.
-            nn.Conv2d(in_channels=21, out_channels=16, kernel_size=3, padding=1),
+            nn.Conv2d(in_channels=21, out_channels=64, kernel_size=3, padding=1),
             nn.ReLU(),
-            # # Max Pool: (8, 8) -> (4, 4)
-            # nn.MaxPool2d(kernel_size=2, stride=2),
 
-            # Conv2: Input 16 channels, Output 32 channels. Kernel size 3x3.
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
+            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
             nn.ReLU(),
-            # # Max Pool: (4, 4) -> (2, 2)
-            # nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
+            nn.ReLU(),
         )
 
         # Calculate the size of the flattened tensor after conv layers
-        # Input is (32 channels * 2 * 2 = 128 features)
-        self.flattened_size = 32 * 8*8  # C * H * W
+        # Input is (128 channels * 2 * 2 = 128 features)
+        self.flattened_size = 128 * 8*8  # C * H * W
 
         # Fully connected layers (for regression output)
         self.fc_layers = nn.Sequential(
-            nn.Linear(self.flattened_size, 64),
+            nn.Linear(self.flattened_size, 256),
             nn.ReLU(),
-            nn.Linear(64, 1)  # Output a single float
+            nn.Linear(256, 1)  # Output a single float
         )
 
     def forward(self, x):
+        x = x.to(torch.float32)
         # x shape: (batch_size, 21, 8, 8)
         x = self.conv_layers(x)
         # x shape: (batch_size, 32, 2, 2)
@@ -71,13 +71,13 @@ device = torch.accelerator.current_accelerator().type if torch.accelerator.is_av
 # Hyperparameters
 INPUT_SHAPE = (21, 8, 8)
 BATCH_SIZE = 64
-LEARNING_RATE = 0.0005
-NUM_EPOCHS = 1000
-DATA_SIZE = 10_000
+LEARNING_RATE = 0.001
+NUM_EPOCHS = 300
+DATA_SIZE = 100
 
 from src.utils.dataset_utils import DatasetUtils
 
-torch.manual_seed(42)
+# torch.manual_seed(42)
 
 basename_prefix = '5b07b25e0ebc5914abc12c6d.split_01_of_66'
 boards_tensor, moves_tensor = DatasetUtils.load_dataset_tensor(tensors_folder_path, f'{basename_prefix}')
@@ -85,10 +85,12 @@ boards_tensor, moves_tensor = DatasetUtils.load_dataset_tensor(tensors_folder_pa
 eval_path = os.path.join(tensors_folder_path, f'{basename_prefix}{DatasetUtils.FILE_SUFFIX.EVALS}')
 evals_tensor = torch.load(eval_path)
 
+evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
+
 # downsample for quicker testing
-# boards_tensor = boards_tensor[:DATA_SIZE]
-# moves_tensor = moves_tensor[:DATA_SIZE]
-# evals_tensor = evals_tensor[:DATA_SIZE]
+boards_tensor = boards_tensor[:DATA_SIZE]
+moves_tensor = moves_tensor[:DATA_SIZE]
+evals_tensor = evals_tensor[:DATA_SIZE]
 
 print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))
 print(f'Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}')
@@ -96,8 +98,8 @@ print(f'Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}')
 # 1.1 Create dummy data
 # Input: (DATA_SIZE, 21, 8, 8)
 # Output: (DATA_SIZE, 1)
-boards_tensor = torch.randn(DATA_SIZE, *INPUT_SHAPE, dtype=torch.float32)
-evals_tensor = torch.randn(DATA_SIZE, 1, dtype=torch.float32)
+# boards_tensor = torch.randn(DATA_SIZE, *INPUT_SHAPE, dtype=torch.float32)
+# evals_tensor = torch.randn(DATA_SIZE, 1, dtype=torch.float32)
 
 # Create Dataset and DataLoader
 dataset = TensorDataset(boards_tensor, evals_tensor)
@@ -115,7 +117,7 @@ optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 # Add a learning rate scheduler to reduce LR over time
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5, threshold=0.05)
 
-early_stopper = EarlyStopper(patience=30, threshold=0.0001)
+early_stopper = EarlyStopper(patience=30, threshold=0.00001)
 
 # 3. Training Loop
 ################################################################
@@ -124,19 +126,19 @@ model.train()  # Set the model to training mode
 
 for epoch in range(NUM_EPOCHS):
     running_loss = 0.0
-    for batch_index, (inputs,labels) in enumerate(dataloader):
+    for batch_index, (board_inputs,eval_outputs) in enumerate(dataloader):
         # Get inputs and labels, and move them to the device
-        inputs = inputs.to(device)
-        labels = labels.to(device)
+        board_inputs = board_inputs.to(device)
+        eval_outputs = eval_outputs.to(device)
 
         # Zero the parameter gradients
         optimizer.zero_grad()
 
         # Forward pass
-        outputs = model(inputs)
+        outputs = model(board_inputs)
 
         # Calculate loss
-        loss = criterion(outputs, labels)
+        loss = criterion(outputs, eval_outputs)
 
         # Backward pass (calculate gradients)
         loss.backward()
@@ -149,7 +151,7 @@ for epoch in range(NUM_EPOCHS):
     
     # Print statistics every epoch
     training_loss = running_loss / len(dataloader)
-    print(f'Epoch [{epoch+1}/{NUM_EPOCHS}] Loss: {training_loss:.6f}')
+    print(f'Epoch [{epoch+1}/{NUM_EPOCHS}] Loss: {training_loss:.8f}')
 
     # Step the scheduler
     scheduler.step(training_loss)
@@ -173,11 +175,12 @@ print("Training finished!")
 model.eval()
 
 # Create a single dummy input (batch size of 1)
-test_input = torch.randn(1, *INPUT_SHAPE, dtype=torch.float32).to(device)
-test_input = boards_tensor[0:1].to(device)  # Use an actual sample from the dataset
 
-# Disable gradient calculation for inference
-with torch.no_grad():
-    prediction = model(test_input)
+for i in range(40):
+    test_input = boards_tensor[i:i+1].to(device)  # Use an actual sample from the dataset
 
-print(f"\nExample Prediction for a single input: {prediction.item():.4f}")
+    # Disable gradient calculation for inference
+    with torch.no_grad():
+        prediction = model(test_input)
+
+    print(f"Example Prediction for a single input: {prediction.item():3.4f} Actual eval: {evals_tensor[i].item():4.4f} delta={abs(prediction.item() - evals_tensor[i].item()):.4f}")
