@@ -156,20 +156,20 @@ class ChessModelResNet(nn.Module):
 
         # Residual tower
         self.res_blocks1 = nn.Sequential(
-            nn.Conv2d(input_channels, 32, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            ChessModelResNet_ResidualBlock(32),
-            ChessModelResNet_ResidualBlock(32),
-        )
-
-        # Residual tower
-        self.res_blocks2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=3, padding=1, bias=False),
+            nn.Conv2d(input_channels, 64, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(),
             ChessModelResNet_ResidualBlock(64),
             ChessModelResNet_ResidualBlock(64),
+        )
+
+        # Residual tower
+        self.res_blocks2 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            ChessModelResNet_ResidualBlock(128),
+            ChessModelResNet_ResidualBlock(128),
         )
 
         # classifier
@@ -186,9 +186,9 @@ class ChessModelResNet(nn.Module):
         self.classifier = nn.Sequential(
             # fully connected layers
             nn.Flatten(),
-            nn.Linear(64 * 8 * 8, fc_intermediate_size),
+            nn.Linear(128 * 8 * 8, fc_intermediate_size),
             nn.ReLU(),
-            # nn.Dropout(0.2),
+            nn.Dropout(0.2),
             # Final classifier layer
             nn.Linear(fc_intermediate_size, output_width),
         )
@@ -218,6 +218,6 @@ class ChessModelResNet(nn.Module):
 # 	 ChessModel class that wraps the original ChessModel
 ###############################################################################
 ###############################################################################
-class ChessModel(ChessModelConv2d):
+class ChessModel(ChessModelResNet):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
         super(ChessModel, self).__init__(input_shape, output_shape)

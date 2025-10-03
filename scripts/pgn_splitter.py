@@ -42,13 +42,13 @@ def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
         return
     
     file_count = (game_count + games_per_file - 1) // games_per_file
-    src_basename = os.path.basename(src_path).replace('.pgn', '')
+    src_basename = os.path.basename(src_path).replace('.pgn.gz', '').replace('.pgn', '')
 
     # open source file (handle .gz if needed)
     src_file = gzip.open(src_path, 'rt', encoding='utf-8') if src_path.endswith('.pgn.gz') else open(src_path, 'r', encoding='utf-8')
 
     for file_index in range(file_count):
-        dst_basename = f"{src_basename}.split_{file_index + 1}_of_{file_count}.pgn"
+        dst_basename = f"{src_basename}.split_{str(file_index + 1).rjust(2,'0')}_of_{str(file_count).rjust(2,'0')}.pgn"
         dst_path = os.path.join(dst_folder, os.path.basename(dst_basename))
 
         # determine byte offsets for the current split
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     args = argParser.parse_args()
     # args = argParser.parse_args(['./data/fishtest_pgns/18-05-25/5b07b25e0ebc5914abc12c6d/5b07b25e0ebc5914abc12c6d.pgn', '--max-games-per-file', '2000'])
 
-    print(f"Splitting PGN files: {args.pgn_paths} into smaller files with max {args.games_per_file} games each.")
+    # print(f"Splitting PGN files: {args.pgn_paths} into smaller files with max {args.games_per_file} games each.")
 
 
     for pgn_path in args.pgn_paths:

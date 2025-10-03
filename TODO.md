@@ -1,12 +1,4 @@
 # TODO
-- do a pgn splitter
-  - will be used for large pgn files - stockfish or lichess
-  - `{original_basename}_{N}_on_{total}.pgn`
-  - pgn_splitter.py -mgp 200 *.pgn
-    - --max-games <int> : maximum number of games per output file (default: 1000)
-  - be efficient when scanning the pgn file
-    - first pass: count the number of games, and the byte offset of each game
-    - second pass: write the games to the output files
 - use this pgn... it has the position from stockfish and its evaluation
   - keep the folders structure to keep track of the source
   - https://huggingface.co/datasets/official-stockfish/fishtest_pgns
@@ -14,7 +6,6 @@
   - do a special `build_evals.py` for it
   - `build_evals_stockfish.py`
   - `build_evals_fishtest.py`
-- try to train on the stockfish pgn
 - do a multi head model in a corner to see how it goes
   - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
 - do a bench of inference - thus i can compare the model inference speed
@@ -25,7 +16,27 @@
   - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - https://gemini.google.com/app/cdfdec954e81eaff
   - add a dropout layer only after fully connected layer
   - code model with self.fc_layers = nn.Sequential() pattern https://chatgpt.com/c/68de57d9-67f0-832b-aebb-c8d110effe48
-- change the encoding to be always from the point of view of the side to play
+- how many chess move are there ?
+  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
+- https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp
+- understand the alpha zero paper move encoding
+  - perplexity summarizing it - https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA
+  - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
+- make a small script which compute the list of all move type at chess
+  - https://gemini.google.com/app/b876c2f17d4fde4e
+  - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
+  - https://www.chess.com/blog/the_real_greco/move-finding-the-engine-way
+  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
+  - AI seems to contradict the alpha zero paper which says there are 4672 possible moves
+  - brute force all possible moves on an empty board
+- code a way to train on a special range of moves, not the whole game
+  - select by move number (e.g. 10 to 30)
+  - later by dynamically detecting opening, midgame, endgame
+  - generate multiple dataset files for each stage of the game
+- make it play on lichess ?
+
+# DONE
+- DONE change the encoding to be always from the point of view of the side to play
   - active side vs opponent side
 - WONTDO create a model which has only white turn
   - and another for black turn
@@ -40,9 +51,6 @@
   - FIXME: issue in the `board_from_tensor` function. see script in `./tmp/dataset_to_eval.py`
 - DONE finish the boards tensor to eval script
   - it is a good checker
-- how many chess move are there ?
-  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
-- https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp
 - WONTDO using gym_chess to generate the board mapping
   - save it in a file, then the uci2class is static
   - check with your own list of all possible moves (you are missing 4 moves)
@@ -57,9 +65,6 @@
   - move_pack(uci) -> chess.Move
   - move_unpack(chess.Move) -> uci
   - move_flip(chess.Move) -> chess.Move
--  understand the alpha zero paper move encoding
-  - perplexity summarizing it - https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA
-  - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
 - DONE can i encode the move flip by changing the mapping ?
   - one mapping if it is white to play, another if it is black to play
   - and you store both mapping in the dataset
@@ -78,25 +83,20 @@
 - DONE have a tool to go from boards to tenser and back
   - `board_to_tensor(board) -> tensor`
   - `tensor_to_board(tensor) -> board`
-- make a small script which compute the list of all move type at chess
-  - https://gemini.google.com/app/b876c2f17d4fde4e
-  - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
-  - https://www.chess.com/blog/the_real_greco/move-finding-the-engine-way
-  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
-  - AI seems to contradict the alpha zero paper which says there are 4672 possible moves
-  - brute force all possible moves on an empty board
 - WONTDO generalize the game slice in the dataset builder
   - allow not to set begining and end move_index
   1. build a dataset for each stage of the game (opening, midgame, endgame)
   2. train a model for each stage of the game
   3. during play, detect the stage of the game and use the corresponding model
-- code a way to train on a special range of moves, not the whole game
-  - select by move number (e.g. 10 to 30)
-  - later by dynamically detecting opening, midgame, endgame
-  - generate multiple dataset files for each stage of the game
-- make it play on lichess ?
-
-# DONE
+- DONE try to train on the stockfish pgn
+- DONE do a pgn splitter
+  - will be used for large pgn files - stockfish or lichess
+  - `{original_basename}_{N}_on_{total}.pgn`
+  - pgn_splitter.py -mgp 200 *.pgn
+    - --max-games <int> : maximum number of games per output file (default: 1000)
+  - be efficient when scanning the pgn file
+    - first pass: count the number of games, and the byte offset of each game
+    - second pass: write the games to the output files
 - DONE look for model structure on the web
   - search for 'pytorch chess model'
   - search for 'pytorch chess neural network'

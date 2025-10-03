@@ -24,8 +24,8 @@ class DatasetUtils:
     def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor) -> str:
             summary = f"""Dataset Summary:
 - Total positions: {len(boards_tensor):,}
-- Input shape: {Encoding.BOARD_DTYPE} (Channels, Height, Width)
-- Output shape: {Encoding.MOVE_DTYPE} (Scalar class index)
+- Input: size {Encoding.INPUT_SHAPE} (Channels, Height, Width), type {Encoding.BOARD_DTYPE}
+- Output shape: size {moves_tensor.shape} (Scalar class index), type {Encoding.MOVE_DTYPE}
 """
             return summary
 
@@ -90,10 +90,10 @@ class DatasetUtils:
         boards: list[chess.Board] = []
         moves: list[chess.Move] = []
         for game in games:
-            board = chess.Board()
+            board = game.board()
             for move in game.mainline_moves():
                 # backup the board before playing the move
-                board_before = board.copy()
+                board_before = board.copy(stack=False)
 
                 # push the move to the board
                 board.push(move)

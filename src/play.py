@@ -165,7 +165,7 @@ class PlayCommand:
                 eval_value = evaluation["value"] if chatbotml_color == "white" else -evaluation["value"]
 
                 eval_str = f"{eval_value/100}" if evaluation["type"] == "cp" else f"mate in {eval_value}"
-                print(f"Stockfish evaluation: {TermcolorUtils.cyan(eval_str)}")
+                print(f"Stockfish evaluation (white pov): {TermcolorUtils.cyan(eval_str)}")
 
             # Check for game over
             if board.is_game_over():

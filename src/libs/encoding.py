@@ -15,7 +15,7 @@ from src.utils.uci2class_utils import Uci2ClassUtils
 class Encoding:
 
     INPUT_SHAPE = (21, 8, 8)  # (channels, height, width)
-    BOARD_DTYPE = torch.uint8
+    BOARD_DTYPE = torch.int32
     MOVE_DTYPE = torch.int32  # class index as long
 
     class PLANE:
@@ -58,7 +58,7 @@ class Encoding:
         opponent_color = chess.WHITE if active_color == chess.BLACK else chess.BLACK
 
         # create an empty tensor - Use numpy first, it is 3-4 faster than torch for this
-        board_numpy = np.zeros(Encoding.INPUT_SHAPE, dtype=np.uint8)
+        board_numpy = np.zeros(Encoding.INPUT_SHAPE, dtype=np.uint16)
 
         ###############################################################################
         #   Piece planes
