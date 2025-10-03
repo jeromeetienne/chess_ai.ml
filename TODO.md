@@ -1,11 +1,8 @@
 # TODO
-- use this pgn... it has the position from stockfish and its evaluation
-  - keep the folders structure to keep track of the source
-  - https://huggingface.co/datasets/official-stockfish/fishtest_pgns
-  - read it thru the usual build_dataset.py
-  - do a special `build_evals.py` for it
-  - `build_evals_stockfish.py`
-  - `build_evals_fishtest.py`
+- do a regression in a corner 
+  - it should not have the same issue that the classification with 1972 classes
+  - https://gemini.google.com/app/b8047920ab1f4b67
+  - `tmp/regression.py`
 - do a multi head model in a corner to see how it goes
   - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
 - do a bench of inference - thus i can compare the model inference speed
@@ -36,6 +33,13 @@
 - make it play on lichess ?
 
 # DONE
+- DONE use this pgn... it has the position from stockfish and its evaluation
+  - keep the folders structure to keep track of the source
+  - https://huggingface.co/datasets/official-stockfish/fishtest_pgns
+  - read it thru the usual build_dataset.py
+  - do a special `build_evals.py` for it
+  - `build_evals_stockfish.py`
+  - `build_evals_fishtest.py`
 - DONE change the encoding to be always from the point of view of the side to play
   - active side vs opponent side
 - WONTDO create a model which has only white turn
