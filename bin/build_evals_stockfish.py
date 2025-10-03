@@ -112,8 +112,7 @@ class AnalyserEnginePool:
 ###############################################################################
 #   Main async function
 #
-async def main():
-    eval_depth = 12
+async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
 
     ###############################################################################
     #   Start the pool of engines
@@ -121,6 +120,7 @@ async def main():
 
     # Get number of logical cores
     logical_cores = typing.cast(int, psutil.cpu_count(logical=True))
+    print(f"Detected {logical_cores} logical CPU cores.")
 
     # start the pool
     engine_count = logical_cores
@@ -158,7 +158,7 @@ async def main():
         print(f"{basename}.pgn processing {boards_tensor.shape[0]} boards", end=" ", flush=True)
 
         # get pov scores for all boards in the tensor
-        tasks = [analyserPool.board_to_povscore(boards_tensor, board_index, max_depth=eval_depth) for board_index in range(board_count)]
+        tasks = [analyserPool.board_to_povscore(boards_tensor, board_index, max_depth=max_depth) for board_index in range(board_count)]
 
         # Perform the evaluation tasks concurrently
         time_start = time.perf_counter()
@@ -192,7 +192,15 @@ async def main():
 #   Main entry point
 #
 if __name__ == "__main__":
-    argParser = argparse.ArgumentParser(description="Build evaluation tensors for chess positions using Stockfish engine.")
+    argParser = argparse.ArgumentParser(description="""Build evaluation tensors for chess positions using Stockfish engine.
+The eval tensors are saved alongside the corresponding boards tensors in the data/pgn_tensors directory.
+                                        
+It uses all available CPU cores to run multiple Stockfish instances in parallel for faster evaluation.                                        
+""")
+    # --max-depth -m <int> : maximum search depth for Stockfish (default: 12)
+    argParser.add_argument("-m", "--max-depth", type=int, default=12, help="Maximum search depth for Stockfish (default: 12)")
+    # --logical-cores -c <int> : number of logical CPU cores to use (default: all available cores)
+    argParser.add_argument("-c", "--logical-cores", type=int, default=None, help="Number of logical CPU cores to use (default: all available cores)")
     args = argParser.parse_args()
 
-    asyncio.run(main())
+    asyncio.run(main(args.max_depth, args.logical_cores))

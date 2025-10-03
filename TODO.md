@@ -1,40 +1,49 @@
 # TODO
-
+- do a pgn splitter
+  - will be used for large pgn files - stockfish or lichess
+  - `{original_basename}_{N}_on_{total}.pgn`
+  - pgn_splitter.py -mgp 200 *.pgn
+    - --max-games <int> : maximum number of games per output file (default: 1000)
+  - be efficient when scanning the pgn file
+    - first pass: count the number of games, and the byte offset of each game
+    - second pass: write the games to the output files
 - use this pgn... it has the position from stockfish and its evaluation
+  - keep the folders structure to keep track of the source
   - https://huggingface.co/datasets/official-stockfish/fishtest_pgns
-  - large files. split them
   - read it thru the usual build_dataset.py
   - do a special `build_evals.py` for it
   - `build_evals_stockfish.py`
-  - `build_evals_pgn.py`
+  - `build_evals_fishtest.py`
+- try to train on the stockfish pgn
+- do a multi head model in a corner to see how it goes
+  - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
+- do a bench of inference - thus i can compare the model inference speed
+- multi-head network: good for alpha alpha-zero 
+  - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
+  - see PUCT (mcts + nn) vs UCT (mcts only)
 - in the model, 
   - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - https://gemini.google.com/app/cdfdec954e81eaff
   - add a dropout layer only after fully connected layer
   - code model with self.fc_layers = nn.Sequential() pattern https://chatgpt.com/c/68de57d9-67f0-832b-aebb-c8d110effe48
 - change the encoding to be always from the point of view of the side to play
   - active side vs opponent side
-- DONE check_dataset: go thru all the board in the dataset and check it is equal to the pgn
-  - compare fen by string
-  - display evaluation too
-  - allow to specify a game + move index - would help push it in chess.com
-- DONE whem building dataset, drop position which are in the opening phase
-- create a model which has only white turn
+- WONTDO create a model which has only white turn
   - and another for black turn
   - NOTE: would allow to know how much better the model would be if it see only one side of the board
-- create a new class called encoding.py with a unit test, and then use it everywhere in the code
+- DONE create a new class called encoding.py with a unit test, and then use it everywhere in the code
   - in encoding, if turn is black, flip the board so that always the side to play is at the bottom
   - it will make learning easier
   - do that for board and for move (e2e4 becomes e7e5 ?)
-- see if you can create a `eval_tensor` which is the stockfish evaluation of the `board_tensor`
+- DONE see if you can create a `eval_tensor` which is the stockfish evaluation of the `board_tensor`
   - thus i can learn a model which evaluates the board, on top of the one which suggest the best move
   - those are the 2 models in alpha zero
   - FIXME: issue in the `board_from_tensor` function. see script in `./tmp/dataset_to_eval.py`
-- finish the boards tensor to eval script
+- DONE finish the boards tensor to eval script
   - it is a good checker
 - how many chess move are there ?
   - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
 - https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp
-- using gym_chess to generate the board mapping
+- WONTDO using gym_chess to generate the board mapping
   - save it in a file, then the uci2class is static
   - check with your own list of all possible moves (you are missing 4 moves)
   - no need to have uci_to_classindex everywhere
@@ -48,29 +57,27 @@
   - move_pack(uci) -> chess.Move
   - move_unpack(chess.Move) -> uci
   - move_flip(chess.Move) -> chess.Move
-- understand the alpha zero paper move encoding
+-  understand the alpha zero paper move encoding
   - perplexity summarizing it - https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA
   - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
-- can i encode the move flip by changing the mapping ?
+- DONE can i encode the move flip by changing the mapping ?
   - one mapping if it is white to play, another if it is black to play
   - and you store both mapping in the dataset
   - easy and backward compatible
   - `uci2class.mapping[turn]` 
   - `uci2class.num_classes`
-- fix the bug in the board encoding
+- DONE fix the bug in the board encoding
   - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py
   - encode every as alpha-zero as it is the FEN standard
   - except the 14 previous moves, encode only the last move
   - encode all this thru constants - it will keep the information in the source
-- make a converter .pgn to the dataset format for each file
+- DONE make a converter .pgn to the dataset format for each file
   - PRO it would avoid the 'build_dataset' step during training (which can take 10+ minutes for large pgn files)
   - thus you can reload the dataset without reprocessing the pgn files
   - Q. how to handle `uci_to_classindex` changes ? would work if i have it static (./bin/all_possible_moves.py)
-- have a tool to go from boards to tenser and back
+- DONE have a tool to go from boards to tenser and back
   - `board_to_tensor(board) -> tensor`
   - `tensor_to_board(tensor) -> board`
-- multi-head network: good for alpha alpha-zero 
-  - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
 - make a small script which compute the list of all move type at chess
   - https://gemini.google.com/app/b876c2f17d4fde4e
   - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
@@ -78,7 +85,7 @@
   - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
   - AI seems to contradict the alpha zero paper which says there are 4672 possible moves
   - brute force all possible moves on an empty board
-- generalize the game slice in the dataset builder
+- WONTDO generalize the game slice in the dataset builder
   - allow not to set begining and end move_index
   1. build a dataset for each stage of the game (opening, midgame, endgame)
   2. train a model for each stage of the game
@@ -87,13 +94,18 @@
   - select by move number (e.g. 10 to 30)
   - later by dynamically detecting opening, midgame, endgame
   - generate multiple dataset files for each stage of the game
-- look for model structure on the web
-  - search for 'pytorch chess model'
-  - search for 'pytorch chess neural network'
-  - search for 'pytorch/tensorflow alpha zero github'
 - make it play on lichess ?
 
 # DONE
+- DONE look for model structure on the web
+  - search for 'pytorch chess model'
+  - search for 'pytorch chess neural network'
+  - search for 'pytorch/tensorflow alpha zero github'
+- DONE check_dataset: go thru all the board in the dataset and check it is equal to the pgn
+  - compare fen by string
+  - display evaluation too
+  - allow to specify a game + move index - would help push it in chess.com
+- DONE whem building dataset, drop position which are in the opening phase
 - DONE experiment with the attacked squares feature
   - https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.attacks
   - add it to the input tensor

@@ -41,15 +41,16 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # dropoutProbability = 0.2
-        # conv1_out_channels = 64
-        # conv2_out_channels = 128
-        # fc_intermediate_size = 1024
-
         dropoutProbability = 0.2
-        conv1_out_channels = 32
-        conv2_out_channels = 64
-        fc_intermediate_size = 256
+        conv1_out_channels = 64
+        conv2_out_channels = 128
+        conv3_out_channels = 16
+        fc_intermediate_size = 128
+
+        # dropoutProbability = 0.2
+        # conv1_out_channels = 32
+        # conv2_out_channels = 64
+        # fc_intermediate_size = 256
 
         # dropoutProbability = 0.2
         # conv1_out_channels = 16
@@ -69,13 +70,16 @@ class ChessModelConv2d(nn.Module):
             nn.Conv2d(conv1_out_channels, conv2_out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(conv2_out_channels),
             nn.ReLU(),
+            nn.Conv2d(conv2_out_channels, conv3_out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(conv3_out_channels),
+            nn.ReLU(),
         )
 
         # self.gap_2d = nn.AdaptiveAvgPool2d(output_size=(4, 4))
         self.flatten = nn.Flatten()
 
         self.fc_layers = nn.Sequential(
-            nn.Linear(conv2_out_channels * 8 * 8, fc_intermediate_size),
+            nn.Linear(conv3_out_channels * 8 * 8, fc_intermediate_size),
             nn.BatchNorm1d(fc_intermediate_size),
             nn.ReLU(),
             nn.Dropout(dropoutProbability),
@@ -214,6 +218,6 @@ class ChessModelResNet(nn.Module):
 # 	 ChessModel class that wraps the original ChessModel
 ###############################################################################
 ###############################################################################
-class ChessModel(ChessModelResNet):
+class ChessModel(ChessModelConv2d):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
         super(ChessModel, self).__init__(input_shape, output_shape)
