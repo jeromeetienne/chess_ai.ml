@@ -27,13 +27,16 @@ full_pipeline: clean build_dataset check_dataset train play ## run the full pipe
 .PHONY: help clean build_dataset train play full_pipeline
 
 check_dataset: ## check dataset integrity
-	./bin/check_dataset.py -fc 2
+	./scripts/check_dataset.py -fc 2
 
 build_dataset: ## build the dataset
 	./bin/build_dataset.py
 
-build_evals: ## build the evals for the dataset
-	./bin/build_evals.py
+build_evals_fishtest: ## build the evals for the dataset using fishtest pgns
+	./scripts/build_evals_fishtest.py
+
+build_evals_stockfish: ## build the evals for the dataset using stockfish evaluations computed live (slow)
+	./scripts/build_evals_stockfish.py
 
 train: ## train the model
 	./bin/train.py
