@@ -7,7 +7,16 @@ clean_output: ## clean output directory
 clean_pgn_tensors: ## clean pgn tensors
 	rm -f ./data/pgn_tensors/*
 
+clean_pgn_splits: ## clean split pgn files
+	rm -f ./data/pgn_splits/*.split_*.pgn
+
 clean: clean_output clean_pgn_tensors ## clean all generated files
+
+pgn_split_lichess:
+	./scripts/pgn_splitter.py  -d ./data/pgn_splits -v ./data/pgn/lichess_elite/*.pgn
+
+pgn_split_fishtest:
+	./scripts/pgn_splitter.py  -d ./data/pgn_splits -v ./data/pgn/fishtest_stockfish/*/*/*.pgn.gz
 
 
 lint: ## Run lint checker on source files

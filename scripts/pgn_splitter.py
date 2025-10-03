@@ -17,7 +17,9 @@ def game_count_in_pgn(file_path: str) -> tuple[int, list[int]]:
     start_offsets = []
     start_marker = '[Event'
     game_count = 0
-    with gzip.open(file_path, 'rt', encoding='utf-8') as file_reader:
+
+    file_reader = gzip.open(file_path, 'rt', encoding='utf-8') if file_path.endswith('.gz') else open(file_path, 'r', encoding='utf-8')
+    with file_reader:
         current_offset = 0
         for line in file_reader:
             if line.startswith(start_marker):
@@ -73,12 +75,17 @@ def split_pgn_file(src_path: str, dst_folder: str, max_games_per_file: int = 500
     # close source file
     src_file.close()
 
+    return game_count
+
+###############################################################################
+#   main entry point
+#
 if __name__ == "__main__":
     # Parse command line arguments - pgn_splitter.py -mgp 200 *.pgn
     argParser = argparse.ArgumentParser(description="Split large PGN files into smaller ones.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     argParser.add_argument("--max-games-per-file", "-mgp", type=int, default=1000, help="Maximum number of games per split file.")
-    # --dst-folder -d <str> : destination folder for split files (default: same as source file)
     argParser.add_argument("--dst-folder", "-d", type=str, default=None, help="Destination folder for split files (default: same as source file).")
+    argParser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output.")
     argParser.add_argument("pgn_paths", type=str, nargs='+', help="Path(s) to the PGN file(s) to split.")
     args = argParser.parse_args()
     # args = argParser.parse_args(['./data/fishtest_pgns/18-05-25/5b07b25e0ebc5914abc12c6d/5b07b25e0ebc5914abc12c6d.pgn', '--max-games-per-file', '2000'])
@@ -89,9 +96,14 @@ if __name__ == "__main__":
     for pgn_path in args.pgn_paths:
         # ignore pgn_path which contain '.split_'
         if '.split_' in pgn_path:
-            # print(f"Skipping already split file: {pgn_path}")
+            print(f"Skipping already split file: {pgn_path}")
             continue
 
+        if args.verbose:
+            print(f"Processing file: {pgn_path}", end='', flush=True)
         pgn_path = os.path.abspath(pgn_path)
         dst_folder = args.dst_folder if args.dst_folder is not None else os.path.dirname(pgn_path)
-        split_pgn_file(pgn_path, dst_folder, args.max_games_per_file)
+        game_count = split_pgn_file(pgn_path, dst_folder, args.max_games_per_file)
+
+        if args.verbose:
+            print(f" - done. {game_count} games found.")
