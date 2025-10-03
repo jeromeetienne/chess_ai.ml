@@ -30,9 +30,9 @@ def game_count_in_pgn(file_path: str) -> tuple[int, list[int]]:
 
     return game_count
 
-def split_pgn_file(src_path: str, dst_folder: str, max_games_per_file: int = 5000):
+def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
     """
-    Split a large PGN file into smaller files, each containing up to max_games_per_file games.
+    Split a large PGN file into smaller files, each containing up to games_per_file games.
     The output files are named as {original_basename}_{N}_of_{total}.pgn
     """
 
@@ -41,7 +41,7 @@ def split_pgn_file(src_path: str, dst_folder: str, max_games_per_file: int = 500
         print(f"No games found in {src_path}. Skipping.")
         return
     
-    file_count = (game_count + max_games_per_file - 1) // max_games_per_file
+    file_count = (game_count + games_per_file - 1) // games_per_file
     src_basename = os.path.basename(src_path).replace('.pgn', '')
 
     # open source file (handle .gz if needed)
@@ -52,8 +52,8 @@ def split_pgn_file(src_path: str, dst_folder: str, max_games_per_file: int = 500
         dst_path = os.path.join(dst_folder, os.path.basename(dst_basename))
 
         # determine byte offsets for the current split
-        offset_start = start_offsets[file_index * max_games_per_file] if file_index * max_games_per_file < game_count else None
-        offset_end = start_offsets[(file_index + 1) * max_games_per_file] if (file_index + 1) * max_games_per_file < game_count else None
+        offset_start = start_offsets[file_index * games_per_file] if file_index * games_per_file < game_count else None
+        offset_end = start_offsets[(file_index + 1) * games_per_file] if (file_index + 1) * games_per_file < game_count else None
 
         # read from source and write to destination
         dst_file = open(dst_path, 'w', encoding='utf-8')
@@ -83,14 +83,14 @@ def split_pgn_file(src_path: str, dst_folder: str, max_games_per_file: int = 500
 if __name__ == "__main__":
     # Parse command line arguments - pgn_splitter.py -mgp 200 *.pgn
     argParser = argparse.ArgumentParser(description="Split large PGN files into smaller ones.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    argParser.add_argument("--max-games-per-file", "-mgp", type=int, default=1000, help="Maximum number of games per split file.")
+    argParser.add_argument("--games-per-file", "-gpf", type=int, default=500, help="Maximum number of games per split file.")
     argParser.add_argument("--dst-folder", "-d", type=str, default=None, help="Destination folder for split files (default: same as source file).")
     argParser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output.")
     argParser.add_argument("pgn_paths", type=str, nargs='+', help="Path(s) to the PGN file(s) to split.")
     args = argParser.parse_args()
     # args = argParser.parse_args(['./data/fishtest_pgns/18-05-25/5b07b25e0ebc5914abc12c6d/5b07b25e0ebc5914abc12c6d.pgn', '--max-games-per-file', '2000'])
 
-    print(f"Splitting PGN files: {args.pgn_paths} into smaller files with max {args.max_games_per_file} games each.")
+    print(f"Splitting PGN files: {args.pgn_paths} into smaller files with max {args.games_per_file} games each.")
 
 
     for pgn_path in args.pgn_paths:
@@ -103,7 +103,7 @@ if __name__ == "__main__":
             print(f"Processing file: {pgn_path}", end='', flush=True)
         pgn_path = os.path.abspath(pgn_path)
         dst_folder = args.dst_folder if args.dst_folder is not None else os.path.dirname(pgn_path)
-        game_count = split_pgn_file(pgn_path, dst_folder, args.max_games_per_file)
+        game_count = split_pgn_file(pgn_path, dst_folder, args.games_per_file)
 
         if args.verbose:
             print(f" - done. {game_count} games found.")
