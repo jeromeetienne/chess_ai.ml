@@ -22,7 +22,7 @@ pgn_split_fishtest:
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py
 
-full_pipeline: clean build_dataset check_dataset train play ## run the full pipeline
+full_pipeline: clean build_dataset train play ## run the full pipeline
 
 .PHONY: help clean build_dataset train play full_pipeline
 

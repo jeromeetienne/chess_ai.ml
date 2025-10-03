@@ -134,7 +134,7 @@ def folder_contains_fishtest_pgn(pgn_folder_path: str) -> bool:
 #
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser(description="""Build evaluation tensors for chess positions fishtest games using Stockfish engine.""")
-    argParser.add_argument("--max-files-count", "-fc", type=int, default=15, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     args = argParser.parse_args()
     # args = argParser.parse_args(['-fc', '4'])  # for testing only, remove this line for production
 

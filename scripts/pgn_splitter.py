@@ -83,7 +83,7 @@ def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
 if __name__ == "__main__":
     # Parse command line arguments - pgn_splitter.py -mgp 200 *.pgn
     argParser = argparse.ArgumentParser(description="Split large PGN files into smaller ones.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    argParser.add_argument("--games-per-file", "-gpf", type=int, default=500, help="Maximum number of games per split file.")
+    argParser.add_argument("--games-per-file", "-gpf", type=int, default=200, help="Maximum number of games per split file.")
     argParser.add_argument("--dst-folder", "-d", type=str, default=None, help="Destination folder for split files (default: same as source file).")
     argParser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output.")
     argParser.add_argument("pgn_paths", type=str, nargs='+', help="Path(s) to the PGN file(s) to split.")

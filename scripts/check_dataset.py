@@ -24,7 +24,7 @@ tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 #
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser(description="Check the integrity of the dataset by comparing PGN files to their tensor representations.")
-    argParser.add_argument("--max-files-count", "-fc", type=int, default=15, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     argParser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output.")
     args = argParser.parse_args()
 

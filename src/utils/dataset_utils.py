@@ -163,7 +163,7 @@ class DatasetUtils:
         ###############################################################################
         #   convert the pgn games in boards and moves, skipping the opening book positions
 
-        print(f'Parsing {pgn_basename} - {str(len(boards_tensor)).rjust(5)} positions')
+        print(f'Checking {pgn_basename} - {str(len(boards_tensor)).rjust(5)} positions')
 
         # parse the pgn file
         pgn_games = PGNUtils.parse_pgn_file(pgn_path)
