@@ -20,6 +20,12 @@ tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 
 
 class DatasetUtils:
+
+    class FILE_SUFFIX:
+        BOARDS = "_boards_tensor.pt"
+        MOVES = "_moves_tensor.pt"
+        EVALS = "_evals_tensor.pt"
+
     @staticmethod
     def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor) -> str:
             summary = f"""Dataset Summary:

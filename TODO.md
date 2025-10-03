@@ -1,4 +1,8 @@
 # TODO
+- use that everywhere    class FILE_SUFFIX:
+        BOARDS = "_boards_tensor.pt"
+        MOVES = "_moves_tensor.pt"
+        EVALS = "_evals_tensor.pt" 
 - do a regression in a corner 
   - it should not have the same issue that the classification with 1972 classes
   - https://gemini.google.com/app/b8047920ab1f4b67
