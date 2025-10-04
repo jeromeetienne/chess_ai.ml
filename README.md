@@ -16,17 +16,43 @@ A neural network model **alone** doesn't possess the depth of calculation requir
 AlphaZero exemplifies the synergy between machine learning and traditional search algorithms. It combines a deep neural network—which evaluates board positions and suggests promising moves, using Monte Carlo Tree Search (MCTS), a powerful tree search technique. The neural network guides the search by focusing on the most relevant moves, while MCTS provides the depth of calculation needed to explore possible continuations. This integration allows AlphaZero to efficiently balance intuition (from ML) and calculation (from tree search), achieving superhuman performance in chess.
 
 ## Inputs encoding
-The input is a 8x8x14 tensor representing the chess board. 
+The input is an 8x8x21 tensor (21 planes × 8 × 8), matching `Encoding.get_input_shape()` in the code.
+The board is always represented from the perspective of the active player (the player to move). If the active player is black, the board is flipped so that black pieces are on the bottom and white pieces are on the top. This allows the model to consistently learn patterns from the viewpoint of the player to move, simplifying the learning process and improving generalization across different game states.
 
-Each of the 12 channels corresponds to a piece type (6 for white, 6 for black). 
-A value of 1 in a channel indicates the presence of the corresponding piece on that square, while a value of 0 indicates its absence.
+The planes are used to represent piece presence and game metadata. They are (index: name):
 
-The remaining 2 channels are used to encode the legal moves:
-- The 13th channel encodes the **from** square of the move (1 if the piece is to be moved from that square, 0 otherwise).
-- The 14th channel encodes the **to** square of the move (1 if the piece is to be moved to that square, 0 otherwise).
+- 0: ACTIVE_PAWN
+- 1: ACTIVE_KNIGHT
+- 2: ACTIVE_BISHOP
+- 3: ACTIVE_ROOK
+- 4: ACTIVE_QUEEN
+- 5: ACTIVE_KING
+- 6: OPPONENT_PAWN
+- 7: OPPONENT_KNIGHT
+- 8: OPPONENT_BISHOP
+- 9: OPPONENT_ROOK
+- 10: OPPONENT_QUEEN
+- 11: OPPONENT_KING
+- 12: REPETITION_2
+- 13: REPETITION_3
+- 14: TURN
+- 15: ACTIVE_KINGSIDE_CASTLING_RIGHTS
+- 16: ACTIVE_QUEENSIDE_CASTLING_RIGHTS
+- 17: OPPONENT_KINGSIDE_CASTLING_RIGHTS
+- 18: OPPONENT_QUEENSIDE_CASTLING_RIGHTS
+- 19: HALFMOVE_CLOCK
+- 20: FULLMOVE_NUMBER
+
+Notes:
+- The first 12 planes encode piece occupancy (6 piece types for the active side followed by 6 for the opponent) rather than a fixed white/black ordering; the board is flipped when black is to move so the tensor is always in the perspective of the active player.
+- There are no dedicated "from"/"to" planes in this repository's encoding. Moves are encoded as a single class index (see "Output encoding" below).
 
 ## Output encoding
-The output is a 1968-dimensional vector representing all possible moves on a chessboard based on the dataset.
+The output is a 1968-dimensional vector (one scalar class per possible move) representing the move policy. The exact set and ordering of moves is provided by the UCI→class JSON files in `output/uci2classes/` (for example `uci2class_arr_white.json`).
+
+This is derived at runtime by `Encoding.get_output_shape()` which loads the UCI-to-class mapping (see `src/utils/uci2class_utils.py`). The repository's current mapping file for white contains 1968 entries, so the model outputs logits of shape `(N, 1968)`.
+
+The `_white` and `_black` suffixes in the UCI-to-class mapping filenames indicate separate mappings for white and black to account for board symmetry. When the active player is black, the board is flipped before encoding, and the corresponding black mapping file is used to ensure moves are consistently represented from the active player's perspective.
 
 ## Good Looking!
 
