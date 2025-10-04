@@ -13,6 +13,7 @@ import chess.engine
 
 # local imports
 from src.libs.chess_extra import ChessExtra
+from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
 from scripts.build_evals_stockfish import unify_engine_score
 
@@ -28,6 +29,7 @@ tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 ###############################################################################
 #   Functions
 #
+
 
 def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader) -> list[float]:
     # play all pgn games of this file
@@ -52,7 +54,7 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
 
             # format of node.comment: '{evaluation_score}/{depth} {time}s'
             # e.g. '+0.18/21 2.7s' for eval +0.18 cp
-            # e.g. '+M77/21 2.7s' for mate in 77    
+            # e.g. '+M77/21 2.7s' for mate in 77
 
             # get evaluation score from node.comment
             comment_parts = node.comment.split("/", 1)
@@ -68,7 +70,7 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
 
             # convert score_str to chess.engine.Score
             if is_float:
-                cp_value = int(float(score_str) *100)
+                cp_value = int(float(score_str) * 100)
                 chess_score = chess.engine.Cp(cp_value)
             elif score_str.startswith("+M") or score_str.startswith("-M"):
                 mate_value = int(score_str[2:])
@@ -84,19 +86,19 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
 
     # return the pgn_evals array
     return pgn_evals
-    
+
 
 def process_pgn_file(pgn_path: str, tensors_folder_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader) -> None:
     # process a single pgn file
     basename = os.path.basename(pgn_path).replace(".pgn", "")
 
     # build dst_path
-    dst_path = os.path.abspath(os.path.join(tensors_folder_path, f"{basename}_evals_tensor.pt"))
+    dst_path = os.path.abspath(os.path.join(tensors_folder_path, f"{basename}{DatasetUtils.FILE_SUFFIX.EVALS}"))
     if os.path.exists(dst_path):
         print(f"{basename}.pgn already got a eval tensor, skipping.")
         return
 
-    # log the event    
+    # log the event
     print(f"Processing {basename}.pgn...", end=" ", flush=True)
 
     # process the pgn file
@@ -110,6 +112,7 @@ def process_pgn_file(pgn_path: str, tensors_folder_path: str, polyglot_reader: c
 
     # log the event
     print(f"Done")
+
 
 ###############################################################################
 #   Check if data/pgn_splits contains fishtest pgn files
@@ -129,11 +132,15 @@ def folder_contains_fishtest_pgn(pgn_folder_path: str) -> bool:
             break
     return contains_fishtest_pgn
 
+
 ###############################################################################
 #   Main Entry Point
 #
 if __name__ == "__main__":
-    argParser = argparse.ArgumentParser(description="""Build evaluation tensors for chess positions fishtest games using Stockfish engine.""")
+    argParser = argparse.ArgumentParser(
+        description="""Build evaluation tensors for chess positions fishtest games using Stockfish engine.""",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     args = argParser.parse_args()
     # args = argParser.parse_args(['-fc', '4'])  # for testing only, remove this line for production
@@ -145,12 +152,11 @@ if __name__ == "__main__":
     pgn_paths = PGNUtils.get_pgn_paths()
     # keep only the first max-files-count pgn files
     if args.max_files_count > 0:
-        pgn_paths = pgn_paths[:args.max_files_count]
+        pgn_paths = pgn_paths[: args.max_files_count]
 
     # Read the polyglot opening book
     polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
     polyglot_reader = chess.polyglot.open_reader(polyglot_path)
-
 
     print(f"Processing {len(pgn_paths)} PGN files from {pgn_folder_path}...")
     for pgn_path in pgn_paths:

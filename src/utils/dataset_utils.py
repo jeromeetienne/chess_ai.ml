@@ -46,10 +46,10 @@ class DatasetUtils:
     @staticmethod
     def load_dataset_tensor(tensors_folder_path: str, basename_prefix: str) -> tuple[torch.Tensor, torch.Tensor]:
         # load the tensors
-        boards_path = f"{tensors_folder_path}/{basename_prefix}_boards_tensor.pt"
+        boards_path = f"{tensors_folder_path}/{basename_prefix}{DatasetUtils.FILE_SUFFIX.BOARDS}"
         boards_tensor = torch.load(boards_path)
         # load the moves tensor
-        moves_path = f"{tensors_folder_path}/{basename_prefix}_moves_tensor.pt"
+        moves_path = f"{tensors_folder_path}/{basename_prefix}{DatasetUtils.FILE_SUFFIX.MOVES}"
         moves_tensor = torch.load(moves_path)
         # ensure they have the same number of positions
         assert boards_tensor.shape[0] == moves_tensor.shape[0], f"boards_tensor has {boards_tensor.shape[0]} positions but moves_tensor has {moves_tensor.shape[0]} positions. basename_prefix={basename_prefix}"
@@ -61,8 +61,8 @@ class DatasetUtils:
         # gather all tensor file paths
         basenames = os.listdir(tensors_folder_path)
         basenames.sort()
-        boards_file_paths = [os.path.join(tensors_folder_path, basename) for basename in basenames if basename.endswith("_boards_tensor.pt")]
-        moves_file_paths = [os.path.join(tensors_folder_path, basename) for basename in basenames if basename.endswith("_moves_tensor.pt")]
+        boards_file_paths = [os.path.join(tensors_folder_path, basename) for basename in basenames if basename.endswith(DatasetUtils.FILE_SUFFIX.BOARDS)]
+        moves_file_paths = [os.path.join(tensors_folder_path, basename) for basename in basenames if basename.endswith(DatasetUtils.FILE_SUFFIX.MOVES)]
 
         # honor the max_file_count limit
         if max_file_count != 0:

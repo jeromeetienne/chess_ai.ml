@@ -20,6 +20,7 @@ from .libs.types import opponent_tech_t, color_t
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
+model_folder_path = os.path.join(output_folder_path, "model")
 data_folder_path = os.path.join(__dirname__, "..", "data")
 
 class PlayCommand:
@@ -56,7 +57,7 @@ class PlayCommand:
         # Load the model
         input_shape = Encoding.INPUT_SHAPE  # (channels, height, width)
         output_shape = (num_classes,)
-        model = ModelUtils.load_model(folder_path=output_folder_path, input_shape=input_shape, output_shape=output_shape)
+        model = ModelUtils.load_model(folder_path=model_folder_path, input_shape=input_shape, output_shape=output_shape)
         
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")

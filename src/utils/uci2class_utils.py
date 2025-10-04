@@ -4,7 +4,8 @@ import json
 import typing
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-data_folder_path = os.path.join(__dirname__, "../../data")
+output_folder_path = os.path.join(__dirname__, "../../output")
+uci2classes_folder_path = os.path.join(output_folder_path, "uci2classes")
 
 class Uci2ClassUtils:
     _uci2class_white: dict[str, int] | None = None
@@ -19,7 +20,7 @@ class Uci2ClassUtils:
             return
 
         # load the file for white
-        white_file_path = os.path.join(data_folder_path, f"uci2class_arr_white.json")
+        white_file_path = os.path.join(uci2classes_folder_path, f"uci2class_arr_white.json")
         with open(white_file_path, "r") as file_reader:
             uci2class_arr: list[str] = json.load(file_reader)
         # Build the mapping for white
@@ -28,7 +29,7 @@ class Uci2ClassUtils:
         Uci2ClassUtils._class2uci_white = {index: move_uci for index, move_uci in enumerate(uci2class_arr)}
 
         # load the file for black
-        black_file_path = os.path.join(data_folder_path, f"uci2class_arr_black.json")
+        black_file_path = os.path.join(uci2classes_folder_path, f"uci2class_arr_black.json")
         with open(black_file_path, "r") as file_reader:
             uci2class_arr: list[str] = json.load(file_reader)
         # Build the mapping for black

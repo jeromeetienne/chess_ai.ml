@@ -1,11 +1,12 @@
 # TODO
+- reorganize folders
+  - ./data/pgn_splits -> ./output
+  - ./data/pgn_tensors -> ./output
+  - ./data/uci2class_arr_* -> ./output/uci2class
+  - ./output/* -> ./output/models
 - how to handle the dual head
   - load eval tensor if present
   - do i force it the eval to be present ? maybe i can create a fake eval of 0...
-- use that everywhere    class FILE_SUFFIX:
-        BOARDS = "_boards_tensor.pt"
-        MOVES = "_moves_tensor.pt"
-        EVALS = "_evals_tensor.pt" 
 - do a regression in a corner 
   - it should not have the same issue that the classification with 1972 classes
   - https://gemini.google.com/app/b8047920ab1f4b67
@@ -40,6 +41,10 @@
 - make it play on lichess ?
 
 # DONE
+- DONE use that everywhere    class FILE_SUFFIX:
+        BOARDS = "_boards_tensor.pt"
+        MOVES = "_moves_tensor.pt"
+        EVALS = "_evals_tensor.pt" 
 - DONE use this pgn... it has the position from stockfish and its evaluation
   - keep the folders structure to keep track of the source
   - https://huggingface.co/datasets/official-stockfish/fishtest_pgns

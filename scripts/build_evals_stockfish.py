@@ -12,9 +12,9 @@ import chess.engine
 import psutil
 import argparse
 
-
 # local imports
 from src.libs.encoding import Encoding
+from src.utils.dataset_utils import DatasetUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_path = f"{__dirname__}/../output"
@@ -132,7 +132,9 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
     ###############################################################################
     boards_tensor_paths = os.listdir(tensors_folder_path)
     boards_tensor_paths.sort()
-    boards_tensor_paths = [os.path.join(tensors_folder_path, basename) for basename in boards_tensor_paths if basename.endswith("_boards_tensor.pt")]
+    boards_tensor_paths = [
+        os.path.join(tensors_folder_path, basename) for basename in boards_tensor_paths if basename.endswith(DatasetUtils.FILE_SUFFIX.BOARDS)
+    ]
     if len(boards_tensor_paths) == 0:
         print(f"No boards tensor files found in {tensors_folder_path}")
         return
@@ -143,9 +145,9 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
     eval_start_time = time.perf_counter()
     board_count_total = 0
     for boards_tensor_path in boards_tensor_paths:
-        basename = os.path.basename(boards_tensor_path).replace("_boards_tensor.pt", "")
+        basename = os.path.basename(boards_tensor_path).replace(DatasetUtils.FILE_SUFFIX.BOARDS, "")
 
-        evals_path = os.path.join(tensors_folder_path, f"{basename}_evals_tensor.pt")
+        evals_path = os.path.join(tensors_folder_path, f"{basename}{DatasetUtils.FILE_SUFFIX.EVALS}")
         if os.path.exists(evals_path):
             print(f"{basename}.pgn already got a eval tensor, skipping.")
             continue
@@ -192,11 +194,14 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
 #   Main entry point
 #
 if __name__ == "__main__":
-    argParser = argparse.ArgumentParser(description="""Build evaluation tensors for chess positions using Stockfish engine.
+    argParser = argparse.ArgumentParser(
+        description="""Build evaluation tensors for chess positions using Stockfish engine.
 The eval tensors are saved alongside the corresponding boards tensors in the data/pgn_tensors directory.
                                         
 It uses all available CPU cores to run multiple Stockfish instances in parallel for faster evaluation.                                        
-""")
+""",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     # --max-depth -m <int> : maximum search depth for Stockfish (default: 12)
     argParser.add_argument("-m", "--max-depth", type=int, default=12, help="Maximum search depth for Stockfish (default: 12)")
     # --logical-cores -c <int> : number of logical CPU cores to use (default: all available cores)

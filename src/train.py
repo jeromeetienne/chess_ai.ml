@@ -25,6 +25,7 @@ from .utils.uci2class_utils import Uci2ClassUtils
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
+model_folder_path = os.path.join(output_folder_path, "model")
 data_folder_path = os.path.join(__dirname__, "..", "data")
 tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 
@@ -41,7 +42,7 @@ class TrainCommand:
         plt.title("Train vs Validation Loss per Epoch")
         plt.legend()
         # Save the plot to output folder
-        plt_path = f"{output_folder_path}/training_validation_loss.png"
+        plt_path = f"{model_folder_path}/training_validation_loss.png"
         plt.savefig(plt_path)
         plt.close()
         # print(f"Training and validation loss plot saved to {plt_path}")
@@ -70,7 +71,7 @@ class TrainCommand:
 {ModelUtils.model_summary(model)}
 ```
         """
-        report_path = f"{output_folder_path}/TRAINING_REPORT.md"
+        report_path = f"{model_folder_path}/TRAINING_REPORT.md"
         with open(report_path, "w") as report_file:
             report_file.write(file_content)
         # print(f"Training report saved to {README_path}")
@@ -228,7 +229,7 @@ class TrainCommand:
             # honor must_save: Save the model if validation loss improved
             if must_save:
                 # Save the model
-                ModelUtils.save_model(model, folder_path=output_folder_path)
+                ModelUtils.save_model(model, folder_path=model_folder_path)
 
                 # Save training report
                 TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, validation_loss, model)

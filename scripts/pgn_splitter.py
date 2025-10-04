@@ -88,9 +88,6 @@ if __name__ == "__main__":
     argParser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output.")
     argParser.add_argument("pgn_paths", type=str, nargs='+', help="Path(s) to the PGN file(s) to split.")
     args = argParser.parse_args()
-    # args = argParser.parse_args(['./data/fishtest_pgns/18-05-25/5b07b25e0ebc5914abc12c6d/5b07b25e0ebc5914abc12c6d.pgn', '--max-games-per-file', '2000'])
-
-    # print(f"Splitting PGN files: {args.pgn_paths} into smaller files with max {args.games_per_file} games each.")
 
 
     for pgn_path in args.pgn_paths:
@@ -101,6 +98,7 @@ if __name__ == "__main__":
 
         if args.verbose:
             print(f"Processing file: {pgn_path}", end='', flush=True)
+            
         pgn_path = os.path.abspath(pgn_path)
         dst_folder = args.dst_folder if args.dst_folder is not None else os.path.dirname(pgn_path)
         game_count = split_pgn_file(pgn_path, dst_folder, args.games_per_file)

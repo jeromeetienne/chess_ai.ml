@@ -18,16 +18,15 @@ from src.utils.uci2class_utils import Uci2ClassUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
-data_folder_path = os.path.abspath(os.path.join(__dirname__, '..', 'data'))
-tensors_folder_path = os.path.join(data_folder_path, 'pgn_tensors')
+data_folder_path = os.path.abspath(os.path.join(__dirname__, "..", "data"))
+tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 
 ###############################################################################
 #   Main entry point
 #
 if __name__ == "__main__":
-    argParser = argparse.ArgumentParser(description="Benchmark different model architectures.")
+    argParser = argparse.ArgumentParser(description="Benchmark different model architectures.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     argParser.parse_args()
-
 
     ###############################################################################
     #   Load and setup model
@@ -55,11 +54,10 @@ if __name__ == "__main__":
     test_input = test_input.to(device)
 
     ###############################################################################
-    #   Model warmup   
+    #   Model warmup
     #
     with torch.no_grad():
         outputs = model(test_input)
- 
 
     ###############################################################################
     #   Benchmarking

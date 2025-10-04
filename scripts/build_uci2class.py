@@ -13,12 +13,16 @@ from src.libs.chess_extra import ChessExtra
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.abspath(os.path.join(__dirname__, "..", "data"))
+output_folder_path = os.path.join(__dirname__, "..", "output")
+uci2classes_folder_path = os.path.join(output_folder_path, "uci2classes")
 
 ###############################################################################
 #   Main entry point
 #
 if __name__ == "__main__":
-    argParser = argparse.ArgumentParser(description="Build UCI to class index mappings for white and black pieces.")
+    argParser = argparse.ArgumentParser(
+        description="Build UCI to class index mappings for white and black pieces.", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     args = argParser.parse_args()
 
     all_moves_uci = ChessExtra.all_unique_moves()
@@ -28,13 +32,12 @@ if __name__ == "__main__":
 
     # Create uci2class mapping
     uci2class_white = [move_uci for move_uci in all_moves_uci]
-    
-    # Save the mapping to a file 
-    white_file_path = os.path.join(data_folder_path, "uci2class_arr_white.json")
+
+    # Save the mapping to a file
+    white_file_path = os.path.join(uci2classes_folder_path, "uci2class_arr_white.json")
     with open(white_file_path, "w") as file_writer:
         json.dump(uci2class_white, file_writer, indent=4)
     print(f"Saved {len(uci2class_white)} unique moves to {white_file_path}")
-
 
     # Create uci2class mapping for black by mirroring XY the white moves
     uci2class_black = []
@@ -49,8 +52,8 @@ if __name__ == "__main__":
         black_move_uci = black_move.uci()
         uci2class_black.append(black_move_uci)
 
-    # Save the mapping to a file 
-    black_file_path = os.path.join(data_folder_path, "uci2class_arr_black.json")
+    # Save the mapping to a file
+    black_file_path = os.path.join(uci2classes_folder_path, "uci2class_arr_black.json")
     with open(black_file_path, "w") as file_writer:
         json.dump(uci2class_black, file_writer, indent=4)
-    print(f"Saved {len(uci2class_black)} unique moves to {black_file_path}")    
+    print(f"Saved {len(uci2class_black)} unique moves to {black_file_path}")
