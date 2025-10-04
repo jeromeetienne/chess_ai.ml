@@ -8,8 +8,8 @@ import chess
 import chess.pgn 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-data_folder_path = os.path.join(__dirname__, "../../data")
-pgn_folder_path = os.path.join(data_folder_path, "pgn_splits")
+output_folder_path = os.path.join(__dirname__, "../../output")
+pgn_folder_path = os.path.join(output_folder_path, "pgn_splits")
 
 class PGNUtils:
     @staticmethod

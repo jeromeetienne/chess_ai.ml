@@ -19,7 +19,7 @@ from .utils.pgn_utils import PGNUtils
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
 data_folder_path = os.path.join(__dirname__, "..", "data")
-tensors_folder_path = os.path.join(__dirname__, "..", "data", "pgn_tensors")
+tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
 
 
 class DatasetBuilderCommand:

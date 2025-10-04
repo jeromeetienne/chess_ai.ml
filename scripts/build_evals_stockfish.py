@@ -17,8 +17,8 @@ from src.libs.encoding import Encoding
 from src.utils.dataset_utils import DatasetUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_path = f"{__dirname__}/../output"
-tensors_folder_path = os.path.join(__dirname__, "..", "data", "pgn_tensors")
+output_folder_path = os.path.join(__dirname__, "../output")
+tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
 stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
 
 

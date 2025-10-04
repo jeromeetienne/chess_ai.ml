@@ -25,9 +25,9 @@ from .utils.uci2class_utils import Uci2ClassUtils
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
-model_folder_path = os.path.join(output_folder_path, "model")
 data_folder_path = os.path.join(__dirname__, "..", "data")
-tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
+model_folder_path = os.path.join(output_folder_path, "model")
+tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
 
 
 class TrainCommand:

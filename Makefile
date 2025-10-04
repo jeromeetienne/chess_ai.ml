@@ -1,23 +1,22 @@
 help: ## show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-clean_output: ## clean output directory
-	rm -f ./output/*
+clean_model: ## clean output directory
+	rm -f ./output/model/*
 
 clean_pgn_tensors: ## clean pgn tensors
-	rm -f ./data/pgn_tensors/*
+	rm -f ./output/pgn_tensors/*
 
 clean_pgn_splits: ## clean split pgn files
-	rm -f ./data/pgn_splits/*.split_*.pgn
+	rm -f ./output/pgn_splits/*.split_*.pgn
 
-clean: clean_output clean_pgn_tensors ## clean all generated files
+clean: clean_model clean_pgn_tensors ## clean all generated files
 
 pgn_split_lichess:
-	./scripts/pgn_splitter.py  -d ./data/pgn_splits -v ./data/pgn/lichess_elite/*.pgn
+	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/pgn/lichess_elite/*.pgn
 
 pgn_split_fishtest:
-	./scripts/pgn_splitter.py  -d ./data/pgn_splits -v ./data/pgn/fishtest_stockfish/*/*/*.pgn.gz
-
+	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/pgn/fishtest_stockfish/*/*/*.pgn.gz
 
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py

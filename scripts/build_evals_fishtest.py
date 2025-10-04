@@ -23,8 +23,9 @@ from scripts.build_evals_stockfish import unify_engine_score
 #
 __dirname__ = os.path.dirname(__file__)
 data_folder_path = os.path.join(__dirname__, "../data")
-pgn_folder_path = os.path.join(data_folder_path, "pgn_splits")
-tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
+output_folder_path = os.path.join(__dirname__, "../output")
+pgn_folder_path = os.path.join(output_folder_path, "pgn_splits")
+tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
 
 ###############################################################################
 #   Functions
@@ -115,12 +116,12 @@ def process_pgn_file(pgn_path: str, tensors_folder_path: str, polyglot_reader: c
 
 
 ###############################################################################
-#   Check if data/pgn_splits contains fishtest pgn files
+#   Check if output/pgn_splits contains fishtest pgn files
 #
 def folder_contains_fishtest_pgn(pgn_folder_path: str) -> bool:
-    # sanity check - ensure data/pgn_splits contains fishtest pgn files - aka the basename is a 16 char hex string
-    # - e.g. data/pgn_splits/5b07b25e0ebc5914abc12c6d.split_05_of_27.pgn
-    # - e.g. data/pgn_splits/5b0974450ebc596ad1d1f757.split_27_of_28.pgn
+    # sanity check - ensure output/pgn_splits contains fishtest pgn files - aka the basename is a 16 char hex string
+    # - e.g. output/pgn_splits/5b07b25e0ebc5914abc12c6d.split_05_of_27.pgn
+    # - e.g. output/pgn_splits/5b0974450ebc596ad1d1f757.split_27_of_28.pgn
     pgn_filenames = [f for f in os.listdir(pgn_folder_path) if f.endswith(".pgn")]
     if len(pgn_filenames) == 0:
         raise RuntimeError(f"No PGN files found in {pgn_folder_path}. Please ensure it contains fishtest pgn files.")
@@ -145,8 +146,8 @@ if __name__ == "__main__":
     args = argParser.parse_args()
     # args = argParser.parse_args(['-fc', '4'])  # for testing only, remove this line for production
 
-    # sanity check - ensure data/pgn_splits contains fishtest pgn files
-    assert folder_contains_fishtest_pgn(pgn_folder_path), f"data/pgn_splits does not contain fishtest pgn files. Please ensure it contains fishtest pgn files."
+    # sanity check - ensure output/pgn_splits contains fishtest pgn files
+    assert folder_contains_fishtest_pgn(pgn_folder_path), f"output/pgn_splits does not contain fishtest pgn files. Please ensure it contains fishtest pgn files."
 
     # get all pgn paths
     pgn_paths = PGNUtils.get_pgn_paths()
