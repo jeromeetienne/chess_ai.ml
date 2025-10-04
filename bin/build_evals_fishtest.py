@@ -13,6 +13,7 @@ import chess.engine
 
 # local imports
 from src.libs.chess_extra import ChessExtra
+from src.libs.encoding import Encoding
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
 from bin.build_evals_stockfish import unify_engine_score
@@ -106,7 +107,7 @@ def process_pgn_file(pgn_path: str, tensors_folder_path: str, polyglot_reader: c
     pgn_evals = build_eval_array_from_pgn(pgn_path, polyglot_reader)
 
     # convert pgn_evals to a torch tensor
-    evals_tensor = torch.tensor(pgn_evals, dtype=torch.float32)
+    evals_tensor = torch.tensor(pgn_evals, dtype=Encoding.EVAL_DTYPE)
 
     # save evals_tensor to dst_path
     torch.save(evals_tensor, dst_path)

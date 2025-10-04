@@ -29,106 +29,6 @@ tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
 
 class TrainCommand:
 
-    @staticmethod
-    def plot_losses(train_losses: list, validation_losses: list):
-        epochs = range(1, len(train_losses) + 1)
-        plt.plot(epochs, train_losses, label="Training Loss")
-        plt.plot(epochs, validation_losses, label="Validation Loss")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.title("Train vs Validation Loss per Epoch")
-        plt.legend()
-        # Save the plot to output folder
-        plt_path = f"{model_folder_path}/training_validation_loss.png"
-        plt.savefig(plt_path)
-        plt.close()
-        # print(f"Training and validation loss plot saved to {plt_path}")
-
-    @staticmethod
-    def save_training_report(
-        train_dataset: torch.utils.data.Subset,
-        validation_dataset: torch.utils.data.Subset,
-        test_dataset: torch.utils.data.Subset,
-        num_classes: int,
-        epoch_index: int,
-        validation_loss: float,
-        model: torch.nn.Module,
-    ):
-        file_content = f"""# Chess Model Training
-- Trained at {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
-- Model trained on {len(train_dataset)} game positions
-- Model validated on {len(validation_dataset)} game positions
-- Model tested on {len(test_dataset)} game positions
-- Number of unique moves: {num_classes}
-- Number of epochs: {epoch_index + 1}
-- Final validation loss: {validation_loss:.4f}
-
-# Model Summary
-```
-{ModelUtils.model_summary(model)}
-```
-        """
-        report_path = f"{model_folder_path}/TRAINING_REPORT.md"
-        with open(report_path, "w") as report_file:
-            report_file.write(file_content)
-        # print(f"Training report saved to {README_path}")
-
-    @staticmethod
-    def train_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Module, device: str) -> float:
-        model.train()
-        running_loss = 0.0
-        for inputs, labels in tqdm.tqdm(dataloader, ncols=80, desc="Training", unit="batch"):
-            inputs, labels = inputs.to(device), labels.to(device)  # Move data to GPU
-            optimizer.zero_grad()
-
-            outputs = model(inputs)  # Raw logits
-
-            # Compute loss
-            loss = loss_fn(outputs, labels)
-            loss.backward()
-
-            # Gradient clipping
-            # torch.torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
-            optimizer.step()
-            running_loss += loss.item()
-
-        average_loss = running_loss / len(dataloader)
-        return average_loss
-
-    @staticmethod
-    def validation_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, loss_fn: torch.nn.Module, device: str) -> float:
-        model.eval()
-        running_loss = 0.0
-        with torch.no_grad():
-            for inputs, labels in dataloader:
-                inputs, labels = inputs.to(device), labels.to(device)
-                outputs = model(inputs)
-
-                loss = loss_fn(outputs, labels)
-                running_loss += loss.item()
-
-        validation_loss = running_loss / len(dataloader)
-        return validation_loss
-
-    @staticmethod
-    def evaluate_model_accuracy(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, device: str) -> float:
-        # FIXME this function is buggy ?
-        model.eval()
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for inputs, labels in dataloader:
-                inputs, labels = inputs.to(device), labels.to(device)
-                logits = model(inputs)
-
-                _, predicted = torch.max(logits, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-
-        accuracy = 100 * correct / total
-        return accuracy
-
     ###############################################################################
     # Train a chess model using PyTorch.
     ###############################################################################
@@ -247,3 +147,104 @@ class TrainCommand:
         # Now test the model on the test set
         eval_accuracy = TrainCommand.evaluate_model_accuracy(model, test_dataloader, device)
         print(f"Accuracy on test set: {eval_accuracy:.2f}%")
+
+
+    @staticmethod
+    def plot_losses(train_losses: list, validation_losses: list):
+        epochs = range(1, len(train_losses) + 1)
+        plt.plot(epochs, train_losses, label="Training Loss")
+        plt.plot(epochs, validation_losses, label="Validation Loss")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.title("Train vs Validation Loss per Epoch")
+        plt.legend()
+        # Save the plot to output folder
+        plt_path = f"{model_folder_path}/training_validation_loss.png"
+        plt.savefig(plt_path)
+        plt.close()
+        # print(f"Training and validation loss plot saved to {plt_path}")
+
+    @staticmethod
+    def save_training_report(
+        train_dataset: torch.utils.data.Subset,
+        validation_dataset: torch.utils.data.Subset,
+        test_dataset: torch.utils.data.Subset,
+        num_classes: int,
+        epoch_index: int,
+        validation_loss: float,
+        model: torch.nn.Module,
+    ):
+        file_content = f"""# Chess Model Training
+- Trained at {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+- Model trained on {len(train_dataset)} game positions
+- Model validated on {len(validation_dataset)} game positions
+- Model tested on {len(test_dataset)} game positions
+- Number of unique moves: {num_classes}
+- Number of epochs: {epoch_index + 1}
+- Final validation loss: {validation_loss:.4f}
+
+# Model Summary
+```
+{ModelUtils.model_summary(model)}
+```
+        """
+        report_path = f"{model_folder_path}/TRAINING_REPORT.md"
+        with open(report_path, "w") as report_file:
+            report_file.write(file_content)
+        # print(f"Training report saved to {README_path}")
+
+    @staticmethod
+    def train_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Module, device: str) -> float:
+        model.train()
+        running_loss = 0.0
+        for inputs, labels in tqdm.tqdm(dataloader, ncols=80, desc="Training", unit="batch"):
+            inputs, labels = inputs.to(device), labels.to(device)  # Move data to GPU
+            optimizer.zero_grad()
+
+            outputs = model(inputs)  # Raw logits
+
+            # Compute loss
+            loss = loss_fn(outputs, labels)
+            loss.backward()
+
+            # Gradient clipping
+            # torch.torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+            optimizer.step()
+            running_loss += loss.item()
+
+        average_loss = running_loss / len(dataloader)
+        return average_loss
+
+    @staticmethod
+    def validation_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, loss_fn: torch.nn.Module, device: str) -> float:
+        model.eval()
+        running_loss = 0.0
+        with torch.no_grad():
+            for inputs, labels in dataloader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                outputs = model(inputs)
+
+                loss = loss_fn(outputs, labels)
+                running_loss += loss.item()
+
+        validation_loss = running_loss / len(dataloader)
+        return validation_loss
+
+    @staticmethod
+    def evaluate_model_accuracy(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, device: str) -> float:
+        # FIXME this function is buggy ?
+        model.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for inputs, labels in dataloader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                logits = model(inputs)
+
+                _, predicted = torch.max(logits, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        accuracy = 100 * correct / total
+        return accuracy

@@ -16,6 +16,7 @@ class Encoding:
 
     BOARD_DTYPE = torch.int32
     MOVE_DTYPE = torch.int32  # class index as long
+    EVAL_DTYPE = torch.float32  # evaluation as float
 
     # create a static property accesor for .OUTPUT_SHAPE
     @staticmethod

@@ -177,7 +177,7 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
         unified_scores: list[float] = [unify_engine_score(relative_score) for relative_score in relative_scores]
 
         # build eval tensor
-        eval_tensor = torch.tensor(unified_scores, dtype=torch.float32)
+        eval_tensor = torch.tensor(unified_scores, dtype=Encoding.EVAL_DTYPE)
 
         # Save eval tensor
         torch.save(eval_tensor, evals_path)
