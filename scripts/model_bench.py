@@ -6,15 +6,11 @@ import time
 
 # pip imports
 import argparse
-import chess
 import torch
 
 # local imports
 from src.libs.chess_model import ChessModel
-from src.utils.dataset_utils import DatasetUtils
-from src.utils.model_utils import ModelUtils
 from src.libs.encoding import Encoding
-from src.utils.uci2class_utils import Uci2ClassUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
