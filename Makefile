@@ -13,10 +13,10 @@ clean_pgn_splits: ## clean split pgn files
 clean: clean_model clean_pgn_tensors ## clean all generated files
 
 pgn_split_lichess:
-	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/pgn/lichess_elite/*.pgn
+	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/lichess_elite/*.pgn
 
 pgn_split_fishtest:
-	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/pgn/fishtest_stockfish/*/*/*.pgn.gz
+	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/fishtest_stockfish/*/*/*.pgn.gz
 
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py

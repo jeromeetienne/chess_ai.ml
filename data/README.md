@@ -1,5 +1,8 @@
-- https://sourceforge.net/p/craftychessinterface/wiki/UCI%20engine%20opening%20book/
+- stockfish_fishtest from https://huggingface.co/datasets/official-stockfish/fishtest_pgns/
+- lichess elite from https://database.nikonoel.fr/
 
+## Polyglot
+- https://sourceforge.net/p/craftychessinterface/wiki/UCI%20engine%20opening%20book/
   - https://github.com/michaeldv/donna_opening_books/raw/master/gm2001.bin
   - https://github.com/michaeldv/donna_opening_books/raw/master/komodo.bin
   - https://github.com/niklasf/python-chess/raw/master/data/polyglot/performance.bin

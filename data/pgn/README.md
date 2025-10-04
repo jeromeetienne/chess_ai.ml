@@ -1,2 +1,0 @@
-- stockfish_fishtest from https://huggingface.co/datasets/official-stockfish/fishtest_pgns/
-- lichess elite from https://database.nikonoel.fr/
