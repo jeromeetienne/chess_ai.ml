@@ -14,16 +14,19 @@ from src.utils.uci2class_utils import Uci2ClassUtils
 
 class Encoding:
 
-    INPUT_SHAPE = (21, 8, 8)  # (channels, height, width)
     BOARD_DTYPE = torch.int32
     MOVE_DTYPE = torch.int32  # class index as long
 
     # create a static property accesor for .OUTPUT_SHAPE
     @staticmethod
-    def GET_OUTPUT_SHAPE() -> tuple[int]:
+    def get_output_shape() -> tuple[int]:
         uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
         num_classes = len(uci2class_white)
         return (num_classes,)
+    
+    @staticmethod
+    def get_input_shape() -> tuple[int, int, int]:
+        return (Encoding.PLANE.PLANE_COUNT, 8, 8)
 
     class PLANE:
         ACTIVE_PAWN = 0
@@ -59,13 +62,11 @@ class Encoding:
         # AlphaZero style board encoding
         # https://github.com/iamlucaswolf/gym-chess/blob/6a5eb43650c400a556505ec035cc3a3c5792f8b2/gym_chess/alphazero/board_encoding.py#L11C1-L33C1
 
-        assert Encoding.INPUT_SHAPE == (21, 8, 8), f"INPUT_SHAPE must be (21, 8, 8), got {Encoding.INPUT_SHAPE}"
-
         active_color = board.turn
         opponent_color = chess.WHITE if active_color == chess.BLACK else chess.BLACK
 
         # create an empty tensor - Use numpy first, it is 3-4 faster than torch for this
-        board_numpy = np.zeros(Encoding.INPUT_SHAPE, dtype=np.uint16)
+        board_numpy = np.zeros(Encoding.get_input_shape(), dtype=np.uint16)
 
         ###############################################################################
         #   Piece planes
@@ -126,7 +127,7 @@ class Encoding:
         convert a board tensor of shape (21, 8, 8) to a chess.Board object
         """
 
-        assert board_tensor.shape == Encoding.INPUT_SHAPE, f"board_tensor shape must be {Encoding.INPUT_SHAPE}, got {board_tensor.shape}"
+        assert board_tensor.shape == Encoding.get_input_shape(), f"board_tensor shape must be {Encoding.get_input_shape()}, got {board_tensor.shape}"
 
         board = chess.Board()
         board.clear()  # clear the board
@@ -206,7 +207,7 @@ class Encoding:
     #     This involves rotating the piece planes and swapping the piece colors.
     #     """
 
-    #     assert board_tensor.shape == Encoding.INPUT_SHAPE, f"board_tensor shape must be {Encoding.INPUT_SHAPE}, got {board_tensor.shape}"
+    #     assert board_tensor.shape == Encoding.get_input_shape(), f"board_tensor shape must be {Encoding.get_input_shape()}, got {board_tensor.shape}"
 
     #     # Rotate all planes by 180 degrees
     #     rotated_tensor = torch.flip(input=board_tensor, dims=[1, 2])
@@ -252,7 +253,7 @@ class Encoding:
         #     AssertionError: If the input tensor shape is not scalar or if the encoding input shape is not as expected.
         # """
 
-        # assert Encoding.INPUT_SHAPE[0] == 16, "not updated to new encoding"
+        # assert Encoding.get_input_shape()[0] == 16, "not updated to new encoding"
 
         # assert move_tensor.shape == (), f"move_tensor shape must be (), got {move_tensor.shape}"
         # move_uci = classindex_to_uci[int(move_tensor.item())]

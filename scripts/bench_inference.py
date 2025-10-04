@@ -30,7 +30,7 @@ if __name__ == "__main__":
     #
 
     # Create the model
-    model = ChessModel(input_shape=Encoding.INPUT_SHAPE, output_shape=Encoding.GET_OUTPUT_SHAPE())
+    model = ChessModel(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
 
     # set to eval mode
     model.eval()
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     # get an random input
     batch_size = 1
-    test_input = torch.randn(batch_size, *Encoding.INPUT_SHAPE, dtype=torch.float32)
+    test_input = torch.randn(batch_size, *Encoding.get_input_shape(), dtype=torch.float32)
     test_input = test_input.to(device)
 
     ###############################################################################

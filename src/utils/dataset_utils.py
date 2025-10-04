@@ -34,7 +34,7 @@ class DatasetUtils:
         EVALS = "_evals_tensor.pt"
 
     ###############################################################################
-    #   Load/Save dataset tensors
+    #   File path helpers
     #
 
     @staticmethod
@@ -46,16 +46,19 @@ class DatasetUtils:
         return f"{tensors_folder_path}/{basename_prefix}{DatasetUtils.FILE_SUFFIX.MOVES}"
 
     @staticmethod
+    def evals_tensor_path(tensors_folder_path: str, basename_prefix: str) -> str:
+        return f"{tensors_folder_path}/{basename_prefix}{DatasetUtils.FILE_SUFFIX.EVALS}"
+
+
+    ###############################################################################
+    #   Load/Save dataset tensors
+    #
+
+    @staticmethod
     def save_boards_tensor(boards_tensor: torch.Tensor, tensors_folder_path: str, basename_prefix: str) -> None:
         # save boards tensor
         boards_path = DatasetUtils.boards_tensor_path(tensors_folder_path, basename_prefix)
         torch.save(boards_tensor, boards_path)  
-
-    @staticmethod
-    def save_moves_tensor(moves_tensor: torch.Tensor, tensors_folder_path: str, basename_prefix: str) -> None:
-        # save moves tensor
-        moves_path = DatasetUtils.moves_tensor_path(tensors_folder_path, basename_prefix)
-        torch.save(moves_tensor, moves_path)
 
     @staticmethod
     def load_boards_tensor(tensors_folder_path: str, basename_prefix: str) -> torch.Tensor:
@@ -65,6 +68,12 @@ class DatasetUtils:
         return boards_tensor
     
     @staticmethod
+    def save_moves_tensor(moves_tensor: torch.Tensor, tensors_folder_path: str, basename_prefix: str) -> None:
+        # save moves tensor
+        moves_path = DatasetUtils.moves_tensor_path(tensors_folder_path, basename_prefix)
+        torch.save(moves_tensor, moves_path)
+
+    @staticmethod
     def load_moves_tensor(tensors_folder_path: str, basename_prefix: str) -> torch.Tensor:
         # load the moves tensor
         moves_path = DatasetUtils.moves_tensor_path(tensors_folder_path, basename_prefix)
@@ -72,19 +81,33 @@ class DatasetUtils:
         return moves_tensor
 
     @staticmethod
-    def load_dataset(tensors_folder_path: str, basename_prefix: str) -> tuple[torch.Tensor, torch.Tensor]:
+    def save_evals_tensor(evals_tensor: torch.Tensor, tensors_folder_path: str, basename_prefix: str) -> None:
+        # save evals tensor
+        evals_path = DatasetUtils.evals_tensor_path(tensors_folder_path, basename_prefix)
+        torch.save(evals_tensor, evals_path)
+
+    @staticmethod
+    def load_evals_tensor(tensors_folder_path: str, basename_prefix: str) -> torch.Tensor:
+        # load the evals tensor
+        evals_path = DatasetUtils.evals_tensor_path(tensors_folder_path, basename_prefix)
+        evals_tensor = torch.load(evals_path)
+        return evals_tensor
+
+    @staticmethod
+    def load_dataset(tensors_folder_path: str, basename_prefix: str) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         # load the tensors
         boards_tensor = DatasetUtils.load_boards_tensor(tensors_folder_path, basename_prefix)
         moves_tensor = DatasetUtils.load_moves_tensor(tensors_folder_path, basename_prefix)
+        evals_tensor = DatasetUtils.load_evals_tensor(tensors_folder_path, basename_prefix)
         # ensure they have the same number of positions
         assert (
             boards_tensor.shape[0] == moves_tensor.shape[0]
         ), f"boards_tensor has {boards_tensor.shape[0]} positions but moves_tensor has {moves_tensor.shape[0]} positions. basename_prefix={basename_prefix}"
         # return the dataset
-        return boards_tensor, moves_tensor
+        return boards_tensor, moves_tensor, evals_tensor
 
     @staticmethod
-    def load_datasets(tensors_folder_path: str, max_file_count: int = 15) -> tuple[torch.Tensor, torch.Tensor]:
+    def load_datasets(tensors_folder_path: str, max_file_count: int = 15) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         # gather all tensor file paths
         basenames = sorted(os.listdir(tensors_folder_path))
         boards_basenames = [basename for basename in basenames if basename.endswith(DatasetUtils.FILE_SUFFIX.BOARDS)]
@@ -97,16 +120,21 @@ class DatasetUtils:
         # load all tensors
         boards_tensors = []
         moves_tensors = []
+        evals_tensors = []
         for basename_prefix in basename_prefixes:
             _boards_tensor = DatasetUtils.load_boards_tensor(tensors_folder_path, basename_prefix)
             _moves_tensor = DatasetUtils.load_moves_tensor(tensors_folder_path, basename_prefix)
+            _evals_tensor = DatasetUtils.load_evals_tensor(tensors_folder_path, basename_prefix)
             boards_tensors.append(_boards_tensor)
             moves_tensors.append(_moves_tensor)
+            evals_tensors.append(_evals_tensor)
 
         # ensure they have the same number of positions
         boards_count = sum([len(boards_tensor) for boards_tensor in boards_tensors])
         moves_count = sum([len(moves_tensor) for moves_tensor in moves_tensors])
+        evals_count = sum([len(evals_tensor) for evals_tensor in evals_tensors])
         assert boards_count == moves_count, f"boards_tensor has {boards_count} positions but moves_tensor has {moves_count} positions"
+        assert boards_count == evals_count, f"boards_tensor has {boards_count} positions but evals_tensor has {evals_count} positions"
 
         # log the event
         print(f"Loading dataset from {len(basename_prefixes)} files, total {boards_count:,} positions")
@@ -114,9 +142,10 @@ class DatasetUtils:
         # concatenate all tensors
         boards_tensor = torch.cat(boards_tensors, dim=0)
         moves_tensor = torch.cat(moves_tensors, dim=0)
+        evals_tensor = torch.cat(evals_tensors, dim=0)
 
         # return the dataset
-        return boards_tensor, moves_tensor
+        return boards_tensor, moves_tensor, evals_tensor
 
     ###############################################################################
     #   Convert PGN games to boards and moves
@@ -157,7 +186,7 @@ class DatasetUtils:
         assert len(boards) == len(moves), f"len(boards)={len(boards)} != len(moves)={len(moves)}"
 
         # create tensors to hold the boards and moves
-        boards_tensor = torch.zeros((len(boards), *Encoding.INPUT_SHAPE), dtype=Encoding.BOARD_DTYPE)
+        boards_tensor = torch.zeros((len(boards), *Encoding.get_input_shape()), dtype=Encoding.BOARD_DTYPE)
         moves_tensor = torch.zeros((len(boards),), dtype=Encoding.MOVE_DTYPE)
 
         # iterate through all positions and encode them
@@ -184,7 +213,7 @@ class DatasetUtils:
         pgn_basename = os.path.basename(pgn_path).replace(".pgn", "")
 
         print(f"Loading tensors for {pgn_basename}")
-        boards_tensor, moves_tensor = DatasetUtils.load_dataset(tensor_folder_path, pgn_basename)
+        boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_dataset(tensor_folder_path, pgn_basename)
 
         ###############################################################################
         #   convert the pgn games in boards and moves, skipping the opening book positions
@@ -247,10 +276,10 @@ class DatasetUtils:
     #
 
     @staticmethod
-    def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor) -> str:
+    def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor, evals_tensor: torch.Tensor) -> str:
         summary = f"""Dataset Summary:
 - Total positions: {len(boards_tensor):,}
-- Input: size {Encoding.INPUT_SHAPE} (Channels, Height, Width), type {Encoding.BOARD_DTYPE}
+- Input: size {Encoding.get_input_shape()} (Channels, Height, Width), type {Encoding.BOARD_DTYPE}
 - Output shape: size {moves_tensor.shape} (Scalar class index), type {Encoding.MOVE_DTYPE}
 """
         return summary

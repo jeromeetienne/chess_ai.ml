@@ -15,6 +15,8 @@ from torch.utils.data import TensorDataset
 
 import matplotlib.pyplot as plt
 
+from src.libs.encoding import Encoding
+
 # local imports
 from .libs.chess_model import ChessModel
 from .libs.early_stopper import EarlyStopper
@@ -146,8 +148,8 @@ class TrainCommand:
         #
 
         # Load the dataset
-        boards_tensor, moves_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
-        print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))
+        boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
+        print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor, evals_tensor))
 
         uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
         num_classes = len(uci2class_white)
@@ -176,8 +178,8 @@ class TrainCommand:
         # print(f"Pytorch computes on {device} device")
 
         # Model Initialization
-        input_shape: tuple[int, int, int] = typing.cast(tuple[int, int, int], boards_tensor.shape[1:])  # (channels, height, width)
-        output_shape = (num_classes,)
+        input_shape = Encoding.get_input_shape()  # (channels, height, width)
+        output_shape = Encoding.get_output_shape()
         model = ChessModel(input_shape=input_shape, output_shape=output_shape).to(device)
 
         # use cross entropy loss for multi-class classification

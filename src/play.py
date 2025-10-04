@@ -50,21 +50,15 @@ class PlayCommand:
         # Load the Model & mapping and Move to GPU if Available
         #
 
-        # Load the mapping
-        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
-        num_classes = len(uci2class_white)
-
         # Load the model
-        input_shape = Encoding.INPUT_SHAPE  # (channels, height, width)
-        output_shape = (num_classes,)
-        model = ModelUtils.load_model(folder_path=model_folder_path, input_shape=input_shape, output_shape=output_shape)
+        model = ModelUtils.load_model(model_folder_path, Encoding.get_input_shape(), Encoding.get_output_shape())
         
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
         polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
+        # Initialize the Chess Player with the loaded model
         chess_player = ChessPlayer(model=model, color=chess.WHITE, polyglot_reader=polyglot_reader)
-
 
         ###############################################################################
         # Use the ```predict_move``` function to get the best move and its probabilities for a given board state:
@@ -74,7 +68,6 @@ class PlayCommand:
         board = chess.Board()
 
         # display the initial board
-        # print(board.unicode())
         print(ChessExtra.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 
         print(f'White: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "white" else opponent_tech)}')

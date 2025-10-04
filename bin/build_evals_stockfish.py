@@ -153,8 +153,8 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
             continue
 
         # Load dataset boards_tensor
-        boards_tensor = torch.load(boards_tensor_path)
-        board_count = boards_tensor.shape[0]
+        boards_tensor = DatasetUtils.load_boards_tensor(boards_tensor_path, basename)
+        board_count = len(boards_tensor)
         board_count_total += board_count
 
         print(f"{basename}.pgn processing {boards_tensor.shape[0]} boards", end=" ", flush=True)
