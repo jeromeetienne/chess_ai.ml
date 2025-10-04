@@ -1,4 +1,7 @@
 # TODO
+- how to handle the dual head
+  - load eval tensor if present
+  - do i force it the eval to be present ? maybe i can create a fake eval of 0...
 - use that everywhere    class FILE_SUFFIX:
         BOARDS = "_boards_tensor.pt"
         MOVES = "_moves_tensor.pt"

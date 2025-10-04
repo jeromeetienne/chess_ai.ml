@@ -9,6 +9,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 # local imports
 from src.libs.early_stopper import EarlyStopper
+from src.utils.pgn_utils import PGNUtils
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -37,11 +38,12 @@ class RegressionModel(nn.Module):
             nn.ReLU(),
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
             nn.ReLU(),
+
         )
 
         # Calculate the size of the flattened tensor after conv layers
         # Input is (128 channels * 2 * 2 = 128 features)
-        self.flattened_size = 128 * 8*8  # C * H * W
+        self.flattened_size = 128 * 4*4  # C * H * W
 
         # Fully connected layers (for regression output)
         self.fc_layers = nn.Sequential(
@@ -69,15 +71,18 @@ class RegressionModel(nn.Module):
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
 
 # Hyperparameters
-INPUT_SHAPE = (21, 8, 8)
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 NUM_EPOCHS = 300
-DATA_SIZE = 100
+DATA_SIZE = 10000
 
 from src.utils.dataset_utils import DatasetUtils
 
 # torch.manual_seed(42)
+
+pgn_paths = PGNUtils.get_pgn_paths()
+# truncate file_pgn_paths to max_files_count
+pgn_paths = pgn_paths[:3]
 
 basename_prefix = '5b07b25e0ebc5914abc12c6d.split_01_of_66'
 boards_tensor, moves_tensor = DatasetUtils.load_dataset_tensor(tensors_folder_path, f'{basename_prefix}')
@@ -95,12 +100,6 @@ evals_tensor = evals_tensor[:DATA_SIZE]
 print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))
 print(f'Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}')
 
-# 1.1 Create dummy data
-# Input: (DATA_SIZE, 21, 8, 8)
-# Output: (DATA_SIZE, 1)
-# boards_tensor = torch.randn(DATA_SIZE, *INPUT_SHAPE, dtype=torch.float32)
-# evals_tensor = torch.randn(DATA_SIZE, 1, dtype=torch.float32)
-
 # Create Dataset and DataLoader
 dataset = TensorDataset(boards_tensor, evals_tensor)
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
@@ -115,7 +114,7 @@ optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 # ----------------------------------------------------------------
 # Add a learning rate scheduler to reduce LR over time
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5, threshold=0.05)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5, threshold=0.001)
 
 early_stopper = EarlyStopper(patience=30, threshold=0.00001)
 
@@ -151,7 +150,7 @@ for epoch in range(NUM_EPOCHS):
     
     # Print statistics every epoch
     training_loss = running_loss / len(dataloader)
-    print(f'Epoch [{epoch+1}/{NUM_EPOCHS}] Loss: {training_loss:.8f}')
+    print(f'Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f}')
 
     # Step the scheduler
     scheduler.step(training_loss)
@@ -183,4 +182,4 @@ for i in range(40):
     with torch.no_grad():
         prediction = model(test_input)
 
-    print(f"Example Prediction for a single input: {prediction.item():3.4f} Actual eval: {evals_tensor[i].item():4.4f} delta={abs(prediction.item() - evals_tensor[i].item()):.4f}")
+    print(f"Example Prediction for a single input: {prediction.item():-3.4f} Actual eval: {evals_tensor[i].item():4.4f} delta={abs(prediction.item() - evals_tensor[i].item()):.4f}")
