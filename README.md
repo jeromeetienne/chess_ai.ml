@@ -6,6 +6,15 @@ Coded with Python and PyTorch.
 
 It has been originally inspired by https://github.com/Skripkon/chess-engine.git
 
+# Machine Learning insights
+
+> "A neural network model on its own cannot produce a reasonable move, as it lacks the depth of calculation required."
+
+## Explaination
+A neural network model **alone** doesn't possess the depth of calculation required in chess. In chess terminology, calculation refers to the process of visualizing sequences of moves and countermoves, assessing their consequences, and predicting resulting positions to make the best decision. This depth of calculation is achieved using search algorithms such as [minimax](https://en.wikipedia.org/wiki/Minimax), [alpha-beta pruning](https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning), or [Monte Carlo Tree Search (MCTS)](https://en.wikipedia.org/wiki/Monte_Carlo_tree_search), which systematically explore the game tree to a certain depth. 
+
+AlphaZero exemplifies the synergy between machine learning and traditional search algorithms. It combines a deep neural network—which evaluates board positions and suggests promising moves, using Monte Carlo Tree Search (MCTS), a powerful tree search technique. The neural network guides the search by focusing on the most relevant moves, while MCTS provides the depth of calculation needed to explore possible continuations. This integration allows AlphaZero to efficiently balance intuition (from ML) and calculation (from tree search), achieving superhuman performance in chess.
+
 ## Inputs encoding
 The input is a 8x8x14 tensor representing the chess board. 
 
@@ -17,7 +26,7 @@ The remaining 2 channels are used to encode the legal moves:
 - The 14th channel encodes the **to** square of the move (1 if the piece is to be moved to that square, 0 otherwise).
 
 ## Output encoding
-The output is a 4096-dimensional vector representing all possible moves on a chessboard based on the dataset.
+The output is a 1968-dimensional vector representing all possible moves on a chessboard based on the dataset.
 
 ## Good Looking!
 
