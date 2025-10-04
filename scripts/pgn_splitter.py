@@ -44,7 +44,7 @@ def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
     src_basename = os.path.basename(src_path).replace('.pgn.gz', '').replace('.pgn', '')
 
     # open source file (handle .gz if needed)
-    src_file = gzip.open(src_path, 'rt', encoding='utf-8') if src_path.endswith('.pgn.gz') else open(src_path, 'r', encoding='utf-8')
+    src_file_io = gzip.open(src_path, 'rt', encoding='utf-8') if src_path.endswith('.pgn.gz') else open(src_path, 'r', encoding='utf-8')
 
     for file_index in range(file_count):
         dst_basename = f"{src_basename}.split_{str(file_index + 1).rjust(2,'0')}_of_{str(file_count).rjust(2,'0')}.pgn"
@@ -58,13 +58,13 @@ def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
         dst_file = open(dst_path, 'w', encoding='utf-8')
         # seek to start offset if specified
         if offset_start is not None:
-            src_file.seek(offset_start)
+            src_file_io.seek(offset_start)
         # read until offset_end or EOF
         if offset_end is not None:
             bytes_to_read = offset_end - (offset_start if offset_start is not None else 0)
-            data = src_file.read(bytes_to_read)
+            data = src_file_io.read(bytes_to_read)
         else:
-            data = src_file.read()
+            data = src_file_io.read()
         # write to destination file
         dst_file.write(data)
 
@@ -72,7 +72,7 @@ def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
         dst_file.close()
     
     # close source file
-    src_file.close()
+    src_file_io.close()
 
     return game_count
 
@@ -80,7 +80,7 @@ def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
 #   main entry point
 #
 if __name__ == "__main__":
-    # Parse command line arguments - pgn_splitter.py -mgp 200 *.pgn
+    # Parse command line arguments - usage example: pgn_splitter.py -mgp 200 *.pgn
     argParser = argparse.ArgumentParser(description="Split large PGN files into smaller ones.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     argParser.add_argument("--games-per-file", "-gpf", type=int, default=200, help="Maximum number of games per split file.")
     argParser.add_argument("--dst-folder", "-d", type=str, default=None, help="Destination folder for split files (default: same as source file).")
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     argParser.add_argument("pgn_paths", type=str, nargs='+', help="Path(s) to the PGN file(s) to split.")
     args = argParser.parse_args()
 
-
+    # process each provided pgn_path
     for pgn_path in args.pgn_paths:
         # ignore pgn_path which contain '.split_'
         if '.split_' in pgn_path:

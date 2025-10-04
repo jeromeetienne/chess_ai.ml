@@ -136,7 +136,7 @@ class TrainCommand:
     # Train a chess model using PyTorch.
     ###############################################################################
     @staticmethod
-    def train(num_epochs: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7, max_file_count: int = 15):
+    def train(max_epoch_count: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7, max_file_count: int = 15):
 
         # set random seed for reproducibility
         # torch.manual_seed(42)
@@ -146,7 +146,7 @@ class TrainCommand:
         #
 
         # Load the dataset
-        boards_tensor, moves_tensor = DatasetUtils.load_datasets(tensors_folder_path=tensors_folder_path, max_file_count=max_file_count)
+        boards_tensor, moves_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
         print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))
 
         uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
@@ -200,7 +200,7 @@ class TrainCommand:
         validation_losses = []
         train_losses = []
 
-        for epoch_index in range(num_epochs):
+        for epoch_index in range(max_epoch_count):
             epoch_start_time = time.time()
             # Training the model
             avg_loss = TrainCommand.train_one_epoch(model=model, dataloader=train_dataloader, optimizer=optimizer, loss_fn=loss_fn, device=device)
@@ -221,7 +221,7 @@ class TrainCommand:
 
             # Print epoch summary
             print(
-                f"Epoch {epoch_index + 1}/{num_epochs}, lr={scheduler.get_last_lr()[0]} Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}"
+                f"Epoch {epoch_index + 1}/{max_epoch_count}, lr={scheduler.get_last_lr()[0]} Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}"
             )
             # Plot training and validation loss
             TrainCommand.plot_losses(train_losses, validation_losses)

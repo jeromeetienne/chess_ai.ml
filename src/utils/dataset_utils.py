@@ -38,36 +38,36 @@ class DatasetUtils:
     #
 
     @staticmethod
-    def board_tensor_path(tensors_folder_path: str, basename_prefix: str) -> str:
+    def boards_tensor_path(tensors_folder_path: str, basename_prefix: str) -> str:
         return f"{tensors_folder_path}/{basename_prefix}{DatasetUtils.FILE_SUFFIX.BOARDS}"
     
     @staticmethod
-    def move_tensor_path(tensors_folder_path: str, basename_prefix: str) -> str:
+    def moves_tensor_path(tensors_folder_path: str, basename_prefix: str) -> str:
         return f"{tensors_folder_path}/{basename_prefix}{DatasetUtils.FILE_SUFFIX.MOVES}"
 
     @staticmethod
     def save_boards_tensor(boards_tensor: torch.Tensor, tensors_folder_path: str, basename_prefix: str) -> None:
         # save boards tensor
-        boards_path = DatasetUtils.board_tensor_path(tensors_folder_path, basename_prefix)
+        boards_path = DatasetUtils.boards_tensor_path(tensors_folder_path, basename_prefix)
         torch.save(boards_tensor, boards_path)  
 
     @staticmethod
     def save_moves_tensor(moves_tensor: torch.Tensor, tensors_folder_path: str, basename_prefix: str) -> None:
         # save moves tensor
-        moves_path = DatasetUtils.move_tensor_path(tensors_folder_path, basename_prefix)
+        moves_path = DatasetUtils.moves_tensor_path(tensors_folder_path, basename_prefix)
         torch.save(moves_tensor, moves_path)
 
     @staticmethod
     def load_boards_tensor(tensors_folder_path: str, basename_prefix: str) -> torch.Tensor:
         # load the boards tensor
-        boards_path = DatasetUtils.board_tensor_path(tensors_folder_path, basename_prefix)
+        boards_path = DatasetUtils.boards_tensor_path(tensors_folder_path, basename_prefix)
         boards_tensor = torch.load(boards_path)
         return boards_tensor
     
     @staticmethod
     def load_moves_tensor(tensors_folder_path: str, basename_prefix: str) -> torch.Tensor:
         # load the moves tensor
-        moves_path = DatasetUtils.move_tensor_path(tensors_folder_path, basename_prefix)
+        moves_path = DatasetUtils.moves_tensor_path(tensors_folder_path, basename_prefix)
         moves_tensor = torch.load(moves_path)
         return moves_tensor
 

@@ -4,7 +4,7 @@
 import argparse
 
 # local imports
-from src.build_dataset import DatasetBuilderCommand
+from src.build_boards_moves import DatasetBuilderCommand
 
 ###############################################################################
 ###############################################################################

@@ -21,6 +21,7 @@ tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 #   Main entry point
 #
 if __name__ == "__main__":
+    # Parse command line arguments
     argParser = argparse.ArgumentParser(description="Benchmark different model architectures.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     argParser.parse_args()
 

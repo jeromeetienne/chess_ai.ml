@@ -51,9 +51,8 @@ class DatasetBuilderCommand:
 
         for pgn_file_path in pgn_file_paths:
             basename = os.path.basename(pgn_file_path).replace(".pgn", "")
-            boards_file_path = os.path.join(tensors_folder_path, f"{basename}{DatasetUtils.FILE_SUFFIX.BOARDS}")
-            moves_file_path = os.path.join(tensors_folder_path, f"{basename}{DatasetUtils.FILE_SUFFIX.MOVES}")
-
+            boards_file_path = DatasetUtils.boards_tensor_path(tensors_folder_path, basename)
+            moves_file_path = DatasetUtils.moves_tensor_path(tensors_folder_path, basename)
 
             # Skip if files already exist
             if os.path.exists(boards_file_path) and os.path.exists(moves_file_path):

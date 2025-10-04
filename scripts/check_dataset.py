@@ -23,6 +23,7 @@ tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 #   Main entry point
 #
 if __name__ == "__main__":
+    # Parse command line arguments
     argParser = argparse.ArgumentParser(
         description="Check the integrity of the dataset by comparing PGN files to their tensor representations.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

@@ -20,11 +20,13 @@ uci2classes_folder_path = os.path.join(output_folder_path, "uci2classes")
 #   Main entry point
 #
 if __name__ == "__main__":
+    # Parse command line arguments
     argParser = argparse.ArgumentParser(
         description="Build UCI to class index mappings for white and black pieces.", formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     args = argParser.parse_args()
 
+    # Generate all unique moves in UCI format
     all_moves_uci = ChessExtra.all_unique_moves()
 
     # sort the moves

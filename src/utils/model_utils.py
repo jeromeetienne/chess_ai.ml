@@ -11,7 +11,6 @@ from ..libs.chess_model import ChessModel
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
-
 class ModelUtils:
     @staticmethod
     def model_summary(model: torch.nn.Module) -> str:

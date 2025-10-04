@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     # Call the train function
     TrainCommand.train(
-        num_epochs=args.num_epochs,
+        max_epoch_count=args.num_epochs,
         batch_size=args.batch_size,
         learning_rate=args.learning_rate,
         train_test_split_ratio=args.train_test_split_ratio,
