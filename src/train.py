@@ -8,16 +8,11 @@ import typing
 import chess
 import tqdm
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader
-from torch.utils.data import TensorDataset
-
+# from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 
-from src.libs.encoding import Encoding
-
 # local imports
+from .libs.encoding import Encoding
 from .libs.chess_model import ChessModel
 from .libs.early_stopper import EarlyStopper
 from .utils.dataset_utils import DatasetUtils
@@ -57,7 +52,7 @@ class TrainCommand:
         num_classes: int,
         epoch_index: int,
         validation_loss: float,
-        model: nn.Module,
+        model: torch.nn.Module,
     ):
         file_content = f"""# Chess Model Training
 - Trained at {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
@@ -79,7 +74,7 @@ class TrainCommand:
         # print(f"Training report saved to {README_path}")
 
     @staticmethod
-    def train_one_epoch(model: nn.Module, dataloader: DataLoader, optimizer: optim.Optimizer, loss_fn: nn.Module, device: str) -> float:
+    def train_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Module, device: str) -> float:
         model.train()
         running_loss = 0.0
         for inputs, labels in tqdm.tqdm(dataloader, ncols=80, desc="Training", unit="batch"):
@@ -93,7 +88,7 @@ class TrainCommand:
             loss.backward()
 
             # Gradient clipping
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            # torch.torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
             optimizer.step()
             running_loss += loss.item()
@@ -102,7 +97,7 @@ class TrainCommand:
         return average_loss
 
     @staticmethod
-    def validation_one_epoch(model: nn.Module, dataloader: DataLoader, loss_fn: nn.Module, device: str) -> float:
+    def validation_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, loss_fn: torch.nn.Module, device: str) -> float:
         model.eval()
         running_loss = 0.0
         with torch.no_grad():
@@ -117,7 +112,7 @@ class TrainCommand:
         return validation_loss
 
     @staticmethod
-    def evaluate_model_accuracy(model: nn.Module, dataloader: DataLoader, device: str) -> float:
+    def evaluate_model_accuracy(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, device: str) -> float:
         # FIXME this function is buggy ?
         model.eval()
         correct = 0
@@ -163,15 +158,15 @@ class TrainCommand:
         dataset_ratio_test = (1 - train_test_split_ratio) / 2
 
         # Create the datasets for training, validation and testing by splitting the original dataset
-        boards_dataset = TensorDataset(boards_tensor, moves_tensor)
+        boards_dataset = torch.utils.data.TensorDataset(boards_tensor, moves_tensor)
         train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(
             boards_dataset, [dataset_ratio_train, dataset_ratio_validation, dataset_ratio_test]
         )
 
         # Create dataloaders for training, validation and testing
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        validation_dataloader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
-        test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        validation_dataloader = torch.utils.data.DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
+        test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
         # Check for GPU
         device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
@@ -183,9 +178,9 @@ class TrainCommand:
         model = ChessModel(input_shape=input_shape, output_shape=output_shape).to(device)
 
         # use cross entropy loss for multi-class classification
-        loss_fn = nn.CrossEntropyLoss()
+        loss_fn = torch.nn.CrossEntropyLoss()
         # use Adam optimizer to update model weights
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         # Add a learning rate scheduler to reduce LR over time
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5, threshold=0.05)
         # Initialize early stopper to stop training if no improvement for 'patience' epochs
