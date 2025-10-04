@@ -28,7 +28,6 @@ def game_count_in_pgn(file_path: str) -> tuple[int, list[int]]:
             current_offset += len(line)
     return game_count, start_offsets
 
-    return game_count
 
 def split_pgn_file(src_path: str, dst_folder: str, games_per_file: int = 500):
     """
