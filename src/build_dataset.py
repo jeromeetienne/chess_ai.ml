@@ -66,8 +66,10 @@ class DatasetBuilderCommand:
             print(f"{basename}.pgn converting to tensors ... ", end="", flush=True)
             games = PGNUtils.parse_pgn_file(pgn_file_path)
 
-            # Convert games to tensors
-            boards_tensor, moves_tensor = DatasetUtils.games_to_tensor(games, polyglot_reader=polyglot_reader)
+            # split the games into boards and moves
+            boards, moves = DatasetUtils.games_to_boards_moves(games, polyglot_reader)
+            # convert the boards and moves to tensors
+            boards_tensor, moves_tensor = DatasetUtils.boards_moves_to_tensor(boards, moves)
 
             # Save boards and moves tensors
             torch.save(boards_tensor, boards_file_path)

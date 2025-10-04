@@ -44,7 +44,7 @@ if __name__ == "__main__":
         pgn_paths = pgn_paths[: args.max_files_count]
 
     for pgn_path in pgn_paths:
-        difference_count = DatasetUtils.check_tensor_from_pgn(pgn_path, polyglot_reader, verbose=args.verbose)
+        difference_count = DatasetUtils.check_tensor_vs_pgn(pgn_path, polyglot_reader, verbose=args.verbose)
         if difference_count == 0:
             print(f"No differences found for {os.path.basename(pgn_path)}")
         else:

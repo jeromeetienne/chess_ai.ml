@@ -85,7 +85,7 @@ pgn_paths = PGNUtils.get_pgn_paths()
 pgn_paths = pgn_paths[:3]
 
 basename_prefix = '5b07b25e0ebc5914abc12c6d.split_01_of_66'
-boards_tensor, moves_tensor = DatasetUtils.load_dataset_tensor(tensors_folder_path, f'{basename_prefix}')
+boards_tensor, moves_tensor = DatasetUtils.load_dataset(tensors_folder_path, f'{basename_prefix}')
 
 eval_path = os.path.join(tensors_folder_path, f'{basename_prefix}{DatasetUtils.FILE_SUFFIX.EVALS}')
 evals_tensor = torch.load(eval_path)

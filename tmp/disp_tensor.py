@@ -33,10 +33,10 @@ if __name__ == "__main__":
     pgn_games = PGNUtils.parse_pgn_file(pgn_path)
 
     # Go thru all the moves of the game, and store the board and move if the position is not in the opening book
-    pgn_boards, pgn_moves = DatasetUtils.split_game_to_board_move(pgn_games, polyglot_reader)
+    pgn_boards, pgn_moves = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)
 
     pgn_basename = os.path.basename(pgn_path).replace(".pgn", "")
-    boards_tensor, moves_tensor = DatasetUtils.load_dataset_tensor(tensor_folder_path, pgn_basename)
+    boards_tensor, moves_tensor = DatasetUtils.load_dataset(tensor_folder_path, pgn_basename)
 
     ###############################################################################
     #   Display some info

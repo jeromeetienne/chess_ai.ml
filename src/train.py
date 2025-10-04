@@ -146,7 +146,7 @@ class TrainCommand:
         #
 
         # Load the dataset
-        boards_tensor, moves_tensor = DatasetUtils.load_dataset(tensors_folder_path=tensors_folder_path, max_file_count=max_file_count)
+        boards_tensor, moves_tensor = DatasetUtils.load_datasets(tensors_folder_path=tensors_folder_path, max_file_count=max_file_count)
         print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor))
 
         uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)

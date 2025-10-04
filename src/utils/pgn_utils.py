@@ -24,6 +24,7 @@ class PGNUtils:
         
         basenames = [basename for basename in os.listdir(pgn_folder_path) if basename.endswith(".pgn")]
         pgn_paths = [os.path.join(pgn_folder_path, basename) for basename in basenames]
+        pgn_paths = [os.path.abspath(pgn_path) for pgn_path in pgn_paths]
         pgn_paths.sort()
 
         return pgn_paths

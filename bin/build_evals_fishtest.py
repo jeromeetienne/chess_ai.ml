@@ -15,7 +15,7 @@ import chess.engine
 from src.libs.chess_extra import ChessExtra
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
-from scripts.build_evals_stockfish import unify_engine_score
+from bin.build_evals_stockfish import unify_engine_score
 
 
 ###############################################################################
@@ -159,6 +159,6 @@ if __name__ == "__main__":
     polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
     polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
-    print(f"Processing {len(pgn_paths)} PGN files from {pgn_folder_path}...")
+    print(f"Processing {len(pgn_paths)} PGN files from {os.path.abspath(pgn_folder_path)}...")
     for pgn_path in pgn_paths:
         process_pgn_file(pgn_path, tensors_folder_path, polyglot_reader)

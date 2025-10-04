@@ -1,7 +1,9 @@
 # TODO
+- move all function to datasetutils load/save function
+  - nobody is allowed to do torch.load()/torch.save() directly
 - how to handle the dual head
   - load eval tensor if present
-  - do i force it the eval to be present ? maybe i can create a fake eval of 0...
+  - do i force it the eval to be present ? maybe i can create a fake eval of 0... YES
 - do a multi head model in a corner to see how it goes
   - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
 - multi-head network: good for alpha alpha-zero 
