@@ -40,7 +40,7 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
 
     pgn_evals: list[float] = []
     # parse the pgn file
-    pgn_games = PGNUtils.parse_pgn_file(pgn_path)
+    pgn_games = PGNUtils.pgn_file_to_games(pgn_path)
 
     # iterate over all games
     for game in pgn_games:

@@ -192,7 +192,7 @@ class DatasetUtils:
         print(f"Checking {pgn_basename} - {str(len(boards_tensor)).rjust(5)} positions")
 
         # parse the pgn file
-        pgn_games = PGNUtils.parse_pgn_file(pgn_path)
+        pgn_games = PGNUtils.pgn_file_to_games(pgn_path)
 
         # split the games into boards and moves
         pgn_boards, pgn_moves = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)

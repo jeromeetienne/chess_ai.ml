@@ -64,7 +64,7 @@ class DatasetBuilderCommand:
             time_start = time.perf_counter()
 
             print(f"{basename}.pgn converting to tensors ... ", end="", flush=True)
-            games = PGNUtils.parse_pgn_file(pgn_file_path)
+            games = PGNUtils.pgn_file_to_games(pgn_file_path)
 
             # split the games into boards and moves
             boards, moves = DatasetUtils.games_to_boards_moves(games, polyglot_reader)

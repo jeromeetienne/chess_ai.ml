@@ -30,7 +30,7 @@ if __name__ == "__main__":
     pgn_path = pgn_paths[0]
 
     # parse the pgn file
-    pgn_games = PGNUtils.parse_pgn_file(pgn_path)
+    pgn_games = PGNUtils.pgn_file_to_games(pgn_path)
 
     # Go thru all the moves of the game, and store the board and move if the position is not in the opening book
     pgn_boards, pgn_moves = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)

@@ -8,6 +8,10 @@ output_folder_path = os.path.join(__dirname__, "../../output")
 uci2classes_folder_path = os.path.join(output_folder_path, "uci2classes")
 
 class Uci2ClassUtils:
+    """
+    Utility class to handle UCI to class index mappings and vice versa.
+    """
+
     _uci2class_white: dict[str, int] | None = None
     _uci2class_black: dict[str, int] | None = None
     _class2uci_white: dict[int, str] | None = None
@@ -15,6 +19,9 @@ class Uci2ClassUtils:
 
     @staticmethod
     def _init_if_needed():
+        """
+        Load the UCI to class mappings from JSON files if they haven't been loaded yet.
+        """
         is_initialized = Uci2ClassUtils._uci2class_white is not None
         if is_initialized:
             return
@@ -39,9 +46,9 @@ class Uci2ClassUtils:
 
     @staticmethod
     def get_uci2class(color: chess.Color) -> dict[str, int]:
+        # Initialize the mappings if needed
         Uci2ClassUtils._init_if_needed()
-        # TODO to remove!. this is temporary until you get the whole board orientation working correctly
-        # color = chess.WHITE
+
         # get the appropriate mapping based on the color
         if color == chess.WHITE:
             uci2class = typing.cast(dict[str, int], Uci2ClassUtils._uci2class_white)
@@ -52,9 +59,9 @@ class Uci2ClassUtils:
     
     @staticmethod
     def get_class2uci(color: chess.Color) -> dict[int, str]:
+        # Initialize the mappings if needed
         Uci2ClassUtils._init_if_needed()
-        # # TODO to remove!. this is temporary until you get the whole board orientation working correctly
-        # color = chess.WHITE
+        
         # get the appropriate mapping based on the color
         if color == chess.WHITE:
             class2uci = typing.cast(dict[int, str], Uci2ClassUtils._class2uci_white)

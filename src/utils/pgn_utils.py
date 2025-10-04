@@ -30,23 +30,7 @@ class PGNUtils:
         return pgn_paths
 
     @staticmethod
-    def parse_pgn_file_iter(file_path: str) -> Iterator[chess.pgn.Game]:
-        """
-        Parse a PGN file and yield chess.pgn.Game objects one by one.
-
-        Arguments:
-            file_path (str): Path to the PGN file.
-        """
-        with open(file_path, 'r') as pgn_file:
-            while True:
-                game = chess.pgn.read_game(pgn_file)
-                if game is None:
-                    break
-                yield game
-
-
-    @staticmethod
-    def parse_pgn_file(file_path: str) -> list[chess.pgn.Game]:
+    def pgn_file_to_games(file_path: str) -> list[chess.pgn.Game]:
         """
         Parse a PGN file and return a list of chess.pgn.Game objects.
 
