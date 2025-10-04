@@ -1,19 +1,9 @@
 # TODO
-- reorganize folders
-  - ./data/pgn_splits -> ./output
-  - ./data/pgn_tensors -> ./output
-  - ./data/uci2class_arr_* -> ./output/uci2class
-  - ./output/* -> ./output/models
 - how to handle the dual head
   - load eval tensor if present
   - do i force it the eval to be present ? maybe i can create a fake eval of 0...
-- do a regression in a corner 
-  - it should not have the same issue that the classification with 1972 classes
-  - https://gemini.google.com/app/b8047920ab1f4b67
-  - `tmp/regression.py`
 - do a multi head model in a corner to see how it goes
   - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
-- do a bench of inference - thus i can compare the model inference speed
 - multi-head network: good for alpha alpha-zero 
   - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
   - see PUCT (mcts + nn) vs UCT (mcts only)
@@ -27,20 +17,30 @@
 - understand the alpha zero paper move encoding
   - perplexity summarizing it - https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA
   - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
-- make a small script which compute the list of all move type at chess
+- make it play on lichess ?
+
+# DONE
+- WONTDO code a way to train on a special range of moves, not the whole game
+  - select by move number (e.g. 10 to 30)
+  - later by dynamically detecting opening, midgame, endgame
+  - generate multiple dataset files for each stage of the game
+- DONE make a small script which compute the list of all move type at chess
   - https://gemini.google.com/app/b876c2f17d4fde4e
   - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
   - https://www.chess.com/blog/the_real_greco/move-finding-the-engine-way
   - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
   - AI seems to contradict the alpha zero paper which says there are 4672 possible moves
   - brute force all possible moves on an empty board
-- code a way to train on a special range of moves, not the whole game
-  - select by move number (e.g. 10 to 30)
-  - later by dynamically detecting opening, midgame, endgame
-  - generate multiple dataset files for each stage of the game
-- make it play on lichess ?
-
-# DONE
+- DONE do a bench of inference - thus i can compare the model inference speed
+- DONE do a regression in a corner 
+  - it should not have the same issue that the classification with 1972 classes
+  - https://gemini.google.com/app/b8047920ab1f4b67
+  - `tmp/regression.py`
+- DONE reorganize folders
+  - ./data/pgn_splits -> ./output
+  - ./data/pgn_tensors -> ./output
+  - ./data/uci2class_arr_* -> ./output/uci2class
+  - ./output/* -> ./output/models
 - DONE use that everywhere    class FILE_SUFFIX:
         BOARDS = "_boards_tensor.pt"
         MOVES = "_moves_tensor.pt"
