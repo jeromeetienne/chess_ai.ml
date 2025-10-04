@@ -1,5 +1,6 @@
 # stdlib imports
 import os
+import math
 
 # pip imports
 import torch
@@ -12,10 +13,10 @@ from src.libs.early_stopper import EarlyStopper
 from src.utils.dataset_utils import DatasetUtils
 
 
-
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = os.path.abspath(os.path.join(__dirname__, '..', 'output'))
-tensors_folder_path = os.path.join(output_folder_path, 'pgn_tensors')
+output_folder_path = os.path.abspath(os.path.join(__dirname__, "..", "output"))
+tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
+
 
 # Define the Model
 ################################################################
@@ -24,6 +25,7 @@ class RegressionModel(torch.nn.Module):
     A simple Convolutional Neural Network (CNN) for regression.
     It processes the (21, 8, 8) input and outputs a single float.
     """
+
     def __init__(self):
         super(RegressionModel, self).__init__()
         # Input: (batch_size, 21, 8, 8) -> 21 is the number of channels
@@ -33,23 +35,19 @@ class RegressionModel(torch.nn.Module):
             # Conv1: Input 21 channels, Output 16 channels. Kernel size 3x3.
             torch.nn.Conv2d(in_channels=21, out_channels=32, kernel_size=3, padding=1),
             torch.nn.ReLU(),
-
-            torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
+            torch.nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding=1),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
+            torch.nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding=1),
             torch.nn.ReLU(),
-            # torch.nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
-            # torch.nn.ReLU(),
-
         )
-
 
         # Fully connected layers (for regression output)
         self.fc_layers = torch.nn.Sequential(
-            torch.nn.Linear(64 * 8 * 8, 64),
+            # regression head
+            torch.nn.Linear(32 * 8 * 8, 64),
             torch.nn.ReLU(),
-            torch.nn.Linear(64, 1)  # Output a single float
-        )
+            torch.nn.Linear(64, 1),
+        )  # Output a single float
 
     def forward(self, x):
         x = x.to(torch.float32)
@@ -61,6 +59,7 @@ class RegressionModel(torch.nn.Module):
         x = self.fc_layers(x)
         # x shape: (batch_size, 1)
         return x
+
 
 def plot_losses(train_losses: list[float]) -> None:
     min_loss = min(train_losses)
@@ -74,19 +73,52 @@ def plot_losses(train_losses: list[float]) -> None:
 
     # Annotate the minimum loss point
     min_epoch = train_losses.index(min_loss) + 1
-    plt.scatter(min_epoch, min_loss, color='red')  # Mark the minimum point
+    plt.scatter(min_epoch, min_loss, color="red")  # Mark the minimum point
 
     # add a text box with the min loss value, in top left corner of the plot
-    plt.text(0.05, 0.95, f'Min Loss: {min_loss:.4f} at Epoch {min_epoch}', transform=plt.gca().transAxes,
-             fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
+    plt.text(
+        0.05,
+        0.95,
+        f"Min Loss: {min_loss:.4f} at Epoch {min_epoch}",
+        transform=plt.gca().transAxes,
+        fontsize=10,
+        verticalalignment="top",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.5),
+    )
 
     # Save the plot to output folder
-    __basename__ = os.path.basename(__file__).replace('.py', '')
+    __basename__ = os.path.basename(__file__).replace(".py", "")
     plt_path = f"{__dirname__}/{__basename__}_training_loss.png"
     plt.savefig(plt_path)
     plt.close()
 
-def train()-> RegressionModel:
+
+def normalize_evals_tensor(evals_tensor: torch.Tensor) -> torch.Tensor:
+    return torch.tanh(evals_tensor / 10.0)
+
+
+# Inverse transform function for later use
+def denormalize_evals_tensor(normalized_evals_tensor: torch.Tensor) -> torch.Tensor:
+    return torch.atanh(normalized_evals_tensor) * 10.0
+
+
+def tensor_histogram_ascii(tensor: torch.Tensor, bins: int = 10, width: int = 50) -> str:
+    hist, bin_edges = torch.histogram(tensor, bins=bins)
+    hist = hist.cpu().numpy()
+    bin_edges = bin_edges.cpu().numpy()
+
+    max_count = hist.max()
+    scale = width / max_count if max_count > 0 else 1
+
+    histogram_lines = []
+    for count, edge_start, edge_end in zip(hist, bin_edges[:-1], bin_edges[1:]):
+        bar = "*" * int(count * scale)
+        histogram_lines.append(f"{edge_start:6.2f} - {edge_end:6.2f} | {bar} ({count})")
+
+    return "\n".join(histogram_lines)
+
+
+def train() -> None:
 
     # ----------------------------------------------------------------
 
@@ -96,16 +128,29 @@ def train()-> RegressionModel:
     device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
 
     # Hyperparameters
-    BATCH_SIZE = 32
+    BATCH_SIZE = 512
     LEARNING_RATE = 0.001
-    NUM_EPOCHS = 500
-    DATA_SIZE = 40_000
-
+    NUM_EPOCHS = 100
+    DATA_SIZE = 100_000
 
     # torch.manual_seed(42)
 
     boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=4)
     evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
+
+    # Convert evals_tensor to numpy and display min/max
+    evals_np = evals_tensor.cpu().numpy()
+    print(f"evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
+
+    # Normalize evals to range [-1, 1] using sigmoid-like scaling
+    evals_tensor = normalize_evals_tensor(evals_tensor)
+
+    print("Evals Tensor Histogram:")
+    print(tensor_histogram_ascii(evals_tensor, bins=20, width=50))
+
+    # Convert evals_tensor to numpy and display min/max
+    evals_np = evals_tensor.cpu().numpy()
+    print(f"normalized evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
 
     # downsample for quicker testing
     boards_tensor = boards_tensor[:DATA_SIZE]
@@ -113,7 +158,7 @@ def train()-> RegressionModel:
     evals_tensor = evals_tensor[:DATA_SIZE]
 
     print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor, evals_tensor))
-    print(f'Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}')
+    print(f"Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}")
 
     # Create Dataset and DataLoader
     dataset = torch.utils.data.TensorDataset(boards_tensor, evals_tensor)
@@ -124,7 +169,8 @@ def train()-> RegressionModel:
     # 2. Instantiate Model, Loss, and Optimizer
     ################################################################
     model = RegressionModel().to(device)
-    criterion = torch.nn.MSELoss()  # Mean Squared Error is common for regression
+    # criterion = torch.nn.MSELoss()  # Mean Squared Error is common for regression
+    criterion = torch.nn.L1Loss()  # Mean Absolute Error is common for regression
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     # ----------------------------------------------------------------
@@ -137,11 +183,11 @@ def train()-> RegressionModel:
     print(f"Starting training on {device}...")
     model.train()  # Set the model to training mode
 
-
     train_losses = []
     for epoch in range(NUM_EPOCHS):
         running_loss = 0.0
-        for batch_index, (board_inputs,eval_outputs) in enumerate(tqdm.tqdm(dataloader, ncols=80)):
+
+        for batch_index, (board_inputs, eval_outputs) in enumerate(tqdm.tqdm(dataloader, ncols=80)):
             # Get inputs and labels, and move them to the device
             board_inputs = board_inputs.to(device)
             eval_outputs = eval_outputs.to(device)
@@ -163,10 +209,10 @@ def train()-> RegressionModel:
 
             # Track loss
             running_loss += loss.item()
-        
+
         # Print statistics every epoch
-        training_loss = running_loss / len(dataloader)
-        print(f'Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f}')
+        training_loss = running_loss / len(dataloader) if len(dataloader) > 0 else float("nan")
+        print(f"Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f}")
 
         # Plot training loss
         train_losses.append(training_loss)
@@ -182,9 +228,8 @@ def train()-> RegressionModel:
             print(f"Early stopping triggered at epoch {epoch+1}.")
             break
 
-
     print("Training finished!")
-    # 
+    #
 
     # ----------------------------------------------------------------
 
@@ -196,18 +241,21 @@ def train()-> RegressionModel:
     # Create a single dummy input (batch size of 1)
 
     for i in range(40):
-        test_input = boards_tensor[i:i+1].to(device)  # Use an actual sample from the dataset
+        test_input = boards_tensor[i : i + 1].to(device)  # Use an actual sample from the dataset
 
         # Disable gradient calculation for inference
         with torch.no_grad():
             prediction = model(test_input)
 
-        print(f"Example Prediction for a single input: {prediction.item():-3.4f} Actual eval: {evals_tensor[i].item():4.4f} delta={abs(prediction.item() - evals_tensor[i].item()):.4f}")
+        unnormalized_prediction = denormalize_evals_tensor(prediction)
+        unnormalized_actual = denormalize_evals_tensor(evals_tensor[i : i + 1])
+        print(
+            f"Example Prediction for a single input: {unnormalized_prediction.item():-3.4f} Actual eval: {unnormalized_actual.item():4.4f} delta={abs(unnormalized_prediction.item() - unnormalized_actual.item()):.4f}"
+        )
 
-    return model
 
 ###############################################################################
 #   Main Entry Point
 #
 if __name__ == "__main__":
-    model = train()
+    train()

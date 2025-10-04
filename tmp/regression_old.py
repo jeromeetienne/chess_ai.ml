@@ -3,6 +3,9 @@ import os
 
 # pip imports
 import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import TensorDataset, DataLoader
 import tqdm
 import matplotlib.pyplot as plt
 
@@ -19,7 +22,7 @@ tensors_folder_path = os.path.join(output_folder_path, 'pgn_tensors')
 
 # Define the Model
 ################################################################
-class RegressionModel(torch.nn.Module):
+class RegressionModel(nn.Module):
     """
     A simple Convolutional Neural Network (CNN) for regression.
     It processes the (21, 8, 8) input and outputs a single float.
@@ -29,26 +32,29 @@ class RegressionModel(torch.nn.Module):
         # Input: (batch_size, 21, 8, 8) -> 21 is the number of channels
 
         # Convolutional layers
-        self.conv_layers = torch.nn.Sequential(
+        self.conv_layers = nn.Sequential(
             # Conv1: Input 21 channels, Output 16 channels. Kernel size 3x3.
-            torch.nn.Conv2d(in_channels=21, out_channels=32, kernel_size=3, padding=1),
-            torch.nn.ReLU(),
+            nn.Conv2d(in_channels=21, out_channels=64, kernel_size=3, padding=1),
+            nn.ReLU(),
 
-            torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
-            torch.nn.ReLU(),
-            torch.nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
-            torch.nn.ReLU(),
-            # torch.nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
-            # torch.nn.ReLU(),
+            # nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
+            # nn.ReLU(),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            # nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
+            # nn.ReLU(),
 
         )
 
+        # Calculate the size of the flattened tensor after conv layers
+        # Input is (128 channels * 2 * 2 = 128 features)
+        self.flattened_size = 128 * 8*8  # C * H * W
 
         # Fully connected layers (for regression output)
-        self.fc_layers = torch.nn.Sequential(
-            torch.nn.Linear(64 * 8 * 8, 64),
-            torch.nn.ReLU(),
-            torch.nn.Linear(64, 1)  # Output a single float
+        self.fc_layers = nn.Sequential(
+            nn.Linear(self.flattened_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 1)  # Output a single float
         )
 
     def forward(self, x):
@@ -63,25 +69,14 @@ class RegressionModel(torch.nn.Module):
         return x
 
 def plot_losses(train_losses: list[float]) -> None:
-    min_loss = min(train_losses)
-
     epochs = range(1, len(train_losses) + 1)
     plt.plot(epochs, train_losses, label="Training Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("Training Loss per Epoch")
     plt.legend()
-
-    # Annotate the minimum loss point
-    min_epoch = train_losses.index(min_loss) + 1
-    plt.scatter(min_epoch, min_loss, color='red')  # Mark the minimum point
-
-    # add a text box with the min loss value, in top left corner of the plot
-    plt.text(0.05, 0.95, f'Min Loss: {min_loss:.4f} at Epoch {min_epoch}', transform=plt.gca().transAxes,
-             fontsize=10, verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.5))
-
     # Save the plot to output folder
-    __basename__ = os.path.basename(__file__).replace('.py', '')
+    __basename__ = os.path.basename(__file__)
     plt_path = f"{__dirname__}/{__basename__}_training_loss.png"
     plt.savefig(plt_path)
     plt.close()
@@ -96,10 +91,10 @@ def train()-> RegressionModel:
     device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
 
     # Hyperparameters
-    BATCH_SIZE = 32
+    BATCH_SIZE = 64
     LEARNING_RATE = 0.001
     NUM_EPOCHS = 500
-    DATA_SIZE = 40_000
+    DATA_SIZE = 20000
 
 
     # torch.manual_seed(42)
@@ -116,20 +111,21 @@ def train()-> RegressionModel:
     print(f'Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}')
 
     # Create Dataset and DataLoader
-    dataset = torch.utils.data.TensorDataset(boards_tensor, evals_tensor)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    dataset = TensorDataset(boards_tensor, evals_tensor)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     # ----------------------------------------------------------------
 
     # 2. Instantiate Model, Loss, and Optimizer
     ################################################################
     model = RegressionModel().to(device)
-    criterion = torch.nn.MSELoss()  # Mean Squared Error is common for regression
-    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    criterion = nn.MSELoss()  # Mean Squared Error is common for regression
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     # ----------------------------------------------------------------
     # Add a learning rate scheduler to reduce LR over time
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=10, threshold=0.05)
+
     early_stopper = EarlyStopper(patience=50, threshold=0.001)
 
     # 3. Training Loop
