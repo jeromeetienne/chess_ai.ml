@@ -1,6 +1,7 @@
 # TODO
 - move all function to datasetutils load/save function
   - nobody is allowed to do torch.load()/torch.save() directly
+- rename the repository as chess_ai.ml
 - how to handle the dual head
   - load eval tensor if present
   - do i force it the eval to be present ? maybe i can create a fake eval of 0... YES
