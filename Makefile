@@ -24,6 +24,9 @@ lint: ## Run lint checker on source files
 
 full_pipeline: clean build_dataset train play ## run the full pipeline
 
+bench: ## benchmark the model
+	./scripts/model_bench.py
+
 .PHONY: help clean build_dataset train play full_pipeline
 
 check_dataset: ## check dataset integrity

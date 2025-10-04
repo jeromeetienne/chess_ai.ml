@@ -18,6 +18,13 @@ class Encoding:
     BOARD_DTYPE = torch.int32
     MOVE_DTYPE = torch.int32  # class index as long
 
+    # create a static property accesor for .OUTPUT_SHAPE
+    @staticmethod
+    def GET_OUTPUT_SHAPE() -> tuple[int]:
+        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
+        num_classes = len(uci2class_white)
+        return (num_classes,)
+
     class PLANE:
         ACTIVE_PAWN = 0
         ACTIVE_KNIGHT = 1
