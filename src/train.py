@@ -104,8 +104,8 @@ class TrainCommand:
         # criterion_reg = torch.nn.MSELoss()
         criterion_reg = torch.nn.L1Loss()
         # Loss weights: classification + regression
-        loss_reg_weight = 1.0
         loss_cls_weight = 1.0
+        loss_reg_weight = 10.0
 
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -131,6 +131,23 @@ class TrainCommand:
 
         for epoch_index in range(max_epoch_count):
             epoch_start_time = time.time()
+
+            # =============================================================================
+            # Dynamic loss weighting
+            # =============================================================================
+            # Dynamic loss weighting based on recent training losses
+            n = min(10, len(train_cls_losses))
+            assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
+            loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.04
+            loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.96
+            # Normalize weights to keep total weight = 2.0
+            total_weight = loss_cls_weight + loss_reg_weight
+            loss_cls_weight = (loss_cls_weight / total_weight) * 2.0
+            loss_reg_weight = (loss_reg_weight / total_weight) * 2.0
+
+            # =============================================================================
+            # 
+            # =============================================================================
             # Training the model
             train_loss, train_cls_loss, train_reg_loss = TrainCommand.train_one_epoch(
                 model, train_dataloader, optimizer, criterion_cls, loss_cls_weight, criterion_reg, loss_reg_weight, device
@@ -141,6 +158,10 @@ class TrainCommand:
                 model, valid_dataloader, criterion_cls, loss_cls_weight, criterion_reg, loss_reg_weight, device
             )
             epoch_elapsed_time = time.time() - epoch_start_time
+
+            # =============================================================================
+            # End of epoch
+            # =============================================================================
 
             # Step the scheduler
             scheduler.step(valid_loss)
@@ -219,7 +240,7 @@ class TrainCommand:
         axes_tot_loss.plot(epochs, train_losses, label="Training Loss")
         axes_tot_loss.plot(epochs, valid_losses, label="Validation Loss")
         axes_tot_loss.set_ylabel("Total Loss")
-        axes_tot_loss.set_title(f"Total Loss per Epoch (cls x {loss_cls_weight} + reg x {loss_reg_weight})")
+        axes_tot_loss.set_title(f"Total Loss per Epoch (cls x {loss_cls_weight:.2f} + reg x {loss_reg_weight:.2f})")
         axes_tot_loss.legend()
 
         # Annotate the minimum loss point
