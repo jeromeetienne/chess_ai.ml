@@ -47,7 +47,7 @@ class ChessModelConv2d(nn.Module):
         # conv3_out_channels = 16
         # fc_intermediate_size = 128
 
-        dropoutProbability = 0.2
+        dropoutProbability = 0.1
         conv1_out_channels = 32
         conv2_out_channels = 64
         conv3_out_channels = 128
@@ -100,8 +100,7 @@ class ChessModelConv2d(nn.Module):
             nn.Dropout(dropoutProbability),
             torch.nn.Linear(reg_fc_size, 1),
         )
-
-
+        
         # Initialize weights
         # nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
         # nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='leaky_relu')
@@ -164,67 +163,76 @@ class ChessModelResNet(nn.Module):
 
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
-        fc_intermediate_size = 256
+
+        # res_block1_size = 64
+        # res_block1_count = 2
+        # res_block2_size = 128
+        # res_block2_count = 2
+        # cls_fc_size = 256
+        # cls_fc_dropout = 0.2
+        # reg_fc_size = 128
+        # reg_fc_dropout = 0.2
+
+        res_block1_size = 32
+        res_block2_size = 64
+        res_block1_count = 3
+        res_block2_count = 3
+        cls_fc_size = 128
+        reg_fc_size = 64
+        cls_fc_dropout = 0.2
+        reg_fc_dropout = 0.2
 
         super().__init__()
 
         # Residual tower
         self.res_blocks1 = nn.Sequential(
-            nn.Conv2d(input_channels, 64, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(input_channels, res_block1_size, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(res_block1_size),
             nn.ReLU(),
-            ChessModelResNet_ResidualBlock(64),
-            ChessModelResNet_ResidualBlock(64),
+            *[ChessModelResNet_ResidualBlock(res_block1_size) for _ in range(res_block1_count)],
         )
 
         # Residual tower
         self.res_blocks2 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(128),
+            nn.Conv2d(res_block1_size, res_block2_size, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(res_block2_size),
             nn.ReLU(),
-            ChessModelResNet_ResidualBlock(128),
-            ChessModelResNet_ResidualBlock(128),
+            *[ChessModelResNet_ResidualBlock(res_block2_size) for _ in range(res_block2_count)],
         )
 
-        # classifier
-        # self.classifier = nn.Sequential(
-        #     nn.Conv2d(64, 2, kernel_size=3, padding=1, bias=False),
-        #     nn.BatchNorm2d(2),
-        #     nn.ReLU(),
-        #     # fully connected layers
-        #     nn.Flatten(),
-        #     nn.Linear(2 * 8 * 8, output_width),
-        #     # nn.Dropout(0.2),
-        # )
-        # classifier
-        self.classifier = nn.Sequential(
+        flat_features = res_block2_size * 8 * 8
+
+        # classification head (move prediction)
+        self.cls_head = nn.Sequential(
             # fully connected layers
             nn.Flatten(),
-            nn.Linear(128 * 8 * 8, fc_intermediate_size),
+            nn.Linear(flat_features, cls_fc_size),
             nn.ReLU(),
-            nn.Dropout(0.2),
+            nn.Dropout(cls_fc_dropout),
             # Final classifier layer
-            nn.Linear(fc_intermediate_size, output_width),
+            nn.Linear(cls_fc_size, output_width),
         )
 
-        # self.classifier = nn.Sequential(
-        #       # Global average pooling + classifier
-        #     nn.AdaptiveAvgPool2d((1, 1)),
-        #     nn.Flatten(),
-        #     nn.Linear(64, output_width)
-        # )
+        self.reg_head = torch.nn.Sequential(
+            torch.nn.Flatten(),
+            torch.nn.Linear(flat_features, reg_fc_size),
+            nn.BatchNorm1d(reg_fc_size),
+            torch.nn.ReLU(),
+            nn.Dropout(reg_fc_dropout),
+            torch.nn.Linear(reg_fc_size, 1),
+        )
 
     def forward(self, x):
         # x: (batch, 21, 8, 8)
-        x = x.to(torch.float32)
+        features = x.to(torch.float32)
 
-        x = self.res_blocks1(x)
-        x = self.res_blocks2(x)
-        # x = self.res_blocks3(x)
+        features = self.res_blocks1(features)
+        features = self.res_blocks2(features)
 
-        # Final classification layer
-        x = self.classifier(x)
-        return x
+        move_logits = self.cls_head(features)
+        eval_pred = self.reg_head(features)
+
+        return move_logits, eval_pred
 
 
 ###############################################################################
@@ -233,5 +241,6 @@ class ChessModelResNet(nn.Module):
 ###############################################################################
 ###############################################################################
 class ChessModel(ChessModelConv2d):
+# class ChessModel(ChessModelResNet):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
         super(ChessModel, self).__init__(input_shape, output_shape)

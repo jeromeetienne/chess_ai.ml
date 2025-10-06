@@ -25,7 +25,7 @@ stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-s
 ###############################################################################
 #   Function to unify chess.engine.PovScore to a single numeric score
 #
-def unify_engine_score(pov_score: chess.engine.Score, mate_range: float = 100, max_centipawn: float = 300) -> float:
+def unify_engine_score(pov_score: chess.engine.Score, mate_range: float = 2, max_cp_score: float = 15) -> float:
     """
     Convert chess.engine.PovScore to a single numeric score.
     - pov_score: chess.engine.PovScore object
@@ -40,14 +40,14 @@ def unify_engine_score(pov_score: chess.engine.Score, mate_range: float = 100, m
         # Just return centipawn score as is
         result = float(_score) / 100.0
         # Clamp to max_centipawn
-        result = max(-max_centipawn, min(max_centipawn, result))
+        result = max(-max_cp_score, min(max_cp_score, result))
     elif pov_score.is_mate():
         # Convert mate in n moves to a large centipawn value with sign
         mate_moves = typing.cast(int, pov_score.mate())
         # # Defensive: avoid division by zero
         mate_moves = mate_moves if mate_moves != 0 else 1
         # Scale mate score
-        result = (max_centipawn + mate_range / abs(mate_moves)) * (1 if mate_moves > 0 else -1)
+        result = (max_cp_score + mate_range / abs(mate_moves)) * (1 if mate_moves > 0 else -1)
     else:
         raise ValueError("Unknown PovScore type")
 

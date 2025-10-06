@@ -1,6 +1,9 @@
 # TODO
-- display the min in training_validation_loss.png
-  - red dot + x axis. like regression_3_dual_head.py
+- add a command line arg to select the model
+  - in train and in play
+- improve the loss weighting
+  - some dynamic technique exists - https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g
+  - "Loss Weights Based on Task Uncertainty" seems to be a good one
 - start to look at the MTCS + NN integration
   - in the player
   - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
@@ -20,6 +23,9 @@
 - make it play on lichess ?
 
 # DONE
+- DONE move the multi-head model to a separate file to residual network
+- DONE display the min in training_validation_loss.png
+  - red dot + x axis. like regression_3_dual_head.py
 - DONE rename the repository as chess_ai.ml
 - DONE how to handle the dual head
   - load eval tensor if present

@@ -289,13 +289,13 @@ class DatasetUtils:
     @staticmethod
     def normalize_evals_tensor(evals_tensor: torch.Tensor) -> torch.Tensor:
         """ Normalize evals to be between -1 and 1 using tanh function. """
-        return torch.tanh(evals_tensor / 10.0)
+        return torch.tanh(evals_tensor / 5.0)
 
     @staticmethod
     # Inverse transform function for later use
     def denormalize_evals_tensor(normalized_evals_tensor: torch.Tensor) -> torch.Tensor:
         """ Inverse of normalize_evals_tensor with atanh function. """
-        return torch.atanh(normalized_evals_tensor) * 10.0
+        return torch.atanh(normalized_evals_tensor) * 5.0
 
     @staticmethod
     def tensor_histogram_ascii(tensor: torch.Tensor, bins: int = 10, width: int = 50) -> str:
