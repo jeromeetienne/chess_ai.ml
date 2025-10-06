@@ -122,12 +122,12 @@ class TrainCommand:
         ###############################################################################
         # Training
         #
-        valid_losses:list[float] = []
-        valid_cls_losses:list[float] = []
-        valid_reg_losses:list[float] = []
-        train_losses:list[float] = []
-        train_cls_losses:list[float] = []
-        train_reg_losses:list[float] = []
+        valid_losses: list[float] = []
+        valid_cls_losses: list[float] = []
+        valid_reg_losses: list[float] = []
+        train_losses: list[float] = []
+        train_cls_losses: list[float] = []
+        train_reg_losses: list[float] = []
 
         for epoch_index in range(max_epoch_count):
             epoch_start_time = time.time()
@@ -209,30 +209,88 @@ class TrainCommand:
     ):
         epochs = range(1, len(train_losses) + 1)
         figure, axes = plt.subplots(1, 3, figsize=(16, 4), sharex=True)
+        axes_tot_loss = axes[0]
+        axes_cls_loss = axes[1]
+        axes_reg_loss = axes[2]
 
-        # 1. Total loss
-        axes[0].plot(epochs, train_losses, label="Training Loss")
-        axes[0].plot(epochs, valid_losses, label="Validation Loss")
-        axes[0].set_ylabel("Total Loss")
-        axes[0].set_title("Total Loss per Epoch")
-        axes[0].legend()
+        # =============================================================================
+        # Total Loss
+        # =============================================================================
+        axes_tot_loss.plot(epochs, train_losses, label="Training Loss")
+        axes_tot_loss.plot(epochs, valid_losses, label="Validation Loss")
+        axes_tot_loss.set_ylabel("Total Loss")
+        axes_tot_loss.set_title(f"Total Loss per Epoch (cls x {loss_cls_weight} + reg x {loss_reg_weight})")
+        axes_tot_loss.legend()
 
-        # 2. Classification loss
-        axes[1].plot(epochs, train_cls_losses, label=f"Training Class Loss")
-        axes[1].plot(epochs, valid_cls_losses, label="Validation Class Loss")
-        axes[1].set_ylabel("Class Loss")
-        axes[1].set_title(f"Classification Loss per Epoch (weighted x{loss_cls_weight})")
-        axes[1].legend()
+        # Annotate the minimum loss point
+        tot_loss_min = min(valid_losses)
+        tot_loss_min_epoch = valid_losses.index(tot_loss_min) + 1
+        axes_tot_loss.scatter(tot_loss_min_epoch, tot_loss_min, color="red")  # Mark the minimum point
 
-        # 3. Regression loss
-        axes[2].plot(epochs, train_reg_losses, label=f"Training Regression Loss")
-        axes[2].plot(epochs, valid_reg_losses, label="Validation Regression Loss")
-        axes[2].set_xlabel("Epoch")
-        axes[2].set_ylabel("Regression Loss")
-        axes[2].set_title(f"Regression Loss per Epoch (weighted x{loss_reg_weight})")
-        axes[2].legend()
+        # add a text box with the min loss value, in top left corner of the plot
+        axes_tot_loss.text(
+            0.05,
+            0.95,
+            f"Min Loss: {tot_loss_min:.4f} at Epoch {tot_loss_min_epoch}",
+            transform=axes_tot_loss.transAxes,
+            fontsize=10,
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.5),
+        )
 
-        plt.tight_layout()
+        # =============================================================================
+        # Classification Loss
+        # =============================================================================
+        axes_cls_loss.plot(epochs, train_cls_losses, label=f"Training Class Loss")
+        axes_cls_loss.plot(epochs, valid_cls_losses, label="Validation Class Loss")
+        axes_cls_loss.set_ylabel("Class Loss")
+        axes_cls_loss.set_title(f"Classification Loss per Epoch")
+        axes_cls_loss.legend()
+
+        # Annotate the minimum loss point
+        cls_loss_min = min(valid_cls_losses)
+        cls_loss_min_epoch = valid_cls_losses.index(cls_loss_min) + 1
+        axes_cls_loss.scatter(cls_loss_min_epoch, cls_loss_min, color="red")  # Mark the minimum point
+
+        # add a text box with the min loss value, in top left corner of the plot
+        axes_cls_loss.text(
+            0.05,
+            0.95,
+            f"Min Loss: {cls_loss_min:.4f} at Epoch {cls_loss_min_epoch}",
+            transform=axes_cls_loss.transAxes,
+            fontsize=10,
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.5),
+        )
+
+
+        # =============================================================================
+        # Regression Loss
+        # =============================================================================
+        axes_reg_loss.plot(epochs, train_reg_losses, label=f"Training Regression Loss")
+        axes_reg_loss.plot(epochs, valid_reg_losses, label="Validation Regression Loss")
+        axes_reg_loss.set_xlabel("Epoch")
+        axes_reg_loss.set_ylabel("Regression Loss")
+        axes_reg_loss.set_title(f"Regression Loss per Epoch")
+        axes_reg_loss.legend()
+
+        # Annotate the minimum loss point
+        reg_loss_min = min(valid_reg_losses)
+        reg_loss_min_epoch = valid_reg_losses.index(reg_loss_min) + 1
+        axes_reg_loss.scatter(reg_loss_min_epoch, reg_loss_min, color="red")  # Mark the minimum point
+
+        # add a text box with the min loss value, in top left corner of the plot
+        axes_reg_loss.text(
+            0.05,
+            0.95,
+            f"Min Loss: {reg_loss_min:.4f} at Epoch {reg_loss_min_epoch}",
+            transform=axes_reg_loss.transAxes,
+            fontsize=10,
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.5),
+        )
+
+        # plt.tight_layout()
         # Save the plot to output folder
         plt_path = f"{model_folder_path}/training_validation_loss.png"
         plt.savefig(plt_path)
