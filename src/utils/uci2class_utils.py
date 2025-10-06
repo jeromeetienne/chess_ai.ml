@@ -69,3 +69,11 @@ class Uci2ClassUtils:
             class2uci = typing.cast(dict[int, str], Uci2ClassUtils._class2uci_black)
         # return the mapping
         return class2uci
+
+    @staticmethod
+    def get_num_classes() -> int:
+        # Initialize the mappings if needed
+        Uci2ClassUtils._init_if_needed()
+        uci2class = Uci2ClassUtils.get_uci2class(chess.WHITE)
+        num_classes = len(uci2class)
+        return num_classes
