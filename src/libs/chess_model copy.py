@@ -41,18 +41,16 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # dropoutProbability = 0.2
-        # conv1_out_channels = 64
-        # conv2_out_channels = 128
-        # conv3_out_channels = 16
-        # fc_intermediate_size = 128
-
         dropoutProbability = 0.2
-        conv1_out_channels = 32
-        conv2_out_channels = 64
-        conv3_out_channels = 128
-        cls_fc_size = 128
-        reg_fc_size = 64
+        conv1_out_channels = 64
+        conv2_out_channels = 128
+        conv3_out_channels = 16
+        fc_intermediate_size = 128
+
+        # dropoutProbability = 0.2
+        # conv1_out_channels = 32
+        # conv2_out_channels = 64
+        # fc_intermediate_size = 256
 
         # dropoutProbability = 0.2
         # conv1_out_channels = 16
@@ -75,32 +73,18 @@ class ChessModelConv2d(nn.Module):
             nn.Conv2d(conv2_out_channels, conv3_out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(conv3_out_channels),
             nn.ReLU(),
-            torch.nn.Flatten(),
         )
-
-        flat_features = conv3_out_channels * 8 * 8
 
         # self.gap_2d = nn.AdaptiveAvgPool2d(output_size=(4, 4))
         self.flatten = nn.Flatten()
 
-        # classification head (move prediction)
-        self.cls_head = nn.Sequential(
-            nn.Linear(flat_features, cls_fc_size),
-            nn.BatchNorm1d(cls_fc_size),
+        self.fc_layers = nn.Sequential(
+            nn.Linear(conv3_out_channels * 8 * 8, fc_intermediate_size),
+            nn.BatchNorm1d(fc_intermediate_size),
             nn.ReLU(),
             nn.Dropout(dropoutProbability),
-            nn.Linear(cls_fc_size, output_width),
+            nn.Linear(fc_intermediate_size, output_width),
         )
-
-        # regression head (eval prediction)
-        self.reg_head = torch.nn.Sequential(
-            torch.nn.Linear(flat_features, reg_fc_size),
-            nn.BatchNorm1d(reg_fc_size),
-            torch.nn.ReLU(),
-            nn.Dropout(dropoutProbability),
-            torch.nn.Linear(reg_fc_size, 1),
-        )
-
 
         # Initialize weights
         # nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
@@ -112,12 +96,14 @@ class ChessModelConv2d(nn.Module):
         # x shape: (batch_size, 21, 8, 8)
         x = x.to(torch.float32)
 
-        features = self.conv_layers(x)
+        x = self.conv_layers(x)
 
-        move_logits = self.cls_head(features)
-        eval_pred = self.reg_head(features)
+        # x = self.gap_2d(x)
+        x = self.flatten(x)
 
-        return move_logits, eval_pred
+        x = self.fc_layers(x)
+
+        return x
 
 
 ###############################################################################

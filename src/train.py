@@ -8,6 +8,7 @@ import typing
 import chess
 import tqdm
 import torch
+
 # from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 
@@ -46,8 +47,29 @@ class TrainCommand:
         boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
         print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor, evals_tensor))
 
-        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
-        num_classes = len(uci2class_white)
+        # FIXME why is this needed on evals_tensor but not moves_tensor
+        # Reshape evals_tensor to (N, 1) to match the expected input shape for the model
+        evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
+
+        num_classes = Uci2ClassUtils.get_num_classes()
+
+        # =============================================================================
+        # Prepare data loaders
+        # =============================================================================
+
+        # Convert evals_tensor to numpy and display min/max
+        evals_np = evals_tensor.cpu().numpy()
+        print(f"evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
+
+        # Normalize evals to range [-1, 1] using sigmoid-like scaling
+        evals_tensor = DatasetUtils.normalize_evals_tensor(evals_tensor)
+
+        print("Evals Tensor Histogram:")
+        print(DatasetUtils.tensor_histogram_ascii(evals_tensor, bins=20, width=50))
+
+        # Convert evals_tensor to numpy and display min/max
+        evals_np = evals_tensor.cpu().numpy()
+        print(f"normalized evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
 
         ###############################################################################
         # Prepare data loaders
@@ -58,14 +80,14 @@ class TrainCommand:
         dataset_ratio_test = (1 - train_test_split_ratio) / 2
 
         # Create the datasets for training, validation and testing by splitting the original dataset
-        boards_dataset = torch.utils.data.TensorDataset(boards_tensor, moves_tensor)
+        boards_dataset = torch.utils.data.TensorDataset(boards_tensor, moves_tensor, evals_tensor)
         train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(
             boards_dataset, [dataset_ratio_train, dataset_ratio_validation, dataset_ratio_test]
         )
 
         # Create dataloaders for training, validation and testing
         train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        validation_dataloader = torch.utils.data.DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
+        valid_dataloader = torch.utils.data.DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
         test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
         # Check for GPU
@@ -77,14 +99,20 @@ class TrainCommand:
         output_shape = Encoding.get_output_shape()
         model = ChessModel(input_shape=input_shape, output_shape=output_shape).to(device)
 
-        # use cross entropy loss for multi-class classification
-        loss_fn = torch.nn.CrossEntropyLoss()
+        # Losses: classification + regression
+        criterion_cls = torch.nn.CrossEntropyLoss()
+        # criterion_reg = torch.nn.MSELoss()
+        criterion_reg = torch.nn.L1Loss()
+        # Loss weights: classification + regression
+        loss_reg_weight = 1.0
+        loss_cls_weight = 1.0
+
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         # Add a learning rate scheduler to reduce LR over time
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5, threshold=0.05)
         # Initialize early stopper to stop training if no improvement for 'patience' epochs
-        early_stopper = EarlyStopper(patience=10, threshold=0.01)
+        early_stopper = EarlyStopper(patience=20, threshold=0.001)
 
         ###############################################################################
         # Display model summary
@@ -94,34 +122,50 @@ class TrainCommand:
         ###############################################################################
         # Training
         #
-        validation_losses = []
-        train_losses = []
+        valid_losses:list[float] = []
+        valid_cls_losses:list[float] = []
+        valid_reg_losses:list[float] = []
+        train_losses:list[float] = []
+        train_cls_losses:list[float] = []
+        train_reg_losses:list[float] = []
 
         for epoch_index in range(max_epoch_count):
             epoch_start_time = time.time()
             # Training the model
-            avg_loss = TrainCommand.train_one_epoch(model=model, dataloader=train_dataloader, optimizer=optimizer, loss_fn=loss_fn, device=device)
+            train_loss, train_cls_loss, train_reg_loss = TrainCommand.train_one_epoch(
+                model, train_dataloader, optimizer, criterion_cls, loss_cls_weight, criterion_reg, loss_reg_weight, device
+            )
 
             # Validate the model on the validation set
-            validation_loss = TrainCommand.validation_one_epoch(model=model, dataloader=validation_dataloader, loss_fn=loss_fn, device=device)
+            valid_loss, valid_cls_loss, valid_reg_loss = TrainCommand.validation_one_epoch(
+                model, valid_dataloader, criterion_cls, loss_cls_weight, criterion_reg, loss_reg_weight, device
+            )
             epoch_elapsed_time = time.time() - epoch_start_time
 
             # Step the scheduler
-            scheduler.step(validation_loss)
+            scheduler.step(valid_loss)
 
             # update training and validation losses array
-            train_losses.append(avg_loss)
-            validation_losses.append(validation_loss)
+            train_losses.append(train_loss)
+            train_cls_losses.append(train_cls_loss)
+            train_reg_losses.append(train_reg_loss)
+            valid_losses.append(valid_loss)
+            valid_cls_losses.append(valid_cls_loss)
+            valid_reg_losses.append(valid_reg_loss)
 
             # Check for early stopping
-            must_stop, must_save = early_stopper.early_stop(validation_loss)
+            must_stop, must_save = early_stopper.early_stop(valid_loss)
 
             # Print epoch summary
-            print(
-                f"Epoch {epoch_index + 1}/{max_epoch_count}, lr={scheduler.get_last_lr()[0]} Training Loss: {avg_loss:.4f}, Validation Loss: {validation_loss:.4f}, Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}"
-            )
+            print(f"Epoch {epoch_index + 1}/{max_epoch_count}, lr={scheduler.get_last_lr()[0]}", end=" | ")
+            print(f"Train Loss: {train_loss:.4f} (cls={(train_cls_loss*loss_cls_weight):.6f} reg={(train_reg_loss*loss_reg_weight):.6f})", end=" | ")
+            print(f"Valid Loss: {valid_loss:.4f} (cls={(valid_cls_loss*loss_cls_weight):.6f} reg={(valid_reg_loss*loss_reg_weight):.6f})", end=" | ")
+            print(f"Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}")
+
             # Plot training and validation loss
-            TrainCommand.plot_losses(train_losses, validation_losses)
+            TrainCommand.plot_losses(
+                train_losses, train_cls_losses, train_reg_losses, loss_cls_weight, valid_losses, valid_cls_losses, valid_reg_losses, loss_reg_weight
+            )
 
             # honor must_save: Save the model if validation loss improved
             if must_save:
@@ -129,7 +173,7 @@ class TrainCommand:
                 ModelUtils.save_model(model, folder_path=model_folder_path)
 
                 # Save training report
-                TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, validation_loss, model)
+                TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, valid_loss, model)
 
                 # Now test the model on the test set
                 eval_accuracy = TrainCommand.evaluate_model_accuracy(model, test_dataloader, device)
@@ -148,21 +192,51 @@ class TrainCommand:
         eval_accuracy = TrainCommand.evaluate_model_accuracy(model, test_dataloader, device)
         print(f"Accuracy on test set: {eval_accuracy:.2f}%")
 
+    # =============================================================================
+    # Helper methods
+    # =============================================================================
 
     @staticmethod
-    def plot_losses(train_losses: list, validation_losses: list):
+    def plot_losses(
+        train_losses: list[float],
+        train_cls_losses: list[float],
+        train_reg_losses: list[float],
+        loss_cls_weight: float,
+        valid_losses: list[float],
+        valid_cls_losses: list[float],
+        valid_reg_losses: list[float],
+        loss_reg_weight: float,
+    ):
         epochs = range(1, len(train_losses) + 1)
-        plt.plot(epochs, train_losses, label="Training Loss")
-        plt.plot(epochs, validation_losses, label="Validation Loss")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.title("Train vs Validation Loss per Epoch")
-        plt.legend()
+        figure, axes = plt.subplots(1, 3, figsize=(16, 4), sharex=True)
+
+        # 1. Total loss
+        axes[0].plot(epochs, train_losses, label="Training Loss")
+        axes[0].plot(epochs, valid_losses, label="Validation Loss")
+        axes[0].set_ylabel("Total Loss")
+        axes[0].set_title("Total Loss per Epoch")
+        axes[0].legend()
+
+        # 2. Classification loss
+        axes[1].plot(epochs, train_cls_losses, label=f"Training Class Loss")
+        axes[1].plot(epochs, valid_cls_losses, label="Validation Class Loss")
+        axes[1].set_ylabel("Class Loss")
+        axes[1].set_title(f"Classification Loss per Epoch (weighted x{loss_cls_weight})")
+        axes[1].legend()
+
+        # 3. Regression loss
+        axes[2].plot(epochs, train_reg_losses, label=f"Training Regression Loss")
+        axes[2].plot(epochs, valid_reg_losses, label="Validation Regression Loss")
+        axes[2].set_xlabel("Epoch")
+        axes[2].set_ylabel("Regression Loss")
+        axes[2].set_title(f"Regression Loss per Epoch (weighted x{loss_reg_weight})")
+        axes[2].legend()
+
+        plt.tight_layout()
         # Save the plot to output folder
         plt_path = f"{model_folder_path}/training_validation_loss.png"
         plt.savefig(plt_path)
         plt.close()
-        # print(f"Training and validation loss plot saved to {plt_path}")
 
     @staticmethod
     def save_training_report(
@@ -194,42 +268,102 @@ class TrainCommand:
         # print(f"Training report saved to {README_path}")
 
     @staticmethod
-    def train_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Module, device: str) -> float:
+    def train_one_epoch(
+        model: torch.nn.Module,
+        dataloader: torch.utils.data.DataLoader,
+        optimizer: torch.optim.Optimizer,
+        criterion_cls: torch.nn.Module,
+        loss_cls_weight: float,
+        criterion_reg: torch.nn.Module,
+        loss_reg_weight: float,
+        device: str,
+    ) -> tuple[float, float, float]:
         model.train()
         running_loss = 0.0
-        for inputs, labels in tqdm.tqdm(dataloader, ncols=80, desc="Training", unit="batch"):
-            inputs, labels = inputs.to(device), labels.to(device)  # Move data to GPU
+        running_cls_loss = 0.0
+        running_reg_loss = 0.0
+
+        for boards_inputs, moves_outputs, evals_outputs in tqdm.tqdm(dataloader, ncols=80, desc="Training", unit="batch"):
+            # Move tensors to the appropriate device
+            boards_inputs = boards_inputs.to(device)
+            moves_outputs = moves_outputs.to(device)
+            evals_outputs = evals_outputs.to(device)
+
+            # reset gradients
             optimizer.zero_grad()
 
-            outputs = model(inputs)  # Raw logits
+            # Model forward pass
+            moves_preds, evals_preds = model(boards_inputs)
 
-            # Compute loss
-            loss = loss_fn(outputs, labels)
+            # classification loss expects shape (N, C) and targets (N,)
+            cls_loss = criterion_cls(moves_preds, moves_outputs)
+
+            # regression loss: ensure shapes match (N,1)
+            reg_loss = criterion_reg(evals_preds, evals_outputs)
+
+            # total loss = weighted sum
+            loss = loss_cls_weight * cls_loss + loss_reg_weight * reg_loss
+
+            # Backpropagation
             loss.backward()
 
-            # Gradient clipping
-            # torch.torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
             optimizer.step()
-            running_loss += loss.item()
 
-        average_loss = running_loss / len(dataloader)
-        return average_loss
+            running_loss += loss.item()
+            running_cls_loss += cls_loss.item()
+            running_reg_loss += reg_loss.item()
+
+        train_loss = running_loss / len(dataloader)
+        train_cls_loss = running_cls_loss / len(dataloader)
+        train_reg_loss = running_reg_loss / len(dataloader)
+
+        return train_loss, train_cls_loss, train_reg_loss
 
     @staticmethod
-    def validation_one_epoch(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, loss_fn: torch.nn.Module, device: str) -> float:
+    def validation_one_epoch(
+        model: torch.nn.Module,
+        dataloader: torch.utils.data.DataLoader,
+        criterion_cls: torch.nn.Module,
+        loss_cls_weight: float,
+        criterion_reg: torch.nn.Module,
+        loss_reg_weight: float,
+        device: str,
+    ) -> tuple[float, float, float]:
         model.eval()
         running_loss = 0.0
+        running_cls_loss = 0.0
+        running_reg_loss = 0.0
+
         with torch.no_grad():
-            for inputs, labels in dataloader:
-                inputs, labels = inputs.to(device), labels.to(device)
-                outputs = model(inputs)
+            for boards_inputs, moves_outputs, evals_outputs in dataloader:
+                # Move tensors to the appropriate device
+                boards_inputs = boards_inputs.to(device)
+                moves_outputs = moves_outputs.to(device)
+                evals_outputs = evals_outputs.to(device)
 
-                loss = loss_fn(outputs, labels)
+                # Model forward pass
+                moves_preds, evals_preds = model(boards_inputs)
+
+                # classification loss expects shape (N, C) and targets (N,)
+                cls_loss = criterion_cls(moves_preds, moves_outputs)
+
+                # regression loss: ensure shapes match (N,1)
+                reg_loss = criterion_reg(evals_preds, evals_outputs)
+
+                # total loss = weighted sum
+                loss = loss_cls_weight * cls_loss + loss_reg_weight * reg_loss
+
+                # update running losses
                 running_loss += loss.item()
+                running_cls_loss += cls_loss.item()
+                running_reg_loss += reg_loss.item()
 
-        validation_loss = running_loss / len(dataloader)
-        return validation_loss
+        # compute average losses
+        valid_loss = running_loss / len(dataloader)
+        valid_cls_loss = running_cls_loss / len(dataloader)
+        valid_reg_loss = running_reg_loss / len(dataloader)
+
+        return valid_loss, valid_cls_loss, valid_reg_loss
 
     @staticmethod
     def evaluate_model_accuracy(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, device: str) -> float:
@@ -238,13 +372,20 @@ class TrainCommand:
         correct = 0
         total = 0
         with torch.no_grad():
-            for inputs, labels in dataloader:
-                inputs, labels = inputs.to(device), labels.to(device)
-                logits = model(inputs)
+            for boards_tensor, moves_tensor, evals_tensor in dataloader:
+                # Move tensors to the appropriate device
+                boards_tensor = boards_tensor.to(device)
+                moves_tensor = moves_tensor.to(device)
+                evals_tensor = evals_tensor.to(device)
 
-                _, predicted = torch.max(logits, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                # FIXME evaluate_model_accuracy() doesnt measure evals accuracy
+
+                # Model forward pass
+                move_logits, eval_pred = model(boards_tensor)
+
+                _, move_predictions = torch.max(move_logits, 1)  # Get the index of the max log-probability
+                total += moves_tensor.size(0)
+                correct += (move_predictions == moves_tensor).sum().item()
 
         accuracy = 100 * correct / total
         return accuracy

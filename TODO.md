@@ -1,15 +1,12 @@
 # TODO
-- move all function to datasetutils load/save function
-  - nobody is allowed to do torch.load()/torch.save() directly
-- rename the repository as chess_ai.ml
-- how to handle the dual head
-  - load eval tensor if present
-  - do i force it the eval to be present ? maybe i can create a fake eval of 0... YES
-- do a multi head model in a corner to see how it goes
-  - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
-- multi-head network: good for alpha alpha-zero 
+- display the min in training_validation_loss.png
+  - red dot + x axis. like regression_3_dual_head.py
+- start to look at the MTCS + NN integration
+  - in the player
   - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
   - see PUCT (mcts + nn) vs UCT (mcts only)
+- move all function to datasetutils load/save function
+  - nobody is allowed to do torch.load()/torch.save() directly
 - in the model, 
   - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - https://gemini.google.com/app/cdfdec954e81eaff
   - add a dropout layer only after fully connected layer
@@ -23,6 +20,15 @@
 - make it play on lichess ?
 
 # DONE
+- DONE rename the repository as chess_ai.ml
+- DONE how to handle the dual head
+  - load eval tensor if present
+  - do i force it the eval to be present ? maybe i can create a fake eval of 0... YES
+- DONE do a multi head model in a corner to see how it goes
+  - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
+- DONE multi-head network: good for alpha alpha-zero 
+  - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
+  - see PUCT (mcts + nn) vs UCT (mcts only)
 - WONTDO code a way to train on a special range of moves, not the whole game
   - select by move number (e.g. 10 to 30)
   - later by dynamically detecting opening, midgame, endgame

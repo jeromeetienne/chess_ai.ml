@@ -134,14 +134,14 @@ def train() -> None:
     device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
 
     # Hyperparameters
-    BATCH_SIZE = 128
+    BATCH_SIZE = 1024
     LEARNING_RATE = 0.001
-    NUM_EPOCHS = 200
-    DATA_SIZE = 100_000
+    NUM_EPOCHS = 300
+    DATA_SIZE = 400_000
 
     # torch.manual_seed(42)
 
-    boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=4)
+    boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=20)
     # moves_tensor is a scalar class index per sample (int)
     evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
 
@@ -202,6 +202,8 @@ def train() -> None:
         running_loss = 0.0
         running_cls_loss = 0.0
         running_reg_loss = 0.0
+        LOSS_REG_WEIGHT = 20.0
+        LOSS_CLS_WEIGHT = 1.0
 
         for batch_index, (board_inputs, moves_targets, eval_outputs) in enumerate(tqdm.tqdm(dataloader, ncols=80)):
             # Move tensors to device
@@ -222,8 +224,6 @@ def train() -> None:
 
 
             # total loss = weighted sum
-            LOSS_REG_WEIGHT = 1.0
-            LOSS_CLS_WEIGHT = 1.0
             loss = LOSS_CLS_WEIGHT * cls_loss + LOSS_REG_WEIGHT * reg_loss
 
             # Backprop
@@ -238,7 +238,7 @@ def train() -> None:
         training_loss = running_loss / len(dataloader) if len(dataloader) > 0 else float("nan")
         avg_cls = running_cls_loss / len(dataloader) if len(dataloader) > 0 else float("nan")
         avg_reg = running_reg_loss / len(dataloader) if len(dataloader) > 0 else float("nan")
-        print(f"Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f} (cls={avg_cls:.6f} reg={avg_reg:.6f})")
+        print(f"Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f} (cls={(avg_cls*LOSS_CLS_WEIGHT):.6f} reg={(avg_reg*LOSS_REG_WEIGHT):.6f})")
 
         # Plot training loss
         train_losses.append(training_loss)

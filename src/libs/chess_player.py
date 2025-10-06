@@ -92,22 +92,27 @@ class ChessPlayer:
 
         # Disable gradient calculation for inference
         with torch.no_grad():
-            logits: torch.Tensor = self._model(boards_tensor)
+            output = self._model(boards_tensor)
+            moves_preds: torch.Tensor = output[0]  # Get the move predictions
+            evals_preds: torch.Tensor = output[1]  # Get the eval predictions
 
-        logits = logits.squeeze(0)  # Remove batch dimension
+        moves_preds = moves_preds.squeeze(0)  # Remove batch dimension
+        evals_preds = evals_preds.squeeze(0)  # Remove batch dimension
 
-        probabilities = torch.softmax(logits, dim=0).cpu().numpy()  # Convert to probabilities
+        # FIXME denormalize evals_preds back to centipawns, and return it
+
+        probabilities = torch.softmax(moves_preds, dim=0).cpu().numpy()  # Convert to probabilities
 
         best_move_uci = self._select_best_move_ml(board, probabilities)
         return best_move_uci
 
-    def _select_best_move_ml(self, board: chess.Board, probabilities: np.ndarray, random_threshold: float = 0.95) -> str | None:
+    def _select_best_move_ml(self, board: chess.Board, move_probabilities: np.ndarray, random_threshold: float = 1.0) -> str | None:
         """
         Select the best move based on the model's output probabilities. only for model-based move prediction.
 
         Args:
             board (chess.Board): The current state of the chess board.
-            probabilities (np.ndarray): The output probabilities from the model.
+            move_probabilities (np.ndarray): The output move probabilities from the model.
             classindex_to_uci (dict[int, str]): Mapping from class indices to UCI move strings.
             random_threshold (float): Threshold to introduce randomness in move selection.
                                       If 1, selects the best move. If less than 1, allows for some
@@ -117,8 +122,8 @@ class ChessPlayer:
         """
         legal_moves = list(board.legal_moves)
         legal_moves_uci = [move.uci() for move in legal_moves]
-        sorted_indices = np.argsort(probabilities)[::-1]
-        sorted_probabilities = probabilities[sorted_indices]
+        sorted_indices = np.argsort(move_probabilities)[::-1]
+        sorted_probabilities = move_probabilities[sorted_indices]
 
         # TODO make the possibility to return top N moves with their probabilities, not just the best one
         # - thus allowing to implement some randomness in the move selection
@@ -130,7 +135,7 @@ class ChessPlayer:
             if move_uci not in legal_moves_uci:
                 continue
 
-            proposed_moves_uci_proba.append((move_uci, probabilities[classindex]))
+            proposed_moves_uci_proba.append((move_uci, move_probabilities[classindex]))
             if len(proposed_moves_uci_proba) >= proposed_top_n:  # Get top 5 legal moves
                 break
 

@@ -285,6 +285,36 @@ class DatasetUtils:
         return summary
 
 
+
+    @staticmethod
+    def normalize_evals_tensor(evals_tensor: torch.Tensor) -> torch.Tensor:
+        """ Normalize evals to be between -1 and 1 using tanh function. """
+        return torch.tanh(evals_tensor / 10.0)
+
+    @staticmethod
+    # Inverse transform function for later use
+    def denormalize_evals_tensor(normalized_evals_tensor: torch.Tensor) -> torch.Tensor:
+        """ Inverse of normalize_evals_tensor with atanh function. """
+        return torch.atanh(normalized_evals_tensor) * 10.0
+
+    @staticmethod
+    def tensor_histogram_ascii(tensor: torch.Tensor, bins: int = 10, width: int = 50) -> str:
+        hist, bin_edges = torch.histogram(tensor, bins=bins)
+        hist = hist.cpu().numpy()
+        bin_edges = bin_edges.cpu().numpy()
+
+        max_count = hist.max()
+        scale = width / max_count if max_count > 0 else 1
+
+        histogram_lines = []
+        for count, edge_start, edge_end in zip(hist, bin_edges[:-1], bin_edges[1:]):
+            bar = "*" * int(count * scale)
+            histogram_lines.append(f"{edge_start:6.2f} - {edge_end:6.2f} | {bar} ({count})")
+
+        return "\n".join(histogram_lines)
+    
+
+
 ###############################################################################
 #   Example usage
 #
