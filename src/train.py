@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 # local imports
 from .libs.encoding import Encoding
-from .libs.chess_model import ChessModel
+from .libs.chess_model import ChessModelResNet, ChessModelConv2d
 from .libs.early_stopper import EarlyStopper
 from .utils.dataset_utils import DatasetUtils
 from .utils.model_utils import ModelUtils
@@ -71,9 +71,9 @@ class TrainCommand:
         evals_np = evals_tensor.cpu().numpy()
         print(f"normalized evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
 
-        ###############################################################################
-        # Prepare data loaders
-        #
+        # =============================================================================
+        # Prepare datasets and dataloaders
+        # =============================================================================
 
         dataset_ratio_train = train_test_split_ratio
         dataset_ratio_validation = (1 - train_test_split_ratio) / 2
@@ -94,10 +94,22 @@ class TrainCommand:
         device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
         # print(f"Pytorch computes on {device} device")
 
-        # Model Initialization
-        input_shape = Encoding.get_input_shape()  # (channels, height, width)
-        output_shape = Encoding.get_output_shape()
-        model = ChessModel(input_shape=input_shape, output_shape=output_shape).to(device)
+        # =============================================================================
+        # Create the model
+        # =============================================================================
+        model_name = "ChessModelConv2d"
+        if model_name == "ChessModelConv2d":
+            model = ChessModelConv2d(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
+        elif model_name == "ChessModelResNet":
+            model = ChessModelResNet(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
+        else:
+            assert False, f"Unknown model name: {model_name}"
+
+        model = model.to(device)
+
+        # =============================================================================
+        # Setup training components: loss functions, optimizer, scheduler, early stopper
+        # =============================================================================
 
         # Losses: classification + regression
         criterion_cls = torch.nn.CrossEntropyLoss()
@@ -119,9 +131,9 @@ class TrainCommand:
 
         print(ModelUtils.model_summary(model))
 
-        ###############################################################################
-        # Training
-        #
+        # =============================================================================
+        # Training loop
+        # =============================================================================
         valid_losses: list[float] = []
         valid_cls_losses: list[float] = []
         valid_reg_losses: list[float] = []

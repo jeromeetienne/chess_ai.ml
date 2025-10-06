@@ -9,7 +9,7 @@ import argparse
 import torch
 
 # local imports
-from src.libs.chess_model import ChessModel
+from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
 from src.libs.encoding import Encoding
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -30,8 +30,17 @@ if __name__ == "__main__":
     #
 
     # Create the model
-    model = ChessModel(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
+    model_name = "ChessModelResNet"
+    if model_name == "ChessModelConv2d":
+        model = ChessModelConv2d(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
+    elif model_name == "ChessModelResNet":
+        model = ChessModelResNet(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
+    else:
+        assert False, f"Unknown model name: {model_name}"
 
+    # =============================================================================
+    # Load model weights if available
+    # =============================================================================
     # set to eval mode
     model.eval()
 

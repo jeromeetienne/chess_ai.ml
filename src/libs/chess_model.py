@@ -240,7 +240,7 @@ class ChessModelResNet(nn.Module):
 # 	 ChessModel class that wraps the original ChessModel
 ###############################################################################
 ###############################################################################
-class ChessModel(ChessModelConv2d):
-# class ChessModel(ChessModelResNet):
+# class ChessModel(ChessModelConv2d):
+class ChessModel(ChessModelResNet):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
         super(ChessModel, self).__init__(input_shape, output_shape)

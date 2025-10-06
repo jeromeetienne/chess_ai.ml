@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+
 import torchview
 
 # local imports
 from src.libs.encoding import Encoding
 from src.utils.model_utils import ModelUtils
+from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
 
 import os
 
@@ -12,7 +15,14 @@ model_folder_path = os.path.join(__dirname__, "../output/model/")
 input_shape = Encoding.get_input_shape()
 output_shape = Encoding.get_output_shape()
 
-model = ModelUtils.load_model(folder_path=model_folder_path, input_shape=input_shape, output_shape=output_shape)
+# Create the model
+model_name = "ChessModelConv2d"
+if model_name == "ChessModelConv2d":
+    model = ChessModelConv2d(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
+elif model_name == "ChessModelResNet":
+    model = ChessModelResNet(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
+else:
+    assert False, f"Unknown model name: {model_name}"
 
 # Input size for the model visualization (batch size 1, 21 channels, 8x8 image)
 input_size = (1, *input_shape)  # (1, 21, 8, 8)
