@@ -1,14 +1,32 @@
 # TODO
+- regression head dataset and alphazero
+  - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
+  - for each move it return if the player to move won or lost the game, +1 if won, -1 if lost, 0 if draw
+  - so no stockfish eval is needed
+  - TODO change the build_evals for that
+- store stockfish path in a ENV variable
+  - use python-dotenv
+- reproduce exactly the alpha zero model
+  - as seen here - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
+- output encoding in alpha-zero - https://chatgpt.com/c/68e47024-d17c-832d-aa46-dc37f265647b
+  - action_size = 4672  # for chess: 73 possible moves from each square
+  - it would means that the maximum number of legal move from any square is 73
+  - is that a better encoding than the uci2classindex ? which is an unstructured encoding... each is just a class index
 - add a command line arg to select the model
   - in train and in play
 - improve the loss weighting
   - some dynamic technique exists - https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g
   - "Loss Weights Based on Task Uncertainty" seems to be a good one
+  - https://chatgpt.com/c/68e456bf-ee34-832d-b241-9faee3f1e24f <- this could explain the wide variation in regularization weight
 - start to look at the MTCS + NN integration
   - in the player
   - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
   - see PUCT (mcts + nn) vs UCT (mcts only)
-- move all function to datasetutils load/save function
+  - not bad https://chatgpt.com/c/68e44feb-ec2c-8326-a512-bee4f5496e9a
+  - im coding a chess program with machine learning. i got a dual head model. it has a policy head which suggest the best move, and a value head which evaluate the board. show me a reusable class for PUCT. with all the type hinting. Make it working with python-chess
+  - "show me a usage of this class with pychess pip package"
+  - good https://chatgpt.com/c/68e46055-e798-8333-8f9d-59c551540d64
+- DONE move all function to datasetutils load/save function
   - nobody is allowed to do torch.load()/torch.save() directly
 - in the model, 
   - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - https://gemini.google.com/app/cdfdec954e81eaff
