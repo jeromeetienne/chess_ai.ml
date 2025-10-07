@@ -80,9 +80,6 @@ class ChessModelConv2d(nn.Module):
 
         flat_features = conv3_out_channels * 8 * 8
 
-        # self.gap_2d = nn.AdaptiveAvgPool2d(output_size=(4, 4))
-        self.flatten = nn.Flatten()
-
         # classification head (move prediction)
         self.cls_head = nn.Sequential(
             nn.Linear(flat_features, cls_fc_size),
@@ -91,7 +88,7 @@ class ChessModelConv2d(nn.Module):
             nn.Dropout(dropoutProbability),
             nn.Linear(cls_fc_size, output_width),
         )
-
+        
         # regression head (eval prediction)
         self.reg_head = torch.nn.Sequential(
             torch.nn.Linear(flat_features, reg_fc_size),
@@ -234,13 +231,74 @@ class ChessModelResNet(nn.Module):
 
         return move_logits, eval_pred
 
+# =============================================================================
+# AlphaZero exact model - NOT USED
+# =============================================================================
 
+class AlphaZeroNet_ResidualBlock(nn.Module):
+    def __init__(self, channels: int):
+        super().__init__()
+        self.conv1 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm2d(channels)
+        self.conv2 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm2d(channels)
+        
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        residual = x
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = self.bn2(self.conv2(x))
+        x += residual
+        x = F.relu(x)
+        return x
+
+class AlphaZeroNet(nn.Module):
+    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
+        super().__init__()
+
+        in_channels, board_size, _ = input_shape
+        action_size = output_shape[0]
+        num_res_blocks = 10  # Number of residual blocks
+
+        self.conv = nn.Conv2d(in_channels, 256, kernel_size=3, padding=1)
+        self.bn = nn.BatchNorm2d(256)
+        self.res_blocks = nn.ModuleList([AlphaZeroNet_ResidualBlock(256) for _ in range(num_res_blocks)])
+        
+        # Policy head
+        self.policy_conv = nn.Conv2d(256, 2, kernel_size=1)
+        self.policy_bn = nn.BatchNorm2d(2)
+        self.policy_fc = nn.Linear(2 * board_size * board_size, action_size)
+        
+        # Value head
+        self.value_conv = nn.Conv2d(256, 1, kernel_size=1)
+        self.value_bn = nn.BatchNorm2d(1)
+        self.value_fc1 = nn.Linear(board_size * board_size, 256)
+        self.value_fc2 = nn.Linear(256, 1)
+        
+    def forward(self, x: torch.Tensor):
+        x = x.to(torch.float32)
+        # Body
+        x = F.relu(self.bn(self.conv(x)))
+        for block in self.res_blocks:
+            x = block(x)
+        
+        # Policy head
+        p = F.relu(self.policy_bn(self.policy_conv(x)))
+        p = p.view(p.size(0), -1)
+        p = F.log_softmax(self.policy_fc(p), dim=1)
+        
+        # Value head
+        v = F.relu(self.value_bn(self.value_conv(x)))
+        v = v.view(v.size(0), -1)
+        v = F.relu(self.value_fc1(v))
+        v = torch.tanh(self.value_fc2(v))
+        
+        return p, v
 ###############################################################################
 ###############################################################################
 # 	 ChessModel class that wraps the original ChessModel
 ###############################################################################
 ###############################################################################
 # class ChessModel(ChessModelConv2d):
-class ChessModel(ChessModelResNet):
+class ChessModel(AlphaZeroNet):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
         super(ChessModel, self).__init__(input_shape, output_shape)
