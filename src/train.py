@@ -70,15 +70,15 @@ class TrainCommand:
         print(f"evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
 
         # Normalize evals to range [-1, 1] using sigmoid-like scaling
-        evals_tensor = DatasetUtils.normalize_evals_tensor(evals_tensor)
+        # evals_tensor = DatasetUtils.normalize_evals_tensor(evals_tensor)
 
         # evals_means = evals_tensor.mean().item()
         # evals_stds = evals_tensor.std().item()
         # evals_tensor = (evals_tensor - evals_means) / (evals_stds + 1e-8)  # avoid division by zero
         # evals_tensor = torch.tanh(evals_tensor/3)
 
-        print("Evals Tensor Histogram:")
-        print(DatasetUtils.tensor_histogram_ascii(evals_tensor, bins=20, width=50))
+        # print("Evals Tensor Histogram:")
+        # print(DatasetUtils.tensor_histogram_ascii(evals_tensor, bins=20, width=50))
 
         # Convert evals_tensor to numpy and display min/max
         evals_np = evals_tensor.cpu().numpy()
@@ -125,8 +125,8 @@ class TrainCommand:
         criterion_reg = torch.nn.L1Loss()
         # criterion_reg = torch.nn.SmoothL1Loss()
         # Loss weights: classification + regression
-        loss_cls_weight = 1.0
-        loss_reg_weight = 10.0
+        loss_cls_weight = 0.1
+        loss_reg_weight = 1.90
 
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -156,11 +156,11 @@ class TrainCommand:
             # =============================================================================
             # Dynamic loss weighting
             # =============================================================================
-            # Dynamic loss weighting based on recent training losses
-            n = min(10, len(train_cls_losses))
+            # # Dynamic loss weighting based on recent training losses
+            n = min(10_000, len(train_cls_losses))
             assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
-            loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.04
-            loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.96
+            loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.10
+            loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.90
             # Normalize weights to keep total weight = 2.0
             total_weight = loss_cls_weight + loss_reg_weight
             loss_cls_weight = (loss_cls_weight / total_weight) * 2.0

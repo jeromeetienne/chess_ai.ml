@@ -4,7 +4,7 @@ help: ## show this help
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py
 
-full_pipeline: clean build_boards_moves build_evals_fishtest train play ## run the full pipeline
+full_pipeline: clean build_boards_moves build_evals_outcome train play ## run the full pipeline
 
 train_deep_20: ## train a model with first 20 pgn files
 	./bin/build_boards_moves.py -fc 20
@@ -56,6 +56,9 @@ pgn_split_fishtest:
 #
 build_boards_moves: ## build the dataset
 	./bin/build_boards_moves.py
+
+build_evals_outcome: ## build the evals for the dataset using game outcome
+	./bin/build_evals_outcome.py
 
 build_evals_fishtest: ## build the evals for the dataset using fishtest pgns
 	./bin/build_evals_fishtest.py

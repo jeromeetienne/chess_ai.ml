@@ -47,12 +47,14 @@ class ChessModelConv2d(nn.Module):
         # conv3_out_channels = 16
         # fc_intermediate_size = 128
 
-        dropoutProbability = 0.1
         conv1_out_channels = 32
         conv2_out_channels = 64
         conv3_out_channels = 128
         cls_fc_size = 128
         reg_fc_size = 64
+        cls_dropoutProbability = 0.3
+        reg_dropoutProbability = 0.2
+
 
         # dropoutProbability = 0.2
         # conv1_out_channels = 16
@@ -85,7 +87,7 @@ class ChessModelConv2d(nn.Module):
             nn.Linear(flat_features, cls_fc_size),
             nn.BatchNorm1d(cls_fc_size),
             nn.ReLU(),
-            nn.Dropout(dropoutProbability),
+            nn.Dropout(cls_dropoutProbability),
             nn.Linear(cls_fc_size, output_width),
         )
         
@@ -94,7 +96,7 @@ class ChessModelConv2d(nn.Module):
             torch.nn.Linear(flat_features, reg_fc_size),
             nn.BatchNorm1d(reg_fc_size),
             torch.nn.ReLU(),
-            nn.Dropout(dropoutProbability),
+            nn.Dropout(reg_dropoutProbability),
             torch.nn.Linear(reg_fc_size, 1),
         )
         
