@@ -4,14 +4,36 @@ import os
 # pip imports
 import torch
 
+from src.libs.encoding import Encoding
+
 # local imports
-from ..libs.chess_model import ChessModel
+from ..libs.chess_model import ChessModelConv2d, ChessModelResNet, AlphaZeroNet
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
 class ModelUtils:
+    class MODEL_NAME:
+        CHESS_MODEL_CONV2D = "ChessModelConv2d"
+        CHESS_MODEL_RESNET = "ChessModelResNet"
+        ALPHA_ZERO_NET = "AlphaZeroNet"
+
+    @staticmethod
+    def create_model(model_name: str) -> torch.nn.Module:
+        input_shape, output_shape = Encoding.get_input_shape(), Encoding.get_output_shape()
+        # Create the model
+        if model_name == "ChessModelConv2d":
+            model = ChessModelConv2d(input_shape=input_shape, output_shape=output_shape)
+        elif model_name == "ChessModelResNet":
+            model = ChessModelResNet(input_shape=input_shape, output_shape=output_shape)
+        elif model_name == "AlphaZeroNet":
+            model = AlphaZeroNet(input_shape=input_shape, output_shape=output_shape)
+        else:
+            assert False, f"Unknown model name: {model_name}"
+
+        return model
+
     @staticmethod
     def model_summary(model: torch.nn.Module) -> str:
         """
@@ -47,16 +69,13 @@ class ModelUtils:
         return "\n".join(output)
 
     @staticmethod
-    def save_model(model: ChessModel, folder_path: str):
+    def save_model(model: torch.nn.Module, folder_path: str):
         # Save the model
         state_dict_path = f"{folder_path}/model.pth"
         torch.save(model.state_dict(), state_dict_path)
 
     @staticmethod
-    def load_model(folder_path: str, input_shape: tuple[int, int, int], output_shape: tuple[int]) -> ChessModel:
+    def load_weights(model: torch.nn.Module, folder_path: str) -> None:
         # Load the model
-        model = ChessModel(input_shape=input_shape, output_shape=output_shape)
         model_path = f"{folder_path}/model.pth"
         model.load_state_dict(torch.load(model_path))
-
-        return model

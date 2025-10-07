@@ -17,7 +17,7 @@ __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
 class ChessPlayer:
-    def __init__(self, model: ChessModel, color: chess.Color , polyglot_reader: chess.polyglot.MemoryMappedReader|None = None):
+    def __init__(self, model: torch.nn.Module, color: chess.Color , polyglot_reader: chess.polyglot.MemoryMappedReader|None = None):
         """
         Initialize the ChessbotMLPlayer with the given model, class index to UCI mapping, and optional polyglot reader.
         """
