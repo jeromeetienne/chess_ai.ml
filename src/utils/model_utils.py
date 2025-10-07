@@ -20,6 +20,12 @@ class ModelUtils:
         ALPHA_ZERO_NET = "AlphaZeroNet"
 
     @staticmethod
+    def get_supported_models() -> list[str]:
+        # get supported models from MODEL_NAME class
+        supported_models = [value for name, value in vars(ModelUtils.MODEL_NAME).items() if not name.startswith("__") and not callable(value)]
+        return supported_models
+
+    @staticmethod
     def create_model(model_name: str) -> torch.nn.Module:
         input_shape, output_shape = Encoding.get_input_shape(), Encoding.get_output_shape()
         # Create the model

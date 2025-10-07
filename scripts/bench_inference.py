@@ -11,6 +11,7 @@ import torch
 # local imports
 from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
 from src.libs.encoding import Encoding
+from src.utils.model_utils import ModelUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
@@ -23,20 +24,23 @@ tensors_folder_path = os.path.join(data_folder_path, "pgn_tensors")
 if __name__ == "__main__":
     # Parse command line arguments
     argParser = argparse.ArgumentParser(description="Benchmark different model architectures.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    argParser.parse_args()
+    argParser.add_argument(
+        "--model_name",
+        "-mn",
+        type=str,
+        default=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
+        choices=ModelUtils.get_supported_models(),
+        help="Model architecture to use for training",
+    )
+    args = argParser.parse_args()
 
     ###############################################################################
     #   Load and setup model
     #
 
     # Create the model
-    model_name = "ChessModelResNet"
-    if model_name == "ChessModelConv2d":
-        model = ChessModelConv2d(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
-    elif model_name == "ChessModelResNet":
-        model = ChessModelResNet(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
-    else:
-        assert False, f"Unknown model name: {model_name}"
+    model_name = args.model_name
+    model = ModelUtils.create_model(model_name)
 
     # =============================================================================
     # Load model weights if available

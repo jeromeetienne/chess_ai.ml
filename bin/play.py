@@ -7,6 +7,7 @@ import argparse
 
 # local imports
 from src.play import PlayCommand
+from src.utils.model_utils import ModelUtils
 
 # define the opponent PYTHON type
 opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
@@ -68,8 +69,8 @@ if __name__ == "__main__":
         "--model_name",
         "-mn",
         type=str,
-        default="ChessModelConv2d",
-        choices=["ChessModelConv2d", "ChessModelResNet", "AlphaZeroNet"],
+        default=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
+        choices=ModelUtils.get_supported_models(),
         help="Model architecture to use for playing",
     )
     args = argParser.parse_args()

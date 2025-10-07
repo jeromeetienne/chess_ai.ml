@@ -5,6 +5,7 @@ import argparse
 
 # local imports
 from src.train import TrainCommand
+from src.utils.model_utils import ModelUtils
 
 ###############################################################################
 #   Main Entry Point
@@ -25,8 +26,8 @@ if __name__ == "__main__":
         "--model_name",
         "-mn",
         type=str,
-        default="ChessModelConv2d",
-        choices=["ChessModelConv2d", "ChessModelResNet", "AlphaZeroNet"],
+        default=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
+        choices=ModelUtils.get_supported_models(),
         help="Model architecture to use for training",
     )
     args = argParser.parse_args()

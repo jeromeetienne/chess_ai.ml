@@ -126,7 +126,7 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
     print(f"Detected {logical_cores} logical CPU cores.")
 
     # get stockfish path from environment variable
-    stockfish_path = os.getenv('STOCKFISH_PATH')
+    stockfish_path = os.getenv("STOCKFISH_PATH")
     assert stockfish_path is not None, "STOCKFISH_PATH environment variable is not set. Please set it in the .env file."
 
     # start the pool
@@ -203,6 +203,7 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser(
         description="""Build evaluation tensors for chess positions using Stockfish engine.
+the eval is the clamped centi-pawns from the point of view of the player to move.
 The eval tensors are saved alongside the corresponding boards tensors in the data/pgn_tensors directory.
                                         
 It uses all available CPU cores to run multiple Stockfish instances in parallel for faster evaluation.                                        

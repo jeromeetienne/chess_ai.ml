@@ -44,10 +44,8 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
     # parse the pgn file
     pgn_games = PGNUtils.pgn_file_to_games(pgn_path)
 
-
     # split the games into boards and moves
     pgn_boards, pgn_moves = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)
-
 
     # iterate over all games
     for game in pgn_games:
@@ -61,7 +59,6 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
             game_result_for_white = 0.0
         else:
             assert False, f"Unexpected game result: {result_str}"
-
 
         # iterate over all moves in the mainline, skipping positions in the opening book
         board = game.board()
@@ -118,7 +115,9 @@ def process_pgn_file(pgn_path: str, tensors_folder_path: str, polyglot_reader: c
 # =============================================================================
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser(
-        description="""Build evaluation tensors for chess positions fishtest games using Stockfish engine.""",
+        description="""Build evaluation tensors for chess positions fishtest games using Stockfish engine.
+The evals are from the point of view of the player to move, and are in the range [-1, 1], where 1 is a win for white, -1 is a win for black, and 0 is a draw.
+""",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")

@@ -1,37 +1,51 @@
 #!/usr/bin/env python3
 
+# stdlib imports
+import os
+
+# pip imports
 import torchview
+import argparse
 
 # local imports
 from src.libs.encoding import Encoding
 from src.utils.model_utils import ModelUtils
 from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
 
-import os
+
+
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 model_folder_path = os.path.join(__dirname__, "../output/model/")
 
-input_shape = Encoding.get_input_shape()
-output_shape = Encoding.get_output_shape()
 
-# Create the model
-model_name = "ChessModelConv2d"
-if model_name == "ChessModelConv2d":
-    model = ChessModelConv2d(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
-elif model_name == "ChessModelResNet":
-    model = ChessModelResNet(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
-else:
-    assert False, f"Unknown model name: {model_name}"
+if __name__ == "__main__":
+    # Parse command line arguments
+    argParser = argparse.ArgumentParser(description="Benchmark different model architectures.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    argParser.add_argument(
+        "--model_name",
+        "-mn",
+        type=str,
+        default=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
+        choices=ModelUtils.get_supported_models(),
+        help="Model architecture to use for training",
+    )
+    args = argParser.parse_args()
+    input_shape = Encoding.get_input_shape()
+    output_shape = Encoding.get_output_shape()
 
-# Input size for the model visualization (batch size 1, 21 channels, 8x8 image)
-input_size = (1, *input_shape)  # (1, 21, 8, 8)
+    # Create the model
+    model_name = args.model_name
+    model = ModelUtils.create_model(model_name)
+
+    # Input size for the model visualization (batch size 1, 21 channels, 8x8 image)
+    input_size = (1, *input_shape)  # (1, 21, 8, 8)
 
 
-# Generate the model graph visualization with expanded nested modules
-dst_folder = os.path.join(__dirname__, "../")
-model_graph = torchview.draw_graph(model, input_size=input_size, expand_nested=True, filename='chess_model', directory=dst_folder)
+    # Generate the model graph visualization with expanded nested modules
+    dst_folder = os.path.join(__dirname__, "../")
+    model_graph = torchview.draw_graph(model, input_size=input_size, expand_nested=True, filename='chess_model', directory=dst_folder)
 
-# # # Display the visual graph (in Jupyter, this will show the image)
-visual = model_graph.visual_graph
-visual.render("chess_model_graph", format="png")  # Saves and opens the graph image as PNG
+    # # # Display the visual graph (in Jupyter, this will show the image)
+    visual = model_graph.visual_graph
+    visual.render("chess_model_graph", format="png")  # Saves and opens the graph image as PNG

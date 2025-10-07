@@ -140,7 +140,9 @@ def folder_contains_fishtest_pgn(pgn_folder_path: str) -> bool:
 #
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser(
-        description="""Build evaluation tensors for chess positions fishtest games using Stockfish engine.""",
+        description="""Build evaluation tensors for chess positions fishtest games using Stockfish engine.
+The evals are from the point of view of the player to move, and are the clamped centi-pawns.
+""",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
@@ -148,7 +150,9 @@ if __name__ == "__main__":
     # args = argParser.parse_args(['-fc', '4'])  # for testing only, remove this line for production
 
     # sanity check - ensure output/pgn_splits contains fishtest pgn files
-    assert folder_contains_fishtest_pgn(pgn_folder_path), f"output/pgn_splits does not contain fishtest pgn files. Please ensure it contains fishtest pgn files."
+    assert folder_contains_fishtest_pgn(
+        pgn_folder_path
+    ), f"output/pgn_splits does not contain fishtest pgn files. Please ensure it contains fishtest pgn files."
 
     # get all pgn paths
     pgn_paths = PGNUtils.get_pgn_paths()

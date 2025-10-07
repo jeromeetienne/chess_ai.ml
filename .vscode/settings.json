@@ -1,3 +1,9 @@
 {
-    "makefile.configureOnOpen": false
+    "makefile.configureOnOpen": false,
+    // Show a vertical ruler at 160 characters to make it easy to spot long lines
+    "editor.rulers": [
+        160
+    ],
+    // Optional: format on save
+    "editor.formatOnSave": true
 }

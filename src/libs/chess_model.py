@@ -41,20 +41,29 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # dropoutProbability = 0.2
         # conv1_out_channels = 64
         # conv2_out_channels = 128
         # conv3_out_channels = 16
-        # fc_intermediate_size = 128
+        # cls_fc_size = 128
+        # reg_fc_size = 64
+        # cls_dropoutProbability = 0.2
+        # reg_dropoutProbability = 0.2
 
-        conv1_out_channels = 32
-        conv2_out_channels = 64
+        # conv1_out_channels = 32
+        # conv2_out_channels = 64
+        # conv3_out_channels = 128
+        # cls_fc_size = 128
+        # reg_fc_size = 64
+        # cls_dropoutProbability = 0.3
+        # reg_dropoutProbability = 0.2
+
+        conv1_out_channels = 16
+        conv2_out_channels = 32
         conv3_out_channels = 128
-        cls_fc_size = 128
+        cls_fc_size = 64
         reg_fc_size = 64
         cls_dropoutProbability = 0.3
         reg_dropoutProbability = 0.2
-
 
         # dropoutProbability = 0.2
         # conv1_out_channels = 16
@@ -70,7 +79,6 @@ class ChessModelConv2d(nn.Module):
             nn.Conv2d(input_channels, conv1_out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(conv1_out_channels),
             nn.ReLU(),
-            # nn.Dropout2d(dropoutProbability),
             nn.Conv2d(conv1_out_channels, conv2_out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(conv2_out_channels),
             nn.ReLU(),
@@ -80,7 +88,7 @@ class ChessModelConv2d(nn.Module):
             torch.nn.Flatten(),
         )
 
-        flat_features = conv3_out_channels * 8 * 8
+        flat_features = conv2_out_channels * 8 * 8
 
         # classification head (move prediction)
         self.cls_head = nn.Sequential(
@@ -90,7 +98,7 @@ class ChessModelConv2d(nn.Module):
             nn.Dropout(cls_dropoutProbability),
             nn.Linear(cls_fc_size, output_width),
         )
-        
+
         # regression head (eval prediction)
         self.reg_head = torch.nn.Sequential(
             torch.nn.Linear(flat_features, reg_fc_size),
@@ -99,7 +107,7 @@ class ChessModelConv2d(nn.Module):
             nn.Dropout(reg_dropoutProbability),
             torch.nn.Linear(reg_fc_size, 1),
         )
-        
+
         # Initialize weights
         # nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
         # nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='leaky_relu')
@@ -233,9 +241,11 @@ class ChessModelResNet(nn.Module):
 
         return move_logits, eval_pred
 
+
 # =============================================================================
 # AlphaZero exact model - NOT USED
 # =============================================================================
+
 
 class AlphaZeroNet_ResidualBlock(nn.Module):
     def __init__(self, channels: int):
@@ -244,7 +254,7 @@ class AlphaZeroNet_ResidualBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(channels)
         self.conv2 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
         self.bn2 = nn.BatchNorm2d(channels)
-        
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = x
         x = F.relu(self.bn1(self.conv1(x)))
@@ -252,6 +262,7 @@ class AlphaZeroNet_ResidualBlock(nn.Module):
         x += residual
         x = F.relu(x)
         return x
+
 
 class AlphaZeroNet(nn.Module):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
@@ -264,37 +275,39 @@ class AlphaZeroNet(nn.Module):
         self.conv = nn.Conv2d(in_channels, 256, kernel_size=3, padding=1)
         self.bn = nn.BatchNorm2d(256)
         self.res_blocks = nn.ModuleList([AlphaZeroNet_ResidualBlock(256) for _ in range(num_res_blocks)])
-        
+
         # Policy head
         self.policy_conv = nn.Conv2d(256, 2, kernel_size=1)
         self.policy_bn = nn.BatchNorm2d(2)
         self.policy_fc = nn.Linear(2 * board_size * board_size, action_size)
-        
+
         # Value head
         self.value_conv = nn.Conv2d(256, 1, kernel_size=1)
         self.value_bn = nn.BatchNorm2d(1)
         self.value_fc1 = nn.Linear(board_size * board_size, 256)
         self.value_fc2 = nn.Linear(256, 1)
-        
+
     def forward(self, x: torch.Tensor):
         x = x.to(torch.float32)
         # Body
         x = F.relu(self.bn(self.conv(x)))
         for block in self.res_blocks:
             x = block(x)
-        
+
         # Policy head
         p = F.relu(self.policy_bn(self.policy_conv(x)))
         p = p.view(p.size(0), -1)
         p = F.log_softmax(self.policy_fc(p), dim=1)
-        
+
         # Value head
         v = F.relu(self.value_bn(self.value_conv(x)))
         v = v.view(v.size(0), -1)
         v = F.relu(self.value_fc1(v))
         v = torch.tanh(self.value_fc2(v))
-        
+
         return p, v
+
+
 ###############################################################################
 ###############################################################################
 # 	 ChessModel class that wraps the original ChessModel
