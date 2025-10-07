@@ -64,6 +64,14 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable debug mode.",
     )
+    argParser.add_argument(
+        "--model_name",
+        "-mn",
+        type=str,
+        default="ChessModelConv2d",
+        choices=["ChessModelConv2d", "ChessModelResNet", "AlphaZeroNet"],
+        help="Model architecture to use for playing",
+    )
     args = argParser.parse_args()
 
     if args.debug is True:
@@ -80,6 +88,7 @@ if __name__ == "__main__":
     #   Start the game
     #
     PlayCommand.play_game(
+        model_name=args.model_name,
         chatbotml_color=chessbotml_color,
         opponent_tech=opponent_tech,
         stockfish_elo=args.stockfish_elo,

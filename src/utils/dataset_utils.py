@@ -285,7 +285,6 @@ class DatasetUtils:
         return summary
 
 
-
     @staticmethod
     def normalize_evals_tensor(evals_tensor: torch.Tensor) -> torch.Tensor:
         """ Normalize evals to be between -1 and 1 using tanh function. """

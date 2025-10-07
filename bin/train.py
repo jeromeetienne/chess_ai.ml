@@ -21,6 +21,14 @@ if __name__ == "__main__":
     argParser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
     argParser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")
     argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument(
+        "--model_name",
+        "-mn",
+        type=str,
+        default="ChessModelConv2d",
+        choices=["ChessModelConv2d", "ChessModelResNet", "AlphaZeroNet"],
+        help="Model architecture to use for training",
+    )
     args = argParser.parse_args()
 
     if args.debug:
@@ -29,6 +37,7 @@ if __name__ == "__main__":
 
     # Call the train function
     TrainCommand.train(
+        model_name=args.model_name,
         max_epoch_count=args.num_epochs,
         batch_size=args.batch_size,
         learning_rate=args.learning_rate,

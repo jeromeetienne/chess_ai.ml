@@ -33,6 +33,7 @@ class PlayCommand:
 
     @staticmethod   
     def play_game(
+        model_name: str,
         chatbotml_color: color_t = "white",
         opponent_tech: opponent_tech_t = "stockfish",
         stockfish_elo: int = 1350,
@@ -51,7 +52,8 @@ class PlayCommand:
         #
 
         # Load the model
-        model = ModelUtils.load_model(model_folder_path, Encoding.get_input_shape(), Encoding.get_output_shape())
+        model = ModelUtils.create_model(model_name)
+        ModelUtils.load_weights(model, model_folder_path)
         
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
@@ -73,6 +75,7 @@ class PlayCommand:
         print(f'White: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "white" else opponent_tech)}')
         print(f'Black: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "black" else opponent_tech)}')
 
+        # TODO change that to a ENV variable in python-dotenv
         stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
         stockfish_evaluation = Stockfish(path=stockfish_path)
         # stockfish_evaluation.set_depth(20)

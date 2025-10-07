@@ -1,5 +1,6 @@
 # stdlib imports
 import os
+from pyexpat import model
 import sys
 import time
 import typing
@@ -34,14 +35,21 @@ class TrainCommand:
     # Train a chess model using PyTorch.
     ###############################################################################
     @staticmethod
-    def train(max_epoch_count: int = 20, batch_size: int = 2048, learning_rate: float = 0.001, train_test_split_ratio: float = 0.7, max_file_count: int = 15):
+    def train(
+        model_name="ChessModelConv2d",
+        max_epoch_count: int = 20,
+        batch_size: int = 2048,
+        learning_rate: float = 0.001,
+        train_test_split_ratio: float = 0.7,
+        max_file_count: int = 15,
+    ):
 
         # set random seed for reproducibility
         # torch.manual_seed(42)
 
-        ###############################################################################
-        # Load Dataset
-        #
+        # =============================================================================
+        # Load the dataset
+        # =============================================================================
 
         # Load the dataset
         boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
@@ -63,6 +71,11 @@ class TrainCommand:
 
         # Normalize evals to range [-1, 1] using sigmoid-like scaling
         evals_tensor = DatasetUtils.normalize_evals_tensor(evals_tensor)
+
+        # evals_means = evals_tensor.mean().item()
+        # evals_stds = evals_tensor.std().item()
+        # evals_tensor = (evals_tensor - evals_means) / (evals_stds + 1e-8)  # avoid division by zero
+        # evals_tensor = torch.tanh(evals_tensor/3)
 
         print("Evals Tensor Histogram:")
         print(DatasetUtils.tensor_histogram_ascii(evals_tensor, bins=20, width=50))
@@ -97,15 +110,10 @@ class TrainCommand:
         # =============================================================================
         # Create the model
         # =============================================================================
-        model_name = "ChessModelConv2d"
-        if model_name == "ChessModelConv2d":
-            model = ChessModelConv2d(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
-        elif model_name == "ChessModelResNet":
-            model = ChessModelResNet(input_shape=Encoding.get_input_shape(), output_shape=Encoding.get_output_shape())
-        else:
-            assert False, f"Unknown model name: {model_name}"
 
+        model = ModelUtils.create_model(model_name)
         model = model.to(device)
+        print(f"Using model: {model_name}")
 
         # =============================================================================
         # Setup training components: loss functions, optimizer, scheduler, early stopper
@@ -115,6 +123,7 @@ class TrainCommand:
         criterion_cls = torch.nn.CrossEntropyLoss()
         # criterion_reg = torch.nn.MSELoss()
         criterion_reg = torch.nn.L1Loss()
+        # criterion_reg = torch.nn.SmoothL1Loss()
         # Loss weights: classification + regression
         loss_cls_weight = 1.0
         loss_reg_weight = 10.0
@@ -158,7 +167,7 @@ class TrainCommand:
             loss_reg_weight = (loss_reg_weight / total_weight) * 2.0
 
             # =============================================================================
-            # 
+            #
             # =============================================================================
             # Training the model
             train_loss, train_cls_loss, train_reg_loss = TrainCommand.train_one_epoch(
@@ -296,7 +305,6 @@ class TrainCommand:
             bbox=dict(boxstyle="round", facecolor="white", alpha=0.5),
         )
 
-
         # =============================================================================
         # Regression Loss
         # =============================================================================
@@ -397,6 +405,18 @@ class TrainCommand:
 
             # Backpropagation
             loss.backward()
+
+            if False:
+                # compute total grad norm (before clipping)
+                total_norm = 0.0
+                for p in model.parameters():
+                    if p.grad is not None:
+                        param_norm = p.grad.data.norm(2)
+                        total_norm += param_norm.item() ** 2
+                total_norm = total_norm**0.5
+                print(f"grad_norm_before_clip = {total_norm:.4f}")
+                # Clip gradients to prevent exploding gradients
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0, norm_type=2.0)
 
             optimizer.step()
 
