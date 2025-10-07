@@ -69,8 +69,10 @@ build_evals_stockfish: ## build the evals for the dataset using stockfish evalua
 train: ## train the model
 	./bin/train.py
 
+play: play_stockfish ## play the model vs stockfish
+
 play_human: ## play against the model
 	./bin/play.py -color black -o human
 
-play_stockfish: ## play against the model
+play_stockfish: ## play the model vs stockfish
 	./bin/play.py

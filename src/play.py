@@ -6,6 +6,7 @@ import typing
 import chess
 import chess.polyglot
 from stockfish import Stockfish
+import dotenv
 
 
 # local imports
@@ -17,6 +18,10 @@ from .utils.pgn_utils import PGNUtils
 from .utils.termcolor_utils import TermcolorUtils
 from .libs.chess_extra import ChessExtra
 from .libs.types import opponent_tech_t, color_t
+
+
+# Init dotenv to load environment variables from .env file
+dotenv.load_dotenv()
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
@@ -75,8 +80,10 @@ class PlayCommand:
         print(f'White: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "white" else opponent_tech)}')
         print(f'Black: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "black" else opponent_tech)}')
 
-        # TODO change that to a ENV variable in python-dotenv
-        stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
+        # get stockfish path from environment variable
+        stockfish_path = os.getenv('STOCKFISH_PATH')
+        assert stockfish_path is not None, "STOCKFISH_PATH environment variable is not set. Please set it in the .env file."
+
         stockfish_evaluation = Stockfish(path=stockfish_path)
         # stockfish_evaluation.set_depth(20)
         # stockfish_evaluation.set_elo_rating(20)

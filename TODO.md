@@ -4,16 +4,10 @@
   - for each move it return if the player to move won or lost the game, +1 if won, -1 if lost, 0 if draw
   - so no stockfish eval is needed
   - TODO change the build_evals for that
-- store stockfish path in a ENV variable
-  - use python-dotenv
-- reproduce exactly the alpha zero model
-  - as seen here - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
 - output encoding in alpha-zero - https://chatgpt.com/c/68e47024-d17c-832d-aa46-dc37f265647b
   - action_size = 4672  # for chess: 73 possible moves from each square
   - it would means that the maximum number of legal move from any square is 73
   - is that a better encoding than the uci2classindex ? which is an unstructured encoding... each is just a class index
-- add a command line arg to select the model
-  - in train and in play
 - improve the loss weighting
   - some dynamic technique exists - https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g
   - "Loss Weights Based on Task Uncertainty" seems to be a good one
@@ -41,6 +35,12 @@
 - make it play on lichess ?
 
 # DONE
+- DONE store stockfish path in a ENV variable
+  - use python-dotenv
+- DONE add a command line arg to select the model
+  - in train and in play
+- DONE reproduce exactly the alpha zero model
+  - as seen here - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
 - DONE move the multi-head model to a separate file to residual network
 - DONE display the min in training_validation_loss.png
   - red dot + x axis. like regression_3_dual_head.py

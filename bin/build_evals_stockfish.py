@@ -11,15 +11,18 @@ import torch
 import chess.engine
 import psutil
 import argparse
+import dotenv
 
 # local imports
 from src.libs.encoding import Encoding
 from src.utils.dataset_utils import DatasetUtils
 
+# Init dotenv to load environment variables from .env file
+dotenv.load_dotenv()
+
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "../output")
 tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
-stockfish_path = "/Users/jetienne/Downloads/stockfish/stockfish-macos-m1-apple-silicon"  # Update this path to your Stockfish binary
 
 
 ###############################################################################
@@ -121,6 +124,10 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
     # Get number of logical cores
     logical_cores = typing.cast(int, psutil.cpu_count(logical=True))
     print(f"Detected {logical_cores} logical CPU cores.")
+
+    # get stockfish path from environment variable
+    stockfish_path = os.getenv('STOCKFISH_PATH')
+    assert stockfish_path is not None, "STOCKFISH_PATH environment variable is not set. Please set it in the .env file."
 
     # start the pool
     engine_count = logical_cores
