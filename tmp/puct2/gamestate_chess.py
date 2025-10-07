@@ -11,12 +11,12 @@ class ChessGameState(GameState):
     def clone(self) -> "ChessGameState":
         return ChessGameState(self.board)
 
-    def get_legal_actions(self) -> List[Any]:
+    def get_legal_actions(self) -> List[chess.Move]:
         """Return all legal moves as a list of chess.Move objects."""
         legal_moves = list(self.board.legal_moves)
         return legal_moves
 
-    def apply_action(self, action: Any) -> "ChessGameState":
+    def apply_action(self, action: chess.Move) -> "ChessGameState":
         """Apply a move and return a new game state."""
         new_board = self.board.copy()
         new_board.push(action)
