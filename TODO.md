@@ -1,4 +1,8 @@
 # TODO
+- make support UCI protocol
+  - https://www.perplexity.ai/search/what-is-the-minimal-implementa-StscaKhDSbqMc46SZmE5LA
+  - chess x is UCI GUI good for debug
+- see about the reg+cls layer with convnet in them like alpha-zero
 - regression head dataset and alphazero
   - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
   - for each move it return if the player to move won or lost the game, +1 if won, -1 if lost, 0 if draw

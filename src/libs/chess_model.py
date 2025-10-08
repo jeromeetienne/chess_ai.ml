@@ -49,21 +49,21 @@ class ChessModelConv2d(nn.Module):
         # cls_dropoutProbability = 0.2
         # reg_dropoutProbability = 0.2
 
-        # conv1_out_channels = 32
-        # conv2_out_channels = 64
-        # conv3_out_channels = 128
-        # cls_fc_size = 128
-        # reg_fc_size = 64
-        # cls_dropoutProbability = 0.3
-        # reg_dropoutProbability = 0.2
-
-        conv1_out_channels = 16
-        conv2_out_channels = 32
+        conv1_out_channels = 32
+        conv2_out_channels = 64
         conv3_out_channels = 128
-        cls_fc_size = 64
+        cls_fc_size = 128
         reg_fc_size = 64
         cls_dropoutProbability = 0.3
         reg_dropoutProbability = 0.2
+
+        # conv1_out_channels = 16
+        # conv2_out_channels = 32
+        # conv3_out_channels = 128
+        # cls_fc_size = 64
+        # reg_fc_size = 64
+        # cls_dropoutProbability = 0.3
+        # reg_dropoutProbability = 0.2
 
         # dropoutProbability = 0.2
         # conv1_out_channels = 16
@@ -88,7 +88,7 @@ class ChessModelConv2d(nn.Module):
             torch.nn.Flatten(),
         )
 
-        flat_features = conv2_out_channels * 8 * 8
+        flat_features = conv3_out_channels * 8 * 8
 
         # classification head (move prediction)
         self.cls_head = nn.Sequential(

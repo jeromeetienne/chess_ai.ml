@@ -121,8 +121,8 @@ class TrainCommand:
 
         # Losses: classification + regression
         criterion_cls = torch.nn.CrossEntropyLoss()
-        # criterion_reg = torch.nn.MSELoss()
-        criterion_reg = torch.nn.L1Loss()
+        criterion_reg = torch.nn.MSELoss()
+        # criterion_reg = torch.nn.L1Loss()
         # criterion_reg = torch.nn.SmoothL1Loss()
         # Loss weights: classification + regression
         loss_cls_weight = 0.1
