@@ -1,9 +1,31 @@
 #!/usr/bin/env python3
 """
-Read stdin line-by-line and print each line as soon as it's received.
+ucinet engine implementation
 
-This uses binary reads/writes and explicit flush to avoid stdio buffering
-delays so lines appear immediately when the producer writes them.
+- it uses the chess library to handle the chess logic
+- it implements a basic UCI protocol
+- it can communicate via named pipes or stdin/stdout
+  - stdin/stdout is the standard way UCI engines communicate
+- named pipes are useful for debugging and development
+  - it uses the `named_pipe_forwarder.py` script to forward stdin/stdout to the named pipes
+
+## Why named pipes?
+This is a trick to help during development. UCI protocol is above stdin/stdout.
+This means the UCI client (aka the GUI) will open a subprocess and communicate
+with it via stdin/stdout.
+
+This make is hard to debug the engine.
+
+### Reasons
+- hard to relaunch the engine
+- hard to log the communication between the GUI and the engine
+- hard to launch the server in debug mode in vscode
+
+### Solution
+- have the engine communicate via named pipes instead of stdin/stdout
+- have a small forwarder script that read stdin and write to the named pipe
+    and read from the other named pipe and write to stdout. `./named_pipe_forwarder.py`
+- have the GUI to talk to the forwarder script instead of the engine directly
 """
 
 # stdlib imports
@@ -15,26 +37,47 @@ import time
 # pip imports
 import argparse
 import chess
+import chess.polyglot
+
+# local imports
+from src.libs.chess_player import ChessPlayer
+from src.utils.model_utils import ModelUtils
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-proto_in_path = os.path.join(__dirname__, "../output/ucinet_proto_in")
-proto_out_path = os.path.join(__dirname__, "../output/ucinet_proto_out")
+data_folder_path = os.path.join(__dirname__, "../data")
+output_folder_path = os.path.join(__dirname__, "..", "output")
+model_folder_path = os.path.join(output_folder_path, "model")
+
+proto_in_path = os.path.join(output_folder_path, "ucinet_proto_in")
+proto_out_path = os.path.join(output_folder_path, "ucinet_proto_out")
+log_file_path = os.path.join(output_folder_path, "ucinet_engine.log")
 
 
 # =============================================================================
 # UCI Engine implementation
 # =============================================================================
 class UciNetEngine:
-    def __init__(self):
-        self.current_board = chess.Board()
+    def __init__(self, ignore_quit: bool = False):
+        self._ignore_quit = ignore_quit
+
+        self._current_board = chess.Board()
+
+        # Load the model
+        model_name = ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D
+        self._model = ModelUtils.create_model(model_name)
+        ModelUtils.load_weights(self._model, model_folder_path)
+
+        # Read the polyglot opening book
+        polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
+        self._polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
     def _log(self, msg: str) -> None:
         """Append a timestamped message to the log file."""
         ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         line = f"{ts} {msg}\n"
         try:
-            with open(os.path.join(__dirname__, "ucinet_engine.log"), "a", encoding="utf-8", errors="replace") as lf:
+            with open(log_file_path, "a", encoding="utf-8", errors="replace") as lf:
                 lf.write(line)
         except Exception:
             # Never raise from logging; fall back to stderr
@@ -43,36 +86,69 @@ class UciNetEngine:
     def process_ucinet_command(self, input_cmd: str) -> str:
         output_cmd: str = ""
         if input_cmd == "uci":
+            # =============================================================================
+            # "uci" command is sent to the engine to identify itself and its capabilities.
+            # =============================================================================
             output_cmd += "id name chess_ai.ml\n"
             output_cmd += "id author jerome Etienne\n"
             output_cmd += "uciok"
         elif input_cmd == "isready":
+            # =============================================================================
+            # "isready" command is sent to the engine to check if it is ready to accept commands.
+            # =============================================================================
             output_cmd = "readyok"
         elif input_cmd.startswith("position"):
-            # position fen rnbqkb1r/pppp1ppp/4pn2/8/P2P4/4P3/1PP2PPP/RNBQKBNR b KQkq a3 0 3
-            # skip the 2 first words "position fen ", dont use character index
+            # =============================================================================
+            # "position" command is sent to the engine to set up the board position.
+            # =============================================================================
+            # input_cmd is like "position fen rnbqkb1r/pppp1ppp/4pn2/8/P2P4/4P3/1PP2PPP/RNBQKBNR b KQkq a3 0 3
+
+            # split into words
             words = input_cmd.split(" ")
+            #
             if len(words) >= 3 and words[1] == "fen":
                 fen = " ".join(words[2:])
-                self.current_board = chess.Board(fen=fen)
+                self._current_board = chess.Board(fen=fen)
                 self._log(f"Set board to FEN: {fen}")
             else:
-                raise ValueError("Unsupported position command format")
+                raise ValueError(f"Unsupported position command format: {input_cmd}")
         elif input_cmd.startswith("go"):
-            legal_moves = list(self.current_board.legal_moves)
-            if not legal_moves:
+            # =============================================================================
+            # "go" command is sent to the engine to start calculating the best move.
+            # =============================================================================
+            # initialize chess player
+            player_color = self._current_board.turn
+            chess_player = ChessPlayer(self._model, player_color, self._polyglot_reader)
+            # predict the best move
+            move_uci = chess_player.predict_next_move(self._current_board)
+            if move_uci is not None:
+                # play the move on the internal board
+                move = chess.Move.from_uci(move_uci)
+                self._current_board.push(move)
+                # log the event
+                self._log(f"Playing move: {move_uci}")
+                # respond with the best move
+                output_cmd += f"bestmove {move_uci}"
+            else:
                 self._log("No legal moves available, game over?")
                 output_cmd += "bestmove (none)"
-            else:
-                best_move = legal_moves[0]  # Just pick the first legal move
-                self._log(f"Playing move: {best_move.uci()}")
-                output_cmd += f"bestmove {best_move.uci()}"
         elif input_cmd == "ucinewgame":
-            pass
+            # =============================================================================
+            # "ucinewgame" command is sent to the engine when a new game is started.
+            # =============================================================================
+            self._current_board.reset()
         elif input_cmd == "stop":
+            # =============================================================================
+            # "stop" command is sent to the engine to stop calculating the best move.
+            # =============================================================================
             pass
         elif input_cmd == "quit":
-            pass
+            # =============================================================================
+            # "quit" command is sent to the engine to tell it to exit.
+            # =============================================================================
+            if self._ignore_quit is False:
+                self._log("Received 'quit' command, exiting...")
+                sys.exit(0)
         else:
             self._log(f"Unknown command: {input_cmd}")
             output_cmd += ""  # Ignore unsupported commands for now
@@ -85,24 +161,7 @@ class UciNetEngine:
 # =============================================================================
 class UciNetServerNamedPipe:
     """
-    A simple UCI engine that communicates via named pipes.
-
-    This is a trick to help during development. UCI protocol is above stdin/stdout.
-    This means the UCI client (aka the GUI) will open a subprocess and communicate
-    with it via stdin/stdout.
-
-    This make is hard to debug the engine.
-
-    ## Reasons
-    - hard to relaunch the engine
-    - hard to log the communication between the GUI and the engine
-    - hard to launch the server in debug mode in vscode
-
-    ## Solution
-    - have the engine communicate via named pipes instead of stdin/stdout
-    - have a small forwarder script that read stdin and write to the named pipe
-      and read from the other named pipe and write to stdout. `./named_pipe_forwarder.py`
-    - have the GUI to talk to the forwarder script instead of the engine directly
+    A ucinet server that communicates via named pipes.
     """
 
     def __init__(self):
@@ -146,7 +205,7 @@ class UciNetServerNamedPipe:
 
 class UciNetServerStdinStdout:
     """
-    A simple UCI engine that communicates via stdin/stdout.
+    A ucinet server that communicates via stdin/stdout.
 
     This is the standard way UCI engines communicate.
     """
@@ -190,7 +249,6 @@ def main() -> None:
     # =============================================================================
     # Argument parsing
     # =============================================================================
-
     argParser = argparse.ArgumentParser(description="UCI chess engine over named pipes or stdin/stdout")
     argParser.add_argument(
         "--mode",
@@ -204,9 +262,9 @@ def main() -> None:
     # =============================================================================
     # Setup server and engine
     # =============================================================================
-
     # create engine
-    engine = UciNetEngine()
+    ignore_quit = True if args.mode == "named_pipe" else False
+    engine = UciNetEngine(ignore_quit=ignore_quit)
 
     # create server
     if args.mode == "named_pipe":

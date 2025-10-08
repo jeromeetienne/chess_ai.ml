@@ -44,3 +44,363 @@
 2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
 2025-10-08 13:59:01 reader received: 
 2025-10-08 13:59:01 reader received: bestmove g8h8
+2025-10-08 14:12:57 reader detected writer closed on /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:12:59 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:05 named_pipe_forwarder main starting
+2025-10-08 14:13:05 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:05 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 14:13:05 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:09 stdin line: uci
+2025-10-08 14:13:09 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 14:13:09 reader received: id name chess_ai.ml
+2025-10-08 14:13:09 reader received: id author jerome Etienne
+2025-10-08 14:13:09 reader received: uciok
+2025-10-08 14:13:09 stdin line: isready
+2025-10-08 14:13:09 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:13:09 reader received: readyok
+2025-10-08 14:13:15 reader detected writer closed on /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:15 reader detected writer closed on /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:17 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:17 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:19 signal 2 received, stopping
+2025-10-08 14:13:19 signal 2 received, stopping
+2025-10-08 14:13:20 signal 2 received, stopping
+2025-10-08 14:13:20 named_pipe_forwarder exiting
+2025-10-08 14:13:23 named_pipe_forwarder main starting
+2025-10-08 14:13:23 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:23 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 14:13:23 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:25 stdin line: uci
+2025-10-08 14:13:25 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 14:13:25 reader received: id name chess_ai.ml
+2025-10-08 14:13:25 reader received: id author jerome Etienne
+2025-10-08 14:13:25 reader received: uciok
+2025-10-08 14:13:29 signal 2 received, stopping
+2025-10-08 14:13:30 named_pipe_forwarder exiting
+2025-10-08 14:13:33 stdin line: quit
+2025-10-08 14:13:33 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: quit
+2025-10-08 14:13:33 reader received: 
+2025-10-08 14:13:35 named_pipe_forwarder main starting
+2025-10-08 14:13:35 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:35 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 14:13:35 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:13:35 stdin line: uci
+2025-10-08 14:13:35 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 14:13:35 reader received: id name chess_ai.ml
+2025-10-08 14:13:35 reader received: id author jerome Etienne
+2025-10-08 14:13:35 reader received: uciok
+2025-10-08 14:13:35 stdin line: isready
+2025-10-08 14:13:35 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:13:35 reader received: readyok
+2025-10-08 14:13:35 stdin line: stop
+2025-10-08 14:13:35 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:13:35 reader received: 
+2025-10-08 14:13:35 stdin line: ucinewgame
+2025-10-08 14:13:35 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: ucinewgame
+2025-10-08 14:13:35 reader received: 
+2025-10-08 14:13:35 stdin line: isready
+2025-10-08 14:13:35 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:13:35 reader received: readyok
+2025-10-08 14:13:35 stdin line: position fen r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 14:13:35 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 14:13:35 stdin line: go movetime 3000
+2025-10-08 14:13:35 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:13:35 reader received: 
+2025-10-08 14:13:35 reader received: bestmove f6g6
+2025-10-08 14:14:11 stdin line: stop
+2025-10-08 14:14:11 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:14:11 stdin line: position fen r1b2br1/pppp1kpp/2n2q2/1B6/4n3/8/PPPP1PPP/RNB1R1K1 w - - 0 10
+2025-10-08 14:14:11 reader received: 
+2025-10-08 14:14:11 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen r1b2br1/pppp1kpp/2n2q2/1B6/4n3/8/PPPP1PPP/RNB1R1K1 w - - 0 10
+2025-10-08 14:14:11 stdin line: go movetime 3000
+2025-10-08 14:14:11 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:14:11 reader received: 
+2025-10-08 14:14:11 reader received: bestmove b1c3
+2025-10-08 14:14:29 stdin line: stop
+2025-10-08 14:14:29 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:14:29 stdin line: position fen r1b2br1/pppp1kpp/2n2q2/1B6/4n3/2N5/PPPP1PPP/R1B1R1K1 b - - 1 10
+2025-10-08 14:14:29 reader received: 
+2025-10-08 14:14:29 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen r1b2br1/pppp1kpp/2n2q2/1B6/4n3/2N5/PPPP1PPP/R1B1R1K1 b - - 1 10
+2025-10-08 14:14:29 stdin line: go movetime 3000
+2025-10-08 14:14:29 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:14:29 reader received: 
+2025-10-08 14:14:29 reader received: bestmove e4c3
+2025-10-08 14:14:34 stdin line: stop
+2025-10-08 14:14:34 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:14:34 reader received: 
+2025-10-08 14:14:34 stdin line: position fen r1b2br1/pppp1kpp/2n2q2/1B6/8/2n5/PPPP1PPP/R1B1R1K1 w - - 0 11
+2025-10-08 14:14:34 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen r1b2br1/pppp1kpp/2n2q2/1B6/8/2n5/PPPP1PPP/R1B1R1K1 w - - 0 11
+2025-10-08 14:14:34 stdin line: go movetime 3000
+2025-10-08 14:14:34 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:14:34 reader received: 
+2025-10-08 14:14:34 reader received: bestmove b2c3
+2025-10-08 14:14:50 stdin line: stop
+2025-10-08 14:14:50 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:14:50 stdin line: position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+2025-10-08 14:14:50 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+2025-10-08 14:14:50 stdin line: go movetime 3000
+2025-10-08 14:14:50 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:14:50 reader received: 
+2025-10-08 14:14:50 reader received: 
+2025-10-08 14:14:50 reader received: bestmove d2d4
+2025-10-08 14:15:01 stdin line: stop
+2025-10-08 14:15:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:01 stdin line: ucinewgame
+2025-10-08 14:15:01 reader received: 
+2025-10-08 14:15:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: ucinewgame
+2025-10-08 14:15:01 stdin line: isready
+2025-10-08 14:15:01 reader received: 
+2025-10-08 14:15:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:15:01 reader received: readyok
+2025-10-08 14:15:01 stdin line: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:01 stdin line: go movetime 3000
+2025-10-08 14:15:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:01 reader received: 
+2025-10-08 14:15:01 reader received: bestmove e7e6
+2025-10-08 14:15:07 stdin line: stop
+2025-10-08 14:15:07 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:07 stdin line: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:07 reader received: 
+2025-10-08 14:15:07 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:07 stdin line: go movetime 3000
+2025-10-08 14:15:07 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:07 reader received: 
+2025-10-08 14:15:07 reader received: bestmove c1f4
+2025-10-08 14:15:12 stdin line: stop
+2025-10-08 14:15:12 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:12 reader received: 
+2025-10-08 14:15:12 stdin line: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/2P5/PP2PPPP/RNBQKBNR b KQkq - 0 2
+2025-10-08 14:15:12 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/2P5/PP2PPPP/RNBQKBNR b KQkq - 0 2
+2025-10-08 14:15:12 stdin line: go movetime 3000
+2025-10-08 14:15:12 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:12 reader received: 
+2025-10-08 14:15:12 reader received: bestmove g8f6
+2025-10-08 14:15:17 stdin line: stop
+2025-10-08 14:15:17 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:17 stdin line: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:17 reader received: 
+2025-10-08 14:15:17 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:17 stdin line: go movetime 3000
+2025-10-08 14:15:17 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:17 reader received: 
+2025-10-08 14:15:17 reader received: bestmove c2c4
+2025-10-08 14:15:17 stdin line: stop
+2025-10-08 14:15:17 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:17 stdin line: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:17 reader received: 
+2025-10-08 14:15:17 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:17 stdin line: go movetime 3000
+2025-10-08 14:15:17 reader received: 
+2025-10-08 14:15:17 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:17 reader received: bestmove d7d6
+2025-10-08 14:15:18 stdin line: stop
+2025-10-08 14:15:18 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:18 stdin line: position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+2025-10-08 14:15:18 reader received: 
+2025-10-08 14:15:18 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+2025-10-08 14:15:18 stdin line: go movetime 3000
+2025-10-08 14:15:18 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:18 reader received: 
+2025-10-08 14:15:18 reader received: bestmove d2d4
+2025-10-08 14:15:18 stdin line: stop
+2025-10-08 14:15:18 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:18 stdin line: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:18 reader received: 
+2025-10-08 14:15:18 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:18 stdin line: go movetime 3000
+2025-10-08 14:15:18 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:18 reader received: 
+2025-10-08 14:15:18 reader received: bestmove g8f6
+2025-10-08 14:15:19 stdin line: stop
+2025-10-08 14:15:19 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:19 stdin line: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:19 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:19 stdin line: go movetime 3000
+2025-10-08 14:15:19 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:19 reader received: 
+2025-10-08 14:15:19 reader received: 
+2025-10-08 14:15:19 reader received: bestmove c2c4
+2025-10-08 14:15:19 stdin line: stop
+2025-10-08 14:15:19 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:19 reader received: 
+2025-10-08 14:15:19 stdin line: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:19 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:19 stdin line: go movetime 3000
+2025-10-08 14:15:19 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:19 reader received: 
+2025-10-08 14:15:19 reader received: bestmove g8f6
+2025-10-08 14:15:20 stdin line: stop
+2025-10-08 14:15:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:20 reader received: 
+2025-10-08 14:15:20 stdin line: position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+2025-10-08 14:15:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+2025-10-08 14:15:20 stdin line: go movetime 3000
+2025-10-08 14:15:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:20 reader received: 
+2025-10-08 14:15:20 reader received: bestmove b2b3
+2025-10-08 14:15:21 stdin line: stop
+2025-10-08 14:15:21 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:21 reader received: 
+2025-10-08 14:15:21 stdin line: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:21 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1
+2025-10-08 14:15:21 stdin line: go movetime 3000
+2025-10-08 14:15:21 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:21 reader received: bestmove c2c4
+2025-10-08 14:15:22 stdin line: stop
+2025-10-08 14:15:22 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:22 stdin line: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:22 reader received: 
+2025-10-08 14:15:22 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2
+2025-10-08 14:15:22 stdin line: go movetime 3000
+2025-10-08 14:15:22 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:22 reader received: 
+2025-10-08 14:15:22 reader received: bestmove g1f3
+2025-10-08 14:15:28 stdin line: stop
+2025-10-08 14:15:28 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:28 reader received: 
+2025-10-08 14:15:28 stdin line: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 2
+2025-10-08 14:15:28 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rnbqkbnr/ppp1pppp/8/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 2
+2025-10-08 14:15:28 stdin line: go movetime 3000
+2025-10-08 14:15:28 reader received: 
+2025-10-08 14:15:28 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:28 reader received: bestmove c8f5
+2025-10-08 14:15:39 stdin line: stop
+2025-10-08 14:15:39 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:39 reader received: 
+2025-10-08 14:15:39 stdin line: position fen rn1qkbnr/ppp1pppp/8/3p1b2/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3
+2025-10-08 14:15:39 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkbnr/ppp1pppp/8/3p1b2/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3
+2025-10-08 14:15:39 stdin line: go movetime 3000
+2025-10-08 14:15:39 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:39 reader received: 
+2025-10-08 14:15:39 reader received: bestmove e2e3
+2025-10-08 14:15:45 stdin line: stop
+2025-10-08 14:15:45 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:45 reader received: 
+2025-10-08 14:15:45 stdin line: position fen rn1qkbnr/ppp1pppp/8/3p1b2/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 3
+2025-10-08 14:15:45 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkbnr/ppp1pppp/8/3p1b2/3P4/4PN2/PPP2PPP/RNBQKB1R b KQkq - 0 3
+2025-10-08 14:15:45 stdin line: go movetime 3000
+2025-10-08 14:15:45 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:45 reader received: 
+2025-10-08 14:15:45 reader received: bestmove g8f6
+2025-10-08 14:15:58 stdin line: stop
+2025-10-08 14:15:58 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:15:58 stdin line: position fen rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 1 4
+2025-10-08 14:15:58 reader received: 
+2025-10-08 14:15:58 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/4PN2/PPP2PPP/RNBQKB1R w KQkq - 1 4
+2025-10-08 14:15:58 stdin line: go movetime 3000
+2025-10-08 14:15:58 reader received: 
+2025-10-08 14:15:58 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:15:58 reader received: bestmove f1e2
+2025-10-08 14:16:08 stdin line: stop
+2025-10-08 14:16:08 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:16:08 stdin line: position fen rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R b KQkq - 2 4
+2025-10-08 14:16:08 reader received: 
+2025-10-08 14:16:08 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkb1r/ppp1pppp/5n2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R b KQkq - 2 4
+2025-10-08 14:16:08 stdin line: go movetime 3000
+2025-10-08 14:16:08 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:16:08 reader received: 
+2025-10-08 14:16:08 reader received: bestmove e7e6
+2025-10-08 14:16:34 stdin line: stop
+2025-10-08 14:16:34 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:16:34 reader received: 
+2025-10-08 14:16:34 stdin line: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:16:34 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:16:34 stdin line: go movetime 3000
+2025-10-08 14:16:34 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:16:34 reader received: 
+2025-10-08 14:16:34 reader received: bestmove f1d3
+2025-10-08 14:25:16 reader detected writer closed on /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:25:19 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:25:29 stdin line: quit
+2025-10-08 14:25:29 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: quit
+2025-10-08 14:25:29 reader received: 
+2025-10-08 14:25:37 named_pipe_forwarder main starting
+2025-10-08 14:25:37 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:25:37 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 14:25:37 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:25:37 stdin line: uci
+2025-10-08 14:25:37 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 14:25:37 reader received: id name chess_ai.ml
+2025-10-08 14:25:37 reader received: id author jerome Etienne
+2025-10-08 14:25:37 reader received: uciok
+2025-10-08 14:25:37 stdin line: isready
+2025-10-08 14:25:37 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:25:37 reader received: readyok
+2025-10-08 14:25:37 stdin line: stop
+2025-10-08 14:25:37 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:25:37 stdin line: ucinewgame
+2025-10-08 14:25:37 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: ucinewgame
+2025-10-08 14:25:37 stdin line: isready
+2025-10-08 14:25:37 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:25:37 stdin line: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:25:37 reader received: 
+2025-10-08 14:25:37 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:25:37 reader received: 
+2025-10-08 14:25:37 stdin line: go movetime 3000
+2025-10-08 14:25:37 reader received: readyok
+2025-10-08 14:25:37 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:25:37 reader received: 
+2025-10-08 14:25:37 reader received: bestmove f1d3
+2025-10-08 14:26:46 reader detected writer closed on /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:26:48 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:27:18 stdin line: quit
+2025-10-08 14:27:18 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: quit
+2025-10-08 14:27:18 reader received: 
+2025-10-08 14:27:20 named_pipe_forwarder main starting
+2025-10-08 14:27:20 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:27:20 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 14:27:20 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:27:20 stdin line: uci
+2025-10-08 14:27:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 14:27:20 reader received: id name chess_ai.ml
+2025-10-08 14:27:20 reader received: id author jerome Etienne
+2025-10-08 14:27:20 reader received: uciok
+2025-10-08 14:27:20 stdin line: isready
+2025-10-08 14:27:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:27:20 reader received: readyok
+2025-10-08 14:27:20 stdin line: stop
+2025-10-08 14:27:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:27:20 stdin line: ucinewgame
+2025-10-08 14:27:20 reader received: 
+2025-10-08 14:27:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: ucinewgame
+2025-10-08 14:27:20 reader received: 
+2025-10-08 14:27:20 stdin line: isready
+2025-10-08 14:27:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:27:20 reader received: readyok
+2025-10-08 14:27:20 stdin line: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:27:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:27:20 stdin line: go movetime 3000
+2025-10-08 14:27:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:27:20 reader received: 
+2025-10-08 14:27:20 reader received: bestmove f1d3
+2025-10-08 14:27:21 stdin line: quit
+2025-10-08 14:27:21 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: quit
+2025-10-08 14:27:21 reader received: 
+2025-10-08 14:27:21 named_pipe_forwarder main starting
+2025-10-08 14:27:21 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:27:21 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 14:27:21 stdin line: uci
+2025-10-08 14:27:21 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 14:27:21 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 14:27:21 reader received: id name chess_ai.ml
+2025-10-08 14:27:21 reader received: id author jerome Etienne
+2025-10-08 14:27:21 reader received: uciok
+2025-10-08 14:27:21 stdin line: isready
+2025-10-08 14:27:21 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:27:21 reader received: readyok
+2025-10-08 14:27:21 stdin line: stop
+2025-10-08 14:27:21 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 14:27:21 stdin line: ucinewgame
+2025-10-08 14:27:21 reader received: 
+2025-10-08 14:27:22 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: ucinewgame
+2025-10-08 14:27:22 stdin line: isready
+2025-10-08 14:27:22 reader received: 
+2025-10-08 14:27:22 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 14:27:22 reader received: readyok
+2025-10-08 14:27:22 stdin line: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:27:22 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen rn1qkb1r/ppp2ppp/4pn2/3p1b2/3P4/4PN2/PPPB1PPP/RN1QKB1R w KQkq - 0 5
+2025-10-08 14:27:22 stdin line: go movetime 3000
+2025-10-08 14:27:22 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 14:27:22 reader received: 
+2025-10-08 14:27:22 reader received: bestmove f1d3
