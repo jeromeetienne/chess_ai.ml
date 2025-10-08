@@ -4,7 +4,7 @@
 A chess bot using machine learning to predict the best move.
 Coded with Python and PyTorch.
 
-It has been originally inspired by https://github.com/Skripkon/chess-engine.git
+it includes a UCI engine interface to connect to chess GUIs like Arena or CuteChess.
 
 # Machine Learning insights
 
@@ -82,11 +82,18 @@ To train a new model, run:
 python ./src/train.py
 ```
 
-To predict with the trained model, run:
+To play with the trained model, run:
 
 ```bash
-python ./src/predict.py
+python ./src/play.py
 ```
+
+## Credits
+- 🎯 **Original Inspiration:** This project draws inspiration from [Skripkon's chess-engine](https://github.com/Skripkon/chess-engine.git) — thank you for paving the way!
+- 🐍 **Core Library:** Built on top of the fantastic [`python-chess`](https://python-chess.readthedocs.io/en/latest/) library, which makes chess programming a breeze.
+- 🤖 **AlphaZero Team:** Huge kudos to the AlphaZero teams for their groundbreaking research and open inspiration!
+- 🙏 **Community:** Thanks to all contributors, testers, and the open-source chess community for sharing knowledge and resources.
+
 
 ## Useful Links
 - stackoverflow specific to chess: http://chess.stackexchange.com/
