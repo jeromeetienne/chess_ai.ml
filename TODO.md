@@ -2,6 +2,10 @@
 - make support UCI protocol
   - https://www.perplexity.ai/search/what-is-the-minimal-implementa-StscaKhDSbqMc46SZmE5LA
   - chess x is UCI GUI good for debug
+  - got an early version working - see `tmp/early_ucinet_support/ucinet_engine.py`
+  - communication with chessx works...
+  - code it in `./bin/ucinet_engine.py` over chessx
+  - then see about a lichess bot
 - see about the reg+cls layer with convnet in them like alpha-zero
 - regression head dataset and alphazero
   - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e

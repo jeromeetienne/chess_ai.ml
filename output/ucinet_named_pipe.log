@@ -1,0 +1,46 @@
+2025-10-08 13:56:38 Created FIFO /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 13:56:38 Created FIFO /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 13:56:38 named_pipe_forwarder main starting
+2025-10-08 13:56:38 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 13:56:38 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 13:58:15 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 13:58:20 stdin line: uci
+2025-10-08 13:58:20 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 13:58:20 reader received: id name chess_ai.ml
+2025-10-08 13:58:20 reader received: id author jerome Etienne
+2025-10-08 13:58:20 reader received: uciok
+2025-10-08 13:58:23 stdin line: isready
+2025-10-08 13:58:23 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 13:58:23 reader received: readyok
+2025-10-08 13:58:24 signal 2 received, stopping
+2025-10-08 13:58:24 signal 2 received, stopping
+2025-10-08 13:58:25 named_pipe_forwarder exiting
+2025-10-08 13:59:01 named_pipe_forwarder main starting
+2025-10-08 13:59:01 reader thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 13:59:01 writer thread starting for /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 13:59:01 reader opened /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_out
+2025-10-08 13:59:01 stdin line: uci
+2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: uci
+2025-10-08 13:59:01 reader received: id name chess_ai.ml
+2025-10-08 13:59:01 reader received: id author jerome Etienne
+2025-10-08 13:59:01 reader received: uciok
+2025-10-08 13:59:01 stdin line: isready
+2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 13:59:01 reader received: readyok
+2025-10-08 13:59:01 stdin line: stop
+2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: stop
+2025-10-08 13:59:01 stdin line: ucinewgame
+2025-10-08 13:59:01 reader received: 
+2025-10-08 13:59:01 writer BrokenPipe when writing to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in
+2025-10-08 13:59:01 reader received: 
+2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: ucinewgame
+2025-10-08 13:59:01 stdin line: isready
+2025-10-08 13:59:01 reader received: 
+2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: isready
+2025-10-08 13:59:01 reader received: readyok
+2025-10-08 13:59:01 stdin line: position fen r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: position fen r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 13:59:01 stdin line: go movetime 3000
+2025-10-08 13:59:01 writer wrote to /Users/jetienne/webwork/chess_ai.ml/scripts/../output/ucinet_proto_in: go movetime 3000
+2025-10-08 13:59:01 reader received: 
+2025-10-08 13:59:01 reader received: bestmove g8h8

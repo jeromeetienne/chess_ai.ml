@@ -1,0 +1,45 @@
+2025-10-08 13:07:34 Unknown command: quit
+2025-10-08 13:07:36 Unknown command: stop
+2025-10-08 13:07:36 Unknown command: ucinewgame
+2025-10-08 13:07:36 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/8/5Q2/PPPP1PPP/RNB1R1K1 w - - 2 9
+2025-10-08 13:07:36 Playing move: b5c6
+2025-10-08 13:08:14 Unknown command: quit
+2025-10-08 13:08:15 Unknown command: stop
+2025-10-08 13:08:15 Unknown command: ucinewgame
+2025-10-08 13:08:15 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/8/5Q2/PPPP1PPP/RNB1R1K1 w - - 2 9
+2025-10-08 13:08:15 Playing move: b5c6
+2025-10-08 13:08:49 Unknown command: quit
+2025-10-08 13:17:47 Unknown command: stop
+2025-10-08 13:17:47 Unknown command: ucinewgame
+2025-10-08 13:17:47 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/8/5Q2/PPPP1PPP/RNB1R1K1 w - - 2 9
+2025-10-08 13:17:47 Playing move: b5c6
+2025-10-08 13:18:13 Unknown command: quit
+2025-10-08 13:18:14 Unknown command: stop
+2025-10-08 13:18:14 Unknown command: ucinewgame
+2025-10-08 13:18:14 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/8/5Q2/PPPP1PPP/RNB1R1K1 w - - 2 9
+2025-10-08 13:18:14 Playing move: b5c6
+2025-10-08 13:18:14 Unknown command: quit
+2025-10-08 13:18:15 Unknown command: stop
+2025-10-08 13:18:15 Unknown command: ucinewgame
+2025-10-08 13:18:15 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/8/5Q2/PPPP1PPP/RNB1R1K1 w - - 2 9
+2025-10-08 13:18:15 Playing move: b5c6
+2025-10-08 13:18:19 Unknown command: stop
+2025-10-08 13:18:19 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 13:18:19 Playing move: g8h8
+2025-10-08 13:18:23 Unknown command: quit
+2025-10-08 13:18:24 Unknown command: stop
+2025-10-08 13:18:24 Unknown command: ucinewgame
+2025-10-08 13:18:24 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 13:18:24 Playing move: g8h8
+2025-10-08 13:26:56 Received quit command, exiting.
+2025-10-08 13:27:11 Starting new game, board reset
+2025-10-08 13:27:11 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 13:27:11 Playing move: g8h8
+2025-10-08 13:27:23 Received quit command, exiting.
+2025-10-08 13:28:01 Starting new game, board reset
+2025-10-08 13:28:01 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 13:28:01 Playing move: g8h8
+2025-10-08 13:28:04 Starting new game, board reset
+2025-10-08 13:28:04 Set board to FEN: r1b2br1/pppp1kpp/2nn1q2/1B6/4Q3/8/PPPP1PPP/RNB1R1K1 b - - 3 9
+2025-10-08 13:28:04 Playing move: g8h8
+2025-10-08 13:49:47 Unknown command: 

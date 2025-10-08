@@ -79,3 +79,12 @@ play_human: ## play against the model
 
 play_stockfish: ## play the model vs stockfish
 	./bin/play.py
+
+###############################################################################
+#   UCI protocol targets
+#
+ucinet_engine: ## run the model as a uci engine
+	./bin/ucinet_engine.py -m named_pipe
+
+ucinet_named_pipe_proxy: ## run a named pipe proxy for uci engine
+	./scripts/ucinet_named_pipe_proxy.py
