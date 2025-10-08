@@ -1,0 +1,8 @@
+uci
+uci
+isready
+stop
+ucinewgame
+isready
+position fen rnbqkb1r/pppp1ppp/4pn2/8/3P4/4P3/PPP2PPP/RNBQKBNR w KQkq - 1 3
+go movetime 3000
