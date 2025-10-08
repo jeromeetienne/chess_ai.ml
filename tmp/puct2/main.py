@@ -1,5 +1,7 @@
 import chess
-from tmp.puct2.puct import PUCT
+
+# from tmp.puct2.puct import PUCT
+from tmp.puct2.puct_batch import PUCT
 from tmp.puct2.gamestate_chess import ChessGameState
 from tmp.puct2.policyvaluenet_mine import PolicyValueNetMine
 from src.libs.chess_extra import ChessExtra
@@ -60,4 +62,4 @@ def play_game(num_simulations=200, max_moves=512, c_puct=1.4):
 
 
 if __name__ == "__main__":
-    play_game(num_simulations=50)
+    play_game(num_simulations=3000)
