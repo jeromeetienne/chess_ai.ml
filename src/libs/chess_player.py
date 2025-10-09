@@ -1,6 +1,7 @@
 # stdlib imports
 import random
 import os
+import typing
 
 # pip imports
 import torch
@@ -12,12 +13,18 @@ import numpy as np
 from ..utils.uci2class_utils import Uci2ClassUtils
 from .encoding import Encoding
 from .chess_model import ChessModel
+from ..puct.policyvaluenet_mine import PolicyValueNetMine
+from ..puct.puct_batch import PUCTBatch
+from ..puct.puct_single import PUCTSingle
+from ..puct.gamestate_chess import ChessGameState
+
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
+
 class ChessPlayer:
-    def __init__(self, model: torch.nn.Module, color: chess.Color , polyglot_reader: chess.polyglot.MemoryMappedReader|None = None):
+    def __init__(self, model: torch.nn.Module, color: chess.Color, polyglot_reader: chess.polyglot.MemoryMappedReader | None = None):
         """
         Initialize the ChessbotMLPlayer with the given model, class index to UCI mapping, and optional polyglot reader.
         """
@@ -25,6 +32,13 @@ class ChessPlayer:
         self._model = model
         self._class2uci = Uci2ClassUtils.get_class2uci(color)
         self._polyglot_reader = polyglot_reader
+
+        # 1. Create initial state
+        self._policyValueNet = PolicyValueNetMine(model)
+
+        # 3. Create PUCT instance
+        self._puct = PUCTBatch(policy_value_fn=self._policyValueNet, c_puct=1.4, batch_size=64)
+        # self._puct = PUCTSingle(policy_value_fn=policyValueNet, c_puct=c_puct)
 
     def predict_next_move(self, board: chess.Board) -> str | None:
         """
@@ -40,12 +54,13 @@ class ChessPlayer:
             return best_move_uci
 
         # If no opening move is found, use the ML model to predict the move
-        best_move_uci = self._predict_next_move_ml(board)
+        # best_move_uci = self._predict_next_move_ml(board)
+        best_move_uci = self._predict_next_move_puct(board)
         return best_move_uci
 
-    ###############################################################################
-    #   opening book based move prediction
-    #
+    # =============================================================================
+    # opening book based move prediction
+    # =============================================================================
     def _predict_next_move_opening_book(self, board: chess.Board) -> str | None:
         """
         Predict the best move for the given board state using the opening book.
@@ -67,9 +82,30 @@ class ChessPlayer:
 
         return move_uci
 
-    ###############################################################################
-    #   machine learning based move prediction
+    # =============================================================================
     #
+    # =============================================================================
+
+    def _predict_next_move_puct(self, board: chess.Board) -> str | None:
+        """
+        Predict the best move for the given board state using PUCT search.
+        Args:
+            board (chess.Board): The current state of the chess board.
+        Returns:
+            str | None: The predicted best move in UCI format, or None if no legal move is found.
+        """
+        state = ChessGameState(board)
+
+        best_move = self._puct.search(state, num_simulations=2000)
+        if best_move is None:
+            return None
+
+        move_uci = best_move.uci()
+        return move_uci
+
+    # =============================================================================
+    # machine learning based move prediction
+    # =============================================================================
     def _predict_next_move_ml(self, board: chess.Board) -> str | None:
         """
         Predict the best move for the given board state using the ML model.
@@ -157,4 +193,3 @@ class ChessPlayer:
         best_move_uci = random.choice(proposed_moves_uci_proba)[0]
 
         return best_move_uci
-

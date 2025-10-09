@@ -6,6 +6,9 @@ from .gamestate_abc import GameState
 from .policyvaluenet_abc import PolicyValueNet
 
 
+# =============================================================================
+# PUCTNode class representing a node in the search tree
+# =============================================================================
 class PUCTBatchNode:
     parent: Optional[PUCTBatchNode]
     """Parent node in the tree (None for the root)."""
@@ -71,6 +74,9 @@ class PUCTBatchNode:
         return len(self.children) > 0
 
 
+# =============================================================================
+# PUCT with batched NN evaluation
+# =============================================================================
 class PUCTBatch:
     def __init__(self, policy_value_fn: PolicyValueNet, c_puct: float = 1.4, batch_size: int = 64):
         self.policy_value_fn = policy_value_fn

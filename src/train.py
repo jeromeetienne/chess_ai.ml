@@ -45,7 +45,7 @@ class TrainCommand:
     ):
 
         # set random seed for reproducibility
-        # torch.manual_seed(42)
+        torch.manual_seed(42)
 
         # =============================================================================
         # Load the dataset
@@ -121,9 +121,9 @@ class TrainCommand:
 
         # Losses: classification + regression
         criterion_cls = torch.nn.CrossEntropyLoss()
-        criterion_reg = torch.nn.MSELoss()
+        # criterion_reg = torch.nn.MSELoss()
         # criterion_reg = torch.nn.L1Loss()
-        # criterion_reg = torch.nn.SmoothL1Loss()
+        criterion_reg = torch.nn.SmoothL1Loss()
         # Loss weights: classification + regression
         loss_cls_weight = 0.1
         loss_reg_weight = 1.90
@@ -157,14 +157,17 @@ class TrainCommand:
             # Dynamic loss weighting
             # =============================================================================
             # # Dynamic loss weighting based on recent training losses
-            n = min(10_000, len(train_cls_losses))
-            assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
-            loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.10
-            loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.90
-            # Normalize weights to keep total weight = 2.0
-            total_weight = loss_cls_weight + loss_reg_weight
-            loss_cls_weight = (loss_cls_weight / total_weight) * 2.0
-            loss_reg_weight = (loss_reg_weight / total_weight) * 2.0
+            # n = min(10_000, len(train_cls_losses))
+            # assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
+            # loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.10
+            # loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.90
+            # # Normalize weights to keep total weight = 2.0
+            # total_weight = loss_cls_weight + loss_reg_weight
+            # loss_cls_weight = (loss_cls_weight / total_weight) * 2.0
+            # loss_reg_weight = (loss_reg_weight / total_weight) * 2.0
+
+            loss_cls_weight = 0.5
+            loss_reg_weight = 2 - loss_cls_weight
 
             # =============================================================================
             #
@@ -199,9 +202,11 @@ class TrainCommand:
             must_stop, must_save = early_stopper.early_stop(valid_loss)
 
             # Print epoch summary
-            print(f"Epoch {epoch_index + 1}/{max_epoch_count}, lr={scheduler.get_last_lr()[0]}", end=" | ")
-            print(f"Train Loss: {train_loss:.4f} (cls={(train_cls_loss*loss_cls_weight):.6f} reg={(train_reg_loss*loss_reg_weight):.6f})", end=" | ")
-            print(f"Valid Loss: {valid_loss:.4f} (cls={(valid_cls_loss*loss_cls_weight):.6f} reg={(valid_reg_loss*loss_reg_weight):.6f})", end=" | ")
+            print(f"Epoch {epoch_index + 1}/{max_epoch_count}", end=" | ")
+            print(f"lr={scheduler.get_last_lr()[0]} n-bad-epoch={scheduler.num_bad_epochs}/{scheduler.patience}", end=" | ")
+            print(f"early-stop epoch={early_stopper.wait_counter}/{early_stopper.patience}", end=" | ")
+            print(f"Train Loss: {train_loss:.4f} (cls={(train_cls_loss*loss_cls_weight):.4f} reg={(train_reg_loss*loss_reg_weight):.4f})", end=" | ")
+            print(f"Valid Loss: {valid_loss:.4f} (cls={(valid_cls_loss*loss_cls_weight):.4f} reg={(valid_reg_loss*loss_reg_weight):.4f})", end=" | ")
             print(f"Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}")
 
             # Plot training and validation loss

@@ -6,11 +6,11 @@ from .gamestate_abc import GameState
 from .policyvaluenet_abc import PolicyValueNet
 
 
-class PUCTNode:
-    parent: Optional[PUCTNode]
+class PUCTSingleNode:
+    parent: Optional[PUCTSingleNode]
     """Parent node in the tree (None for the root)."""
 
-    children: dict[Any, PUCTNode]
+    children: dict[Any, PUCTSingleNode]
     """Mapping from actions to child nodes."""
 
     prior: float
@@ -24,9 +24,9 @@ class PUCTNode:
     """Sum of the backed-up value estimates for this node; divide by
     `visit_count` to obtain the average value estimate."""
 
-    def __init__(self, parent: Optional[PUCTNode], prior: float):
+    def __init__(self, parent: Optional[PUCTSingleNode], prior: float):
         self.parent = parent
-        self.children: dict[Any, PUCTNode] = {}
+        self.children: dict[Any, PUCTSingleNode] = {}
         self.prior = prior
 
         self.visit_count = 0
@@ -71,7 +71,7 @@ class PUCTNode:
         return len(self.children) > 0
 
 
-class PUCT:
+class PUCTSingle:
     def __init__(self, policy_value_fn: PolicyValueNet, c_puct: float = 1.4):
         self.policy_value_fn = policy_value_fn
         self.c_puct = c_puct
@@ -80,7 +80,7 @@ class PUCT:
         """
         Run PUCT search from `root_state` and return the chosen action.
 
-        The algorithm initializes a single root `PUCTNode`, expands it using the
+        The algorithm initializes a single root `PUCTSingle_Node`, expands it using the
         policy-value network, then performs `num_simulations` Monte Carlo tree
         search simulations. Each simulation traverses the current tree using
         `_traverse`, evaluates the reached leaf with `_evaluate`, and updates
@@ -109,7 +109,7 @@ class PUCT:
         - Does not modify the provided `root_state` thanks to `root_state.clone()`
           used during simulations.
         """
-        root = PUCTNode(parent=None, prior=1.0)
+        root = PUCTSingleNode(parent=None, prior=1.0)
 
         # expand root
         self._expand(root, root_state)
@@ -122,7 +122,7 @@ class PUCT:
         # pick the action with max visit count
         return max(root.children.items(), key=lambda item: item[1].visit_count)[0]
 
-    def _traverse(self, node: PUCTNode, state: GameState) -> Tuple[PUCTNode, GameState]:
+    def _traverse(self, node: PUCTSingleNode, state: GameState) -> Tuple[PUCTSingleNode, GameState]:
         """
         Traverse the search tree from `node` following PUCT selection until a
         leaf node or a terminal state is reached.
@@ -133,7 +133,7 @@ class PUCT:
 
         Parameters
         ----------
-        node: PUCTNode
+        node: PUCTSingle_Node
             The starting node in the tree.
         state: GameState
             The game state corresponding to `node`. This object will be
@@ -142,7 +142,7 @@ class PUCT:
 
         Returns
         -------
-        Tuple[PUCTNode, GameState]
+        Tuple[PUCTSingle_Node, GameState]
             A pair (leaf_node, leaf_state) where `leaf_node` is the final node
             reached (either unexpanded or corresponding to a terminal state)
             and `leaf_state` is the game state after applying the sequence of
@@ -153,7 +153,7 @@ class PUCT:
             state = state.apply_action(action)
         return node, state
 
-    def _select_child(self, node: PUCTNode) -> Tuple[Any, PUCTNode]:
+    def _select_child(self, node: PUCTSingleNode) -> Tuple[Any, PUCTSingleNode]:
         """
         Select the child of `node` with the highest PUCT score.
 
@@ -170,13 +170,13 @@ class PUCT:
 
         Parameters
         ----------
-        node: PUCTNode
+        node: PUCTSingle_Node
                 The parent node whose children will be scored and from which a
                 single (action, child) pair is returned.
 
         Returns
         -------
-        Tuple[Any, PUCTNode]
+        Tuple[Any, PUCTSingle_Node]
                 The selected (action, child) pair. The method asserts that at
                 least one child exists and will raise an AssertionError otherwise.
 
@@ -204,18 +204,18 @@ class PUCT:
 
         return best_action, best_child
 
-    def _expand(self, node: PUCTNode, state: GameState) -> None:
+    def _expand(self, node: PUCTSingleNode, state: GameState) -> None:
         """
         Expand `node` by creating child nodes for each legal action in `state`.
 
         If `state` is terminal this is a no-op. Otherwise this method queries the
         policy-value network to obtain prior probabilities for legal moves and
-        creates a new `PUCTNode` for each (action, prior) pair, storing them in
+        creates a new `PUCTSingle_Node` for each (action, prior) pair, storing them in
         `node.children` keyed by the action.
 
         Parameters
         ----------
-        node: PUCTNode
+        node: PUCTSingle_Node
             The tree node that corresponds to `state`. New children will have
             `node` set as their `parent`.
         state: GameState
@@ -239,9 +239,9 @@ class PUCT:
         priors, _ = self.policy_value_fn.predict(state)
 
         for action, prior in zip(legal_actions, priors):
-            node.children[action] = PUCTNode(parent=node, prior=prior)
+            node.children[action] = PUCTSingleNode(parent=node, prior=prior)
 
-    def _evaluate(self, node: PUCTNode, state: GameState) -> float:
+    def _evaluate(self, node: PUCTSingleNode, state: GameState) -> float:
         """
         Evaluate a leaf state and return a value from the perspective of the
         player to move in `state`.
@@ -254,7 +254,7 @@ class PUCT:
 
         Parameters
         ----------
-        node: PUCTNode
+        node: PUCTSingle_Node
             The node corresponding to `state`. This node will be expanded when
             `state` is non-terminal.
         state: GameState
@@ -273,7 +273,7 @@ class PUCT:
         _, value = self.policy_value_fn.predict(state)
         return value
 
-    def _backpropagate(self, node: Optional[PUCTNode], value: float) -> None:
+    def _backpropagate(self, node: Optional[PUCTSingleNode], value: float) -> None:
         """
         Backpropagate a value up the tree starting from `node` and ending at the root.
 
@@ -286,7 +286,7 @@ class PUCT:
 
         Parameters
         ----------
-        node: PUCTNode
+        node: PUCTSingle_Node
             The starting node for backpropagation. If `None`, the method does nothing.
         value: float
             The value to backpropagate (model or game-evaluation output). Typical
