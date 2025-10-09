@@ -36,7 +36,7 @@ class TrainCommand:
     ###############################################################################
     @staticmethod
     def train(
-        model_name="ChessModelConv2d",
+        model_name=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
         max_epoch_count: int = 20,
         batch_size: int = 2048,
         learning_rate: float = 0.001,
@@ -45,14 +45,14 @@ class TrainCommand:
     ):
 
         # set random seed for reproducibility
-        torch.manual_seed(42)
+        # torch.manual_seed(42)
 
         # =============================================================================
         # Load the dataset
         # =============================================================================
 
         # Load the dataset
-        boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
+        boards_tensor, moves_tensor, evals_tensor, moves_index = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
         print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor, evals_tensor))
 
         # FIXME why is this needed on evals_tensor but not moves_tensor

@@ -3,6 +3,8 @@
 import argparse
 import os
 
+import chess
+
 from src.libs.encoding import Encoding
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
@@ -17,16 +19,15 @@ if __name__ == "__main__":
     argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     args = argParser.parse_args()
 
-    boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, args.max_files_count)
+    # Load datasets
+    boards_tensor, moves_tensor, evals_tensor, moves_index = DatasetUtils.load_datasets(tensors_folder_path, args.max_files_count)
 
-    for i, (board_tensor, move_tensor, eval_tensor) in enumerate(zip(boards_tensor, moves_tensor, evals_tensor)):
+    for i, (board_tensor, move_tensor, eval_tensor, move_index) in enumerate(zip(boards_tensor, moves_tensor, evals_tensor, moves_index)):
         board = Encoding.board_from_tensor(board_tensor)
         move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
         eval = eval_tensor.item()
 
-        print("Board:")
+        print(f"Board: {'white' if board.turn == chess.WHITE else 'black'} to move - {move_uci}")
         print(board)
-        print("Move (UCI):", move_uci)
-        print("Eval:", eval)
+        print(f"Moves idx: game {move_index['game_idx']} move {move_index['move_idx']} - Eval value: {eval}")
         print("-" * 40)
-

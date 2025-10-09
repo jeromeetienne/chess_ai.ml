@@ -135,7 +135,7 @@ def train() -> None:
 
     # torch.manual_seed(42)
 
-    boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=4)
+    boards_tensor, moves_tensor, evals_tensor, moves_index = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=4)
     evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
 
     # Convert evals_tensor to numpy and display min/max

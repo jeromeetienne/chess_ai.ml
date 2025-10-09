@@ -22,10 +22,10 @@ train_deep_35: ## train a model with first 35 pgn files
 	./bin/train.py -fc 35
 
 bench_inference: ## benchmark the model
-	./scripts/bench_inference.py
+	./tools/bench_inference.py
 
 check_dataset: ## check dataset integrity
-	./scripts/check_dataset.py -fc 2
+	./tools/check_dataset.py -fc 2
 
 ###############################################################################
 #   Clean targets
@@ -45,10 +45,10 @@ clean: clean_model clean_pgn_tensors ## clean model and pgn tensors
 #   PGN splitting targets
 #
 pgn_split_lichess:
-	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/lichess_elite/*.pgn
+	./tools/pgn_splitter.py  -d ./output/pgn_splits -v ./data/lichess_elite/*.pgn
 
 pgn_split_fishtest:
-	./scripts/pgn_splitter.py  -d ./output/pgn_splits -v ./data/fishtest_stockfish/*/*/*.pgn.gz
+	./tools/pgn_splitter.py  -d ./output/pgn_splits -v ./data/fishtest_stockfish/*/*/*.pgn.gz
 
 
 ###############################################################################
@@ -87,4 +87,4 @@ ucinet_engine: ## run the model as a uci engine
 	./bin/ucinet_engine.py -m named_pipe
 
 ucinet_named_pipe_proxy: ## run a named pipe proxy for uci engine
-	./scripts/ucinet_named_pipe_proxy.py
+	./tools/ucinet_named_pipe_proxy.py

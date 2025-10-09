@@ -13,6 +13,7 @@ from ..libs.chess_model import ChessModelConv2d, ChessModelResNet, AlphaZeroNet
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")
 
+
 class ModelUtils:
     class MODEL_NAME:
         CHESS_MODEL_CONV2D = "ChessModelConv2d"
@@ -29,11 +30,11 @@ class ModelUtils:
     def create_model(model_name: str) -> torch.nn.Module:
         input_shape, output_shape = Encoding.get_input_shape(), Encoding.get_output_shape()
         # Create the model
-        if model_name == "ChessModelConv2d":
+        if model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
             model = ChessModelConv2d(input_shape=input_shape, output_shape=output_shape)
-        elif model_name == "ChessModelResNet":
+        elif model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
             model = ChessModelResNet(input_shape=input_shape, output_shape=output_shape)
-        elif model_name == "AlphaZeroNet":
+        elif model_name == ModelUtils.MODEL_NAME.ALPHA_ZERO_NET:
             model = AlphaZeroNet(input_shape=input_shape, output_shape=output_shape)
         else:
             assert False, f"Unknown model name: {model_name}"
@@ -47,23 +48,23 @@ class ModelUtils:
         """
         total_params = 0
         trainable_params = 0
-        
+
         output = []
         output.append(f"\nModel Architecture: {model.__class__.__name__}")
         output.append("-" * 60)
         output.append(f"{'Layer Name':<30} {'Param Count':>15} {'Trainable':>10}")
         output.append("=" * 60)
-        
+
         for name, parameter in model.named_parameters():
             if not parameter.requires_grad:
-                continue    
-            
+                continue
+
             param = parameter.numel()
             total_params += param
-            
+
             if parameter.requires_grad:
                 trainable_params += param
-            
+
             output.append(f"{name:<30} {param:>15,} {'Yes' if parameter.requires_grad else 'No':>10}")
 
         output.append("=" * 60)

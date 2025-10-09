@@ -1,10 +1,15 @@
 # TODO
-- see about the reg+cls layer with convnet in them like alpha-zero
+- output encoding Good https://chatgpt.com/c/68e7d930-69ac-832b-8ae5-5fac5a399f6c
+- accuracy for win/loss/draw probability in training - for reggression head
 - output encoding in alpha-zero - https://chatgpt.com/c/68e47024-d17c-832d-aa46-dc37f265647b
   - action_size = 4672  # for chess: 73 possible moves from each square
   - it keeps spatialisation
   - it would means that the maximum number of legal move from any square is 73
   - is that a better encoding than the uci2classindex ? which is an unstructured encoding... each is just a class index
+- stockfish never give up... many game got 200 moves
+  - remove those from the dataset
+  - ask AI for a good heuristic to detect endgame - https://gemini.google.com/app/98b4cfd00112caa8
+- see about the reg+cls layer with convnet in them like alpha-zero
 - improve the loss weighting ?
   - some dynamic technique exists - https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g
   - "Loss Weights Based on Task Uncertainty" seems to be a good one

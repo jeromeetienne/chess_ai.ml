@@ -45,7 +45,7 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
     pgn_games = PGNUtils.pgn_file_to_games(pgn_path)
 
     # split the games into boards and moves
-    pgn_boards, pgn_moves = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)
+    pgn_boards, pgn_moves, pgn_moves_index = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)
 
     # iterate over all games
     for game in pgn_games:

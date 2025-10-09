@@ -25,7 +25,7 @@ if __name__ == "__main__":
     polyglot_path = os.path.join(data_folder_path, "polyglot/lichess_pro_books/lpb-allbook.bin")
     polyglot_reader = chess.polyglot.open_reader(polyglot_path)
 
-    # Get the first pgn file 
+    # Get the first pgn file
     pgn_paths = PGNUtils.get_pgn_paths()
     pgn_path = pgn_paths[0]
 
@@ -33,10 +33,10 @@ if __name__ == "__main__":
     pgn_games = PGNUtils.pgn_file_to_games(pgn_path)
 
     # Go thru all the moves of the game, and store the board and move if the position is not in the opening book
-    pgn_boards, pgn_moves = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)
+    pgn_boards, pgn_moves, pgn_moves_index = DatasetUtils.games_to_boards_moves(pgn_games, polyglot_reader)
 
     pgn_basename = os.path.basename(pgn_path).replace(".pgn", "")
-    boards_tensor, moves_tensor = DatasetUtils.load_dataset(tensor_folder_path, pgn_basename)
+    boards_tensor, moves_tensor, evals_tensor, moves_index = DatasetUtils.load_dataset(tensor_folder_path, pgn_basename)
 
     ###############################################################################
     #   Display some info
@@ -44,17 +44,14 @@ if __name__ == "__main__":
     print(f"Boards tensor shape: {boards_tensor.shape}")
     print(f"Moves tensor shape: {moves_tensor.shape}")
 
-
     for board_index in range(10):
         pgn_board = pgn_boards[board_index]
         pgn_move = pgn_moves[board_index]
-        print(f'pgn board:')
+        print(f"pgn board:")
         print(pgn_board)
-        print(f'pgn move: {pgn_move.uci()}')
+        print(f"pgn move: {pgn_move.uci()}")
 
         board_tensor = boards_tensor[board_index]
-
-
 
         move_tensor = moves_tensor[board_index]
         print(f"First board tensor: {'white' if pgn_board.turn else 'black'}")

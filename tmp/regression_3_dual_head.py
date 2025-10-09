@@ -222,7 +222,6 @@ def train() -> None:
             # regression loss: ensure shapes match (N,1)
             reg_loss = criterion_reg(eval_pred, eval_outputs)
 
-
             # total loss = weighted sum
             loss = LOSS_CLS_WEIGHT * cls_loss + LOSS_REG_WEIGHT * reg_loss
 
@@ -238,7 +237,9 @@ def train() -> None:
         training_loss = running_loss / len(dataloader) if len(dataloader) > 0 else float("nan")
         avg_cls = running_cls_loss / len(dataloader) if len(dataloader) > 0 else float("nan")
         avg_reg = running_reg_loss / len(dataloader) if len(dataloader) > 0 else float("nan")
-        print(f"Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f} (cls={(avg_cls*LOSS_CLS_WEIGHT):.6f} reg={(avg_reg*LOSS_REG_WEIGHT):.6f})")
+        print(
+            f"Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f} (cls={(avg_cls*LOSS_CLS_WEIGHT):.6f} reg={(avg_reg*LOSS_REG_WEIGHT):.6f})"
+        )
 
         # Plot training loss
         train_losses.append(training_loss)
@@ -288,7 +289,9 @@ def train() -> None:
 
         unnormalized_pred_eval = denormalize_evals_tensor(eval_pred).item()
 
-        print(f"Sample {i+1}: true_move_idx={true_move} true_eval={true_eval:4.4f} pred_eval={unnormalized_pred_eval:4.4f} top3_move_indices={topk_indices} top3_probs={[round(p,3) for p in topk_probs]}")
+        print(
+            f"Sample {i+1}: true_move_idx={true_move} true_eval={true_eval:4.4f} pred_eval={unnormalized_pred_eval:4.4f} top3_moves_index={topk_indices} top3_probs={[round(p,3) for p in topk_probs]}"
+        )
 
 
 ###############################################################################

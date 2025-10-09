@@ -1,4 +1,5 @@
 # stdlib imports
+import json
 import os
 import time
 
@@ -59,21 +60,23 @@ class DatasetBuilderCommand:
                 print(f"{basename}.pgn already got a boards and moves tensor files, skipping.")
                 continue
 
-
             time_start = time.perf_counter()
 
             print(f"{basename}.pgn converting to tensors... ", end="", flush=True)
             games = PGNUtils.pgn_file_to_games(pgn_file_path)
 
             # split the games into boards and moves
-            boards, moves = DatasetUtils.games_to_boards_moves(games, polyglot_reader)
+            boards, moves, moves_index = DatasetUtils.games_to_boards_moves(games, polyglot_reader)
             # convert the boards and moves to tensors
             boards_tensor, moves_tensor = DatasetUtils.boards_moves_to_tensor(boards, moves)
 
             # Save boards and moves tensors
-            torch.save(boards_tensor, boards_file_path)
-            torch.save(moves_tensor, moves_file_path)
+            DatasetUtils.save_boards_tensor(boards_tensor, tensors_folder_path, basename)
+            DatasetUtils.save_moves_tensor(moves_tensor, tensors_folder_path, basename)
+            DatasetUtils.save_moves_index(moves_index, tensors_folder_path, basename)
 
+            # lo
             time_elapsed = time.perf_counter() - time_start
-            print(f"Done. {str(boards_tensor.shape[0]).rjust(5)} boards in {time_elapsed:.2f} seconds, avg {boards_tensor.shape[0]/time_elapsed:.2f} boards/sec ")
-
+            print(
+                f"Done. {str(boards_tensor.shape[0]).rjust(5)} boards in {time_elapsed:.2f} seconds, avg {boards_tensor.shape[0]/time_elapsed:.2f} boards/sec "
+            )

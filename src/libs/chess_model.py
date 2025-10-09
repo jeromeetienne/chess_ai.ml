@@ -54,8 +54,8 @@ class ChessModelConv2d(nn.Module):
         # conv3_out_channels = 128
         cls_fc_size = 128
         reg_fc_size = 64
-        cls_dropoutProbability = 0.1
-        reg_dropoutProbability = 0.1
+        cls_dropoutProbability = 0.0
+        reg_dropoutProbability = 0.0
 
         # conv1_out_channels = 16
         # conv2_out_channels = 32
@@ -186,8 +186,8 @@ class ChessModelResNet(nn.Module):
         res_block2_count = 3
         cls_fc_size = 128
         reg_fc_size = 64
-        cls_fc_dropout = 0.2
-        reg_fc_dropout = 0.2
+        cls_fc_dropout = 0.0
+        reg_fc_dropout = 0.0
 
         super().__init__()
 
