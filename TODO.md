@@ -1,22 +1,11 @@
 # TODO
-- make support UCI protocol
-  - https://www.perplexity.ai/search/what-is-the-minimal-implementa-StscaKhDSbqMc46SZmE5LA
-  - chess x is UCI GUI good for debug
-  - got an early version working - see `tmp/early_ucinet_support/ucinet_engine.py`
-  - communication with chessx works...
-  - code it in `./bin/ucinet_engine.py` over chessx
-  - then see about a lichess bot
 - see about the reg+cls layer with convnet in them like alpha-zero
-- regression head dataset and alphazero
-  - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
-  - for each move it return if the player to move won or lost the game, +1 if won, -1 if lost, 0 if draw
-  - so no stockfish eval is needed
-  - TODO change the build_evals for that
 - output encoding in alpha-zero - https://chatgpt.com/c/68e47024-d17c-832d-aa46-dc37f265647b
   - action_size = 4672  # for chess: 73 possible moves from each square
+  - it keeps spatialisation
   - it would means that the maximum number of legal move from any square is 73
   - is that a better encoding than the uci2classindex ? which is an unstructured encoding... each is just a class index
-- improve the loss weighting
+- improve the loss weighting ?
   - some dynamic technique exists - https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g
   - "Loss Weights Based on Task Uncertainty" seems to be a good one
   - https://chatgpt.com/c/68e456bf-ee34-832d-b241-9faee3f1e24f <- this could explain the wide variation in regularization weight
@@ -43,6 +32,18 @@
 - make it play on lichess ?
 
 # DONE
+- DONE regression output dataset and alphazero
+  - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
+  - for each move it return if the player to move won or lost the game, +1 if won, -1 if lost, 0 if draw
+  - so no stockfish eval is needed
+  - TODO change the build_evals for that
+- DONE make support UCI protocol
+  - https://www.perplexity.ai/search/what-is-the-minimal-implementa-StscaKhDSbqMc46SZmE5LA
+  - chess x is UCI GUI good for debug
+  - got an early version working - see `tmp/early_ucinet_support/ucinet_engine.py`
+  - communication with chessx works...
+  - code it in `./bin/ucinet_engine.py` over chessx
+  - then see about a lichess bot
 - DONE store stockfish path in a ENV variable
   - use python-dotenv
 - DONE add a command line arg to select the model
