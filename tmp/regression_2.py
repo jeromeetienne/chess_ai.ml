@@ -222,7 +222,7 @@ def train() -> None:
         scheduler.step(training_loss)
 
         # Check for early stopping
-        must_stop, must_save = early_stopper.early_stop(training_loss)
+        must_stop, must_save = early_stopper.step(training_loss)
 
         if must_stop:
             print(f"Early stopping triggered at epoch {epoch+1}.")

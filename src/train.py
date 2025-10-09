@@ -124,14 +124,11 @@ class TrainCommand:
         # criterion_reg = torch.nn.MSELoss()
         # criterion_reg = torch.nn.L1Loss()
         criterion_reg = torch.nn.SmoothL1Loss()
-        # Loss weights: classification + regression
-        loss_cls_weight = 0.1
-        loss_reg_weight = 1.90
 
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         # Add a learning rate scheduler to reduce LR over time
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5, threshold=0.05)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3, threshold=0.05)
         # Initialize early stopper to stop training if no improvement for 'patience' epochs
         early_stopper = EarlyStopper(patience=20, threshold=0.001)
 
@@ -156,18 +153,19 @@ class TrainCommand:
             # =============================================================================
             # Dynamic loss weighting
             # =============================================================================
-            # # Dynamic loss weighting based on recent training losses
-            # n = min(10_000, len(train_cls_losses))
-            # assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
-            # loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.10
-            # loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.90
-            # # Normalize weights to keep total weight = 2.0
-            # total_weight = loss_cls_weight + loss_reg_weight
-            # loss_cls_weight = (loss_cls_weight / total_weight) * 2.0
-            # loss_reg_weight = (loss_reg_weight / total_weight) * 2.0
-
-            loss_cls_weight = 0.5
-            loss_reg_weight = 2 - loss_cls_weight
+            # Dynamic loss weighting based on recent training losses
+            if True:
+                n = min(10_000, len(train_cls_losses))
+                assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
+                loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.10
+                loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.90
+                # Normalize weights to keep total weight = 2.0
+                total_weight = loss_cls_weight + loss_reg_weight
+                loss_cls_weight = (loss_cls_weight / total_weight) * 2.0
+                loss_reg_weight = (loss_reg_weight / total_weight) * 2.0
+            else:
+                loss_cls_weight = 0.5
+                loss_reg_weight = 2 - loss_cls_weight
 
             # =============================================================================
             #
@@ -199,12 +197,12 @@ class TrainCommand:
             valid_reg_losses.append(valid_reg_loss)
 
             # Check for early stopping
-            must_stop, must_save = early_stopper.early_stop(valid_loss)
+            must_stop, must_save = early_stopper.step(valid_loss)
 
             # Print epoch summary
             print(f"Epoch {epoch_index + 1}/{max_epoch_count}", end=" | ")
-            print(f"lr={scheduler.get_last_lr()[0]} n-bad-epoch={scheduler.num_bad_epochs}/{scheduler.patience}", end=" | ")
-            print(f"early-stop epoch={early_stopper.wait_counter}/{early_stopper.patience}", end=" | ")
+            print(f"lr={scheduler.get_last_lr()[0]} badEpoch={scheduler.num_bad_epochs}/{scheduler.patience}", end=" | ")
+            print(f"early-stop badEpoch={early_stopper.bad_epoch_count}/{early_stopper.patience}", end=" | ")
             print(f"Train Loss: {train_loss:.4f} (cls={(train_cls_loss*loss_cls_weight):.4f} reg={(train_reg_loss*loss_reg_weight):.4f})", end=" | ")
             print(f"Valid Loss: {valid_loss:.4f} (cls={(valid_cls_loss*loss_cls_weight):.4f} reg={(valid_reg_loss*loss_reg_weight):.4f})", end=" | ")
             print(f"Time: {epoch_elapsed_time:.2f}-sec {'(Saved)' if must_save else '(worst)'}")

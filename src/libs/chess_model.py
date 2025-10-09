@@ -41,21 +41,21 @@ class ChessModelConv2d(nn.Module):
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # conv1_out_channels = 64
-        # conv2_out_channels = 128
-        # conv3_out_channels = 16
-        # cls_fc_size = 128
-        # reg_fc_size = 64
-        # cls_dropoutProbability = 0.2
-        # reg_dropoutProbability = 0.2
-
-        conv1_out_channels = 32
-        conv2_out_channels = 64
-        # conv3_out_channels = 128
+        conv1_out_channels = 64
+        conv2_out_channels = 128
+        conv3_out_channels = 256
         cls_fc_size = 128
         reg_fc_size = 64
-        cls_dropoutProbability = 0.0
-        reg_dropoutProbability = 0.0
+        cls_dropoutProbability = 0.5
+        reg_dropoutProbability = 0.4
+
+        # conv1_out_channels = 32
+        # conv2_out_channels = 64
+        # conv3_out_channels = 128
+        # cls_fc_size = 128
+        # reg_fc_size = 64
+        # cls_dropoutProbability = 0.0
+        # reg_dropoutProbability = 0.0
 
         # conv1_out_channels = 16
         # conv2_out_channels = 32
@@ -82,13 +82,13 @@ class ChessModelConv2d(nn.Module):
             nn.Conv2d(conv1_out_channels, conv2_out_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(conv2_out_channels),
             nn.ReLU(),
-            # nn.Conv2d(conv2_out_channels, conv3_out_channels, kernel_size=3, padding=1),
-            # nn.BatchNorm2d(conv3_out_channels),
-            # nn.ReLU(),
+            nn.Conv2d(conv2_out_channels, conv3_out_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(conv3_out_channels),
+            nn.ReLU(),
             torch.nn.Flatten(),
         )
 
-        flat_features = conv2_out_channels * 8 * 8
+        flat_features = conv3_out_channels * 8 * 8
 
         # classification head (move prediction)
         self.cls_head = nn.Sequential(

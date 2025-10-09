@@ -13,10 +13,10 @@ class EarlyStopper:
         """
         self.patience = patience
         self.threshold = threshold
-        self.wait_counter = 0
+        self.bad_epoch_count = 0
         self.min_validation_loss = float("inf")
 
-    def early_stop(self, validation_loss: float) -> tuple[bool, bool]:
+    def step(self, validation_loss: float) -> tuple[bool, bool]:
         """
         Checks if training should be stopped early based on validation loss.
 
@@ -36,12 +36,12 @@ class EarlyStopper:
         if is_improved:
             # If improved, update the minimum validation loss and reset wait counter
             self.min_validation_loss = validation_loss
-            self.wait_counter = 0
+            self.bad_epoch_count = 0
             must_save = True  # Signal to save the model
         else:
             # If not improved, increment the wait counter
-            self.wait_counter += 1
-            if self.wait_counter >= self.patience:
+            self.bad_epoch_count += 1
+            if self.bad_epoch_count >= self.patience:
                 # If patience exceeded, signal to stop training
                 must_stop = True
 

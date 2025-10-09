@@ -13,8 +13,10 @@ from src.utils.pgn_utils import PGNUtils
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-output_folder_path = os.path.abspath(os.path.join(__dirname__, '..', 'output'))
-tensors_folder_path = os.path.join(output_folder_path, 'pgn_tensors')
+output_folder_path = os.path.abspath(os.path.join(__dirname__, "..", "output"))
+tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
+
+
 # Define the Model
 ################################################################
 class RegressionModel(nn.Module):
@@ -22,6 +24,7 @@ class RegressionModel(nn.Module):
     A simple Convolutional Neural Network (CNN) for regression.
     It processes the (21, 8, 8) input and outputs a single float.
     """
+
     def __init__(self):
         super(RegressionModel, self).__init__()
         # Input: (batch_size, 21, 8, 8) -> 21 is the number of channels
@@ -31,26 +34,20 @@ class RegressionModel(nn.Module):
             # Conv1: Input 21 channels, Output 16 channels. Kernel size 3x3.
             nn.Conv2d(in_channels=21, out_channels=64, kernel_size=3, padding=1),
             nn.ReLU(),
-
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
             nn.ReLU(),
-
         )
 
         # Calculate the size of the flattened tensor after conv layers
         # Input is (128 channels * 2 * 2 = 128 features)
-        self.flattened_size = 128 * 8*8  # C * H * W
+        self.flattened_size = 128 * 8 * 8  # C * H * W
 
         # Fully connected layers (for regression output)
-        self.fc_layers = nn.Sequential(
-            nn.Linear(self.flattened_size, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)  # Output a single float
-        )
+        self.fc_layers = nn.Sequential(nn.Linear(self.flattened_size, 256), nn.ReLU(), nn.Linear(256, 1))  # Output a single float
 
     def forward(self, x):
         x = x.to(torch.float32)
@@ -62,6 +59,7 @@ class RegressionModel(nn.Module):
         x = self.fc_layers(x)
         # x shape: (batch_size, 1)
         return x
+
 
 # ----------------------------------------------------------------
 
@@ -84,10 +82,10 @@ pgn_paths = PGNUtils.get_pgn_paths()
 # truncate file_pgn_paths to max_files_count
 pgn_paths = pgn_paths[:3]
 
-basename_prefix = '5b07b25e0ebc5914abc12c6d.split_01_of_66'
+basename_prefix = "5b07b25e0ebc5914abc12c6d.split_01_of_66"
 boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=1)
 
-eval_path = os.path.join(tensors_folder_path, f'{basename_prefix}{DatasetUtils.FILE_SUFFIX.EVALS}')
+eval_path = os.path.join(tensors_folder_path, f"{basename_prefix}{DatasetUtils.FILE_SUFFIX.EVALS}")
 evals_tensor = torch.load(eval_path)
 
 evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
@@ -98,7 +96,7 @@ moves_tensor = moves_tensor[:DATA_SIZE]
 evals_tensor = evals_tensor[:DATA_SIZE]
 
 print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor, evals_tensor))
-print(f'Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}')
+print(f"Evals tensor shape: {evals_tensor.shape}, dtype: {evals_tensor.dtype}")
 
 # Create Dataset and DataLoader
 dataset = TensorDataset(boards_tensor, evals_tensor)
@@ -125,7 +123,7 @@ model.train()  # Set the model to training mode
 
 for epoch in range(NUM_EPOCHS):
     running_loss = 0.0
-    for batch_index, (board_inputs,eval_outputs) in enumerate(dataloader):
+    for batch_index, (board_inputs, eval_outputs) in enumerate(dataloader):
         # Get inputs and labels, and move them to the device
         board_inputs = board_inputs.to(device)
         eval_outputs = eval_outputs.to(device)
@@ -147,16 +145,16 @@ for epoch in range(NUM_EPOCHS):
 
         # Track loss
         running_loss += loss.item()
-    
+
     # Print statistics every epoch
     training_loss = running_loss / len(dataloader)
-    print(f'Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f}')
+    print(f"Epoch {epoch+1} lr={scheduler.get_last_lr()[0]} Loss: {training_loss:.8f}")
 
     # Step the scheduler
     scheduler.step(training_loss)
 
     # Check for early stopping
-    must_stop, must_save = early_stopper.early_stop(training_loss)
+    must_stop, must_save = early_stopper.step(training_loss)
 
     if must_stop:
         print(f"Early stopping triggered at epoch {epoch+1}.")
@@ -164,7 +162,7 @@ for epoch in range(NUM_EPOCHS):
 
 
 print("Training finished!")
-# 
+#
 
 # ----------------------------------------------------------------
 
@@ -176,10 +174,12 @@ model.eval()
 # Create a single dummy input (batch size of 1)
 
 for i in range(40):
-    test_input = boards_tensor[i:i+1].to(device)  # Use an actual sample from the dataset
+    test_input = boards_tensor[i : i + 1].to(device)  # Use an actual sample from the dataset
 
     # Disable gradient calculation for inference
     with torch.no_grad():
         prediction = model(test_input)
 
-    print(f"Example Prediction for a single input: {prediction.item():-3.4f} Actual eval: {evals_tensor[i].item():4.4f} delta={abs(prediction.item() - evals_tensor[i].item()):.4f}")
+    print(
+        f"Example Prediction for a single input: {prediction.item():-3.4f} Actual eval: {evals_tensor[i].item():4.4f} delta={abs(prediction.item() - evals_tensor[i].item()):.4f}"
+    )
