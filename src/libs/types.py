@@ -1,5 +1,4 @@
 # stdlib imports
-import os
 import typing
 
 # define the opponent PYTHON type

@@ -28,6 +28,7 @@ output_folder_path = os.path.join(__dirname__, "..", "output")
 model_folder_path = os.path.join(output_folder_path, "model")
 data_folder_path = os.path.join(__dirname__, "..", "data")
 
+
 class PlayCommand:
 
     ###############################################################################
@@ -36,7 +37,7 @@ class PlayCommand:
     ###############################################################################
     ###############################################################################
 
-    @staticmethod   
+    @staticmethod
     def play_game(
         model_name: str,
         chatbotml_color: color_t = "white",
@@ -59,7 +60,7 @@ class PlayCommand:
         # Load the model
         model = ModelUtils.create_model(model_name)
         ModelUtils.load_weights(model, model_folder_path)
-        
+
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
         polyglot_reader = chess.polyglot.open_reader(polyglot_path)
@@ -81,7 +82,7 @@ class PlayCommand:
         print(f'Black: {TermcolorUtils.cyan("chessbotml" if chatbotml_color == "black" else opponent_tech)}')
 
         # get stockfish path from environment variable
-        stockfish_path = os.getenv('STOCKFISH_PATH')
+        stockfish_path = os.getenv("STOCKFISH_PATH")
         assert stockfish_path is not None, "STOCKFISH_PATH environment variable is not set. Please set it in the .env file."
 
         stockfish_evaluation = Stockfish(path=stockfish_path)
@@ -132,10 +133,10 @@ class PlayCommand:
                     best_move = input(f"Enter your move {board.fullmove_number} for {turn_color} (in UCI format): ")
             elif player_type == "stockfish":
                 # Set the current board position in Stockfish
-                stockfish.set_fen_position(board.fen()) # type: ignore
+                stockfish.set_fen_position(board.fen())  # type: ignore
 
                 # Get the best move from Stockfish
-                best_move = stockfish.get_best_move() # type: ignore
+                best_move = stockfish.get_best_move()  # type: ignore
                 if best_move is None:
                     raise ValueError("Stockfish could not find a move. BUG BUG.")
 
@@ -155,8 +156,9 @@ class PlayCommand:
             print(ChessExtra.board_to_string(board, flip_board=False if chatbotml_color == "white" else True))
 
             # display the post-move board
-            in_opening_str = " (in opening book)" if ChessExtra.is_in_opening_book(board, polyglot_reader) else ""
-            print(f"Move {board.fullmove_number} played by {turn_color} ({player_type}): {TermcolorUtils.cyan(best_move)} {in_opening_str}")
+            in_opening_str = " (in opening book)" if ChessExtra.in_opening_book(board, polyglot_reader) else ""
+            in_endgame_str = " (in endgame)" if ChessExtra.is_endgame(board) else ""
+            print(f"Move {board.fullmove_number} played by {turn_color} ({player_type}): {TermcolorUtils.cyan(best_move)} {in_opening_str}{in_endgame_str}")
 
             ###############################################################################
             #   Optionally, evaluate the position using Stockfish after each move
@@ -192,4 +194,3 @@ class PlayCommand:
 
         print("PGN Representation of the game:")
         print(pgn_game)
-

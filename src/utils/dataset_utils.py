@@ -184,7 +184,7 @@ class DatasetUtils:
 
     @staticmethod
     def games_to_boards_moves(
-        games: list[chess.pgn.Game], polyglot_reader: chess.polyglot.MemoryMappedReader | None
+        games: list[chess.pgn.Game], polyglot_reader: chess.polyglot.MemoryMappedReader | None, skip_opening_book: bool = True, skip_endgame: bool = True
     ) -> tuple[list[chess.Board], list[chess.Move], list["DatasetUtils.MoveIndex"]]:
         boards: list[chess.Board] = []
         moves: list[chess.Move] = []
@@ -199,7 +199,11 @@ class DatasetUtils:
                 board.push(move)
 
                 # skip if the position is in the opening book
-                if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
+                if skip_opening_book and polyglot_reader and ChessExtra.in_opening_book(board, polyglot_reader):
+                    continue
+
+                # skip if is in endgame
+                if skip_endgame and ChessExtra.is_endgame(board):
                     continue
 
                 # append the board in pgn_boards

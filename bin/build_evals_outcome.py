@@ -34,7 +34,9 @@ tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
 #
 
 
-def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader) -> list[float]:
+def build_eval_array_from_pgn(
+    pgn_path: str, polyglot_reader: chess.polyglot.MemoryMappedReader, skip_opening_book: bool = True, skip_endgame: bool = True
+) -> list[float]:
     # play all pgn games of this file
     # - skip all positions already in the opening book
     # - extract the evaluation_score for each position and append it an array
@@ -68,7 +70,11 @@ def build_eval_array_from_pgn(pgn_path: str, polyglot_reader: chess.polyglot.Mem
             # push the move to the board
             board.push(node.move)
             # skip if the position is in the opening book
-            if polyglot_reader and ChessExtra.is_in_opening_book(board, polyglot_reader):
+            if skip_opening_book and polyglot_reader and ChessExtra.in_opening_book(board, polyglot_reader):
+                continue
+
+            # skip if is in endgame
+            if skip_endgame and ChessExtra.is_endgame(board):
                 continue
 
             # get the result probability for this move from the point of view of the player to move

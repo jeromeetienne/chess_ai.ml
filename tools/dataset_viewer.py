@@ -5,6 +5,7 @@ import os
 
 import chess
 
+from src.libs.chess_extra import ChessExtra
 from src.libs.encoding import Encoding
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
@@ -30,4 +31,5 @@ if __name__ == "__main__":
         print(f"Board: {'white' if board.turn == chess.WHITE else 'black'} to move - {move_uci}")
         print(board)
         print(f"Moves idx: game {move_index['game_idx']} move {move_index['move_idx']} - Eval value: {eval}")
+        print(f'Endgame {"yes" if ChessExtra.is_endgame(board) else "no"}')
         print("-" * 40)
