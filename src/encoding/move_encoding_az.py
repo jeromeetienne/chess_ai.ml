@@ -22,26 +22,43 @@ class MoveEncodingAz:
     - Underpromotions 9
     """
 
+    # create a static property accesor for .OUTPUT_SHAPE
+    @staticmethod
+    def get_output_shape() -> tuple[int, int, int]:
+        return MoveEncodingAz.TENSOR_SHAPE
+
     # =============================================================================
     # Constants and encoding/decoding functions
     # =============================================================================
-    TENSOR_SHAPE = (73, 8, 8)  # (planes, ranks, files)
-    # Directions for sliding pieces: N, S, E, W, NE, NW, SE, SW
+    MOVE_DTYPE = torch.int32  # class index as long
+    """Tensor dtype for move encoding."""
+
+    TENSOR_SHAPE = (73, 8, 8)
+    """Shape of the move encoding tensor: (planes, ranks, files)."""
+
     SLIDING_DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
-    # Knight directions
+    """Directions for sliding pieces: N, S, E, W, NE, NW, SE, SW."""
+
     KNIGHT_DIRS = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
-    # Promotion pieces
+    """Knight move directions."""
+
     PROMOTION_PIECES = [chess.KNIGHT, chess.BISHOP, chess.ROOK]
-    # Promotion directions
-    PROMOTION_DIRS = [(1, 0), (1, 1), (1, -1)]  # Forward, forward-right, forward-left
-    # Names for descriptions
+    """Promotion piece types for underpromotions."""
+
+    PROMOTION_DIRS = [(1, 0), (1, 1), (1, -1)]
+    """Promotion directions: forward, forward-right, forward-left."""
+
     DIRECTION_NAMES = ["↑ (North)", "↓ (South)", "→ (East)", "← (West)", "↗ (North-East)", "↖ (North-West)", "↘ (South-East)", "↙ (South-West)"]
-    # Knight move names
+    """Human-readable names for sliding directions."""
+
     KNIGHT_NAMES = ["(+2, +1)", "(+2, -1)", "(-2, +1)", "(-2, -1)", "(+1, +2)", "(+1, -2)", "(-1, +2)", "(-1, -2)"]
-    # Underpromotion names
+    """Human-readable names for knight moves."""
+
     PROMO_PIECE_NAMES = {chess.KNIGHT: "Knight", chess.BISHOP: "Bishop", chess.ROOK: "Rook"}
-    # Underpromotion direction names
+    """Mapping from promotion piece type to name."""
+
     PROMO_DIR_NAMES = ["↑", "↗", "↖"]
+    """Human-readable names for underpromotion directions."""
 
     @staticmethod
     def encode_move_tensor(move: chess.Move, color_to_move: chess.Color) -> torch.Tensor:

@@ -13,12 +13,23 @@ from src.encoding.board_encoding import BoardEncoding
 
 
 class MoveEncodingUci2Class:
+    MOVE_DTYPE = torch.int32  # class index as long
 
+    # create a static property accesor for .OUTPUT_SHAPE
+    @staticmethod
+    def get_output_shape() -> tuple[int]:
+        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
+        num_classes = len(uci2class_white)
+        return (num_classes,)
+
+    # =============================================================================
+    # move_to_tensor/move_from_tensor
+    # =============================================================================
     @staticmethod
     def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
         uci2class = Uci2ClassUtils.get_uci2class(color)
         class_index = uci2class[move_uci]
-        move_tensor = torch.tensor(class_index, dtype=BoardEncoding.MOVE_DTYPE)
+        move_tensor = torch.tensor(class_index, dtype=MoveEncodingUci2Class.MOVE_DTYPE)
         return move_tensor
 
     @staticmethod

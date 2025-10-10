@@ -230,7 +230,7 @@ class DatasetUtils:
 
         # create tensors to hold the boards and moves
         boards_tensor = torch.zeros((len(boards), *BoardEncoding.get_input_shape()), dtype=BoardEncoding.BOARD_DTYPE)
-        moves_tensor = torch.zeros((len(boards),), dtype=BoardEncoding.MOVE_DTYPE)
+        moves_tensor = torch.zeros((len(boards),), dtype=MoveEncoding.MOVE_DTYPE)
 
         # iterate through all positions and encode them
         for position_index, (board, move) in enumerate(zip(boards, moves)):
@@ -323,7 +323,7 @@ class DatasetUtils:
         summary = f"""Dataset Summary:
 - Total positions: {len(boards_tensor):,}
 - Input: size {BoardEncoding.get_input_shape()} (Channels, Height, Width), type {BoardEncoding.BOARD_DTYPE}
-- Output shape: size {moves_tensor.shape} (Scalar class index), type {BoardEncoding.MOVE_DTYPE}
+- Output shape: size {moves_tensor.shape} (Scalar class index), type {MoveEncoding.MOVE_DTYPE}
 """
         return summary
 

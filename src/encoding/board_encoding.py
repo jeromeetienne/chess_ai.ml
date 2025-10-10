@@ -3,22 +3,11 @@ import numpy as np
 import torch
 import chess
 
-# local imports
-from src.utils.uci2class_utils import Uci2ClassUtils
-
 
 class BoardEncoding:
 
     BOARD_DTYPE = torch.int32
-    MOVE_DTYPE = torch.int32  # class index as long
     EVAL_DTYPE = torch.float32  # evaluation as float
-
-    # create a static property accesor for .OUTPUT_SHAPE
-    @staticmethod
-    def get_output_shape() -> tuple[int]:
-        uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
-        num_classes = len(uci2class_white)
-        return (num_classes,)
 
     @staticmethod
     def get_input_shape() -> tuple[int, int, int]:

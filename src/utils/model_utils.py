@@ -4,10 +4,10 @@ import os
 # pip imports
 import torch
 
-from src.encoding.board_encoding import BoardEncoding
-
 # local imports
 from ..libs.chess_model import ChessModelConv2d, ChessModelResNet, AlphaZeroNet
+from ..encoding.board_encoding import BoardEncoding
+from ..encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -28,7 +28,7 @@ class ModelUtils:
 
     @staticmethod
     def create_model(model_name: str) -> torch.nn.Module:
-        input_shape, output_shape = BoardEncoding.get_input_shape(), BoardEncoding.get_output_shape()
+        input_shape, output_shape = BoardEncoding.get_input_shape(), MoveEncoding.get_output_shape()
         # Create the model
         if model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
             model = ChessModelConv2d(input_shape=input_shape, output_shape=output_shape)
