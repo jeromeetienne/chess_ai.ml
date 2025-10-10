@@ -58,8 +58,7 @@ class PlayCommand:
         #
 
         # Load the model
-        model = ModelUtils.create_model(model_name)
-        ModelUtils.load_weights(model, model_folder_path)
+        model = ModelUtils.load_model(model_name, model_folder_path)
 
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")

@@ -65,8 +65,7 @@ class UciNetEngine:
 
         # Load the model
         model_name = ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D
-        self._model = ModelUtils.create_model(model_name)
-        ModelUtils.load_weights(self._model, model_folder_path)
+        self._model = ModelUtils.load_model(model_name, model_folder_path)
 
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")

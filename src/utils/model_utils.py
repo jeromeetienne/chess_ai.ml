@@ -76,13 +76,23 @@ class ModelUtils:
         return "\n".join(output)
 
     @staticmethod
-    def save_model(model: torch.nn.Module, folder_path: str):
-        # Save the model
-        state_dict_path = f"{folder_path}/model.pth"
-        torch.save(model.state_dict(), state_dict_path)
-
-    @staticmethod
     def load_weights(model: torch.nn.Module, folder_path: str) -> None:
         # Load the model
         model_path = f"{folder_path}/model.pth"
         model.load_state_dict(torch.load(model_path))
+
+    # =============================================================================
+    # load/save model
+    # =============================================================================
+
+    @staticmethod
+    def load_model(model_name: str, folder_path: str) -> torch.nn.Module:
+        model = ModelUtils.create_model(model_name)
+        ModelUtils.load_weights(model, folder_path)
+        return model
+
+    @staticmethod
+    def save_model(model: torch.nn.Module, folder_path: str):
+        # Save the model
+        state_dict_path = f"{folder_path}/model.pth"
+        torch.save(model.state_dict(), state_dict_path)
