@@ -47,7 +47,7 @@ class ChessModelConv2d(nn.Module):
         cls_fc_size = 128
         reg_fc_size = 64
         cls_dropoutProbability = 0.5
-        reg_dropoutProbability = 0.4
+        reg_dropoutProbability = 0.5
 
         # conv1_out_channels = 32
         # conv2_out_channels = 64
