@@ -10,9 +10,9 @@ def test_encode_decode_roundtrip_simple_moves():
 
     # pawn two-step
     move_1 = chess.Move.from_uci("e2e4")
-    t1 = MoveEncodingAz.encode_move_tensor(move_1, board.turn)
-    assert t1.shape == MoveEncodingAz.TENSOR_SHAPE
-    move_decoded_1 = MoveEncodingAz.decode_move_tensor(t1, board.turn)
+    tensor_1 = MoveEncodingAz.encode_move_tensor(move_1, board.turn)
+    assert tensor_1.shape == MoveEncodingAz.TENSOR_SHAPE
+    move_decoded_1 = MoveEncodingAz.decode_move_tensor(tensor_1, board.turn)
     assert move_decoded_1 == move_1
 
     # knight move
@@ -45,14 +45,14 @@ def test_underpromotion_encoding_white_and_black():
 
     # underpromotion to knight on a8 (forward)
     move_kn = chess.Move.from_uci("a7a8n")
-    t_kn = MoveEncodingAz.encode_move_tensor(move_kn, board_w.turn)
-    move_decoded_kn = MoveEncodingAz.decode_move_tensor(t_kn, board_w.turn)
+    tensor_kn = MoveEncodingAz.encode_move_tensor(move_kn, board_w.turn)
+    move_decoded_kn = MoveEncodingAz.decode_move_tensor(tensor_kn, board_w.turn)
     assert move_decoded_kn == move_kn
 
     # underpromotion to rook on a8 (forward)
     move_ro = chess.Move.from_uci("a7a8r")
-    t_ro = MoveEncodingAz.encode_move_tensor(move_ro, board_w.turn)
-    move_decoded_ro = MoveEncodingAz.decode_move_tensor(t_ro, board_w.turn)
+    tensor_ro = MoveEncodingAz.encode_move_tensor(move_ro, board_w.turn)
+    move_decoded_ro = MoveEncodingAz.decode_move_tensor(tensor_ro, board_w.turn)
     assert move_decoded_ro == move_ro
 
     # black underpromotion (black pawn on second rank moving to first)
@@ -61,9 +61,68 @@ def test_underpromotion_encoding_white_and_black():
     board_b.set_piece_at(chess.A2, chess.Piece(chess.PAWN, chess.BLACK))
     board_b.turn = chess.BLACK
     move_bq = chess.Move.from_uci("a2a1n")  # black promotes downwards, specify knight
-    t_bq = MoveEncodingAz.encode_move_tensor(move_bq, board_b.turn)
-    move_decoded_bq = MoveEncodingAz.decode_move_tensor(t_bq, board_b.turn)
+    tensor_bq = MoveEncodingAz.encode_move_tensor(move_bq, board_b.turn)
+    move_decoded_bq = MoveEncodingAz.decode_move_tensor(tensor_bq, board_b.turn)
     assert move_decoded_bq == move_bq
+
+
+def test_queen_promotion_encoding_white_and_black():
+    # White queen promotion (should be encoded as a sliding move, not underpromotion)
+    board_w = chess.Board()
+    board_w.clear()
+    board_w.set_piece_at(chess.A7, chess.Piece(chess.PAWN, chess.WHITE))
+    board_w.turn = chess.WHITE
+
+    move_q = chess.Move.from_uci("a7a8q")
+    tensor_q = MoveEncodingAz.encode_move_tensor(move_q, board_w.turn)
+    move_decoded_q = MoveEncodingAz.decode_move_tensor(tensor_q, board_w.turn)
+    assert move_decoded_q == move_q
+
+    # Black queen promotion
+    board_b = chess.Board()
+    board_b.clear()
+    board_b.set_piece_at(chess.H2, chess.Piece(chess.PAWN, chess.BLACK))
+    board_b.turn = chess.BLACK
+
+    move_qb = chess.Move.from_uci("h2h1q")
+    tensor_qb = MoveEncodingAz.encode_move_tensor(move_qb, board_b.turn)
+    move_decoded_qb = MoveEncodingAz.decode_move_tensor(tensor_qb, board_b.turn)
+    assert move_decoded_qb == move_qb
+
+
+def test_move_to_string_descriptions():
+    board = chess.Board()
+    move = chess.Move.from_uci("e2e4")
+    desc = MoveEncodingAz.move_to_string(move, board.turn)
+    assert "Slide" in desc and "from e2" in desc
+
+    move_knight = chess.Move.from_uci("g1f3")
+    desc_knight = MoveEncodingAz.move_to_string(move_knight, board.turn)
+    assert "Knight jump" in desc_knight and "from g1" in desc_knight
+
+    # Underpromotion
+    board.clear()
+    board.set_piece_at(chess.B7, chess.Piece(chess.PAWN, chess.WHITE))
+    move_up = chess.Move.from_uci("b7b8n")
+    desc_up = MoveEncodingAz.move_to_string(move_up, chess.WHITE)
+    assert "Underpromotion" in desc_up and "to Knight" in desc_up
+
+
+def test_encode_decode_all_knight_moves():
+    board = chess.Board()
+    board.clear()
+    board.set_piece_at(chess.D4, chess.Piece(chess.KNIGHT, chess.WHITE))
+    board.turn = chess.WHITE
+    from_sq = chess.D4
+    for dx, dy in MoveEncodingAz.KNIGHT_DIRS:
+        fx, fy = divmod(from_sq, 8)
+        tx, ty = fx + dx, fy + dy
+        if 0 <= tx < 8 and 0 <= ty < 8:
+            to_sq = tx * 8 + ty
+            move = chess.Move(from_sq, to_sq)
+            tensor = MoveEncodingAz.encode_move_tensor(move, board.turn)
+            move_decoded = MoveEncodingAz.decode_move_tensor(tensor, board.turn)
+            assert move_decoded == move
 
 
 def test_encode_legal_moves_mask_matches_board():
@@ -75,7 +134,7 @@ def test_encode_legal_moves_mask_matches_board():
 
 
 def test_decode_invalid_tensor_shape_and_content_errors():
-    # wrong shape
+    # wrong shapemak
     bad = torch.zeros((72, 8, 8), dtype=torch.float32)
     with pytest.raises(ValueError):
         MoveEncodingAz.decode_move_tensor(bad, chess.WHITE)

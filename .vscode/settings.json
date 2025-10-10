@@ -1,9 +1,23 @@
 {
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src"
+    ],
+    "files.exclude": {
+        "**/__pycache__": true,
+        "output": true,
+        "data": true,
+        "tmp": true
+    },
     "makefile.configureOnOpen": false,
-    // Show a vertical ruler at 160 characters to make it easy to spot long lines
     "editor.rulers": [
         160
     ],
-    // Optional: format on save
     "editor.formatOnSave": true
 }

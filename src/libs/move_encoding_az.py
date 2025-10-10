@@ -90,14 +90,28 @@ class MoveEncodingAz:
         dx = tx - fx
         dy = ty - fy
 
-        # 1. Sliding moves
+        # 1. Underpromotion (must be checked before sliding moves so underpromotions
+        #    to N/B/R are encoded in the last 9 planes rather than as a slide)
+        if move.promotion in MoveEncodingAz.PROMOTION_PIECES:
+            px_dir = 1 if color_to_move == chess.WHITE else -1
+            rel_dx = tx - fx
+            rel_dy = ty - fy
+            for dir_idx, (px, py) in enumerate(MoveEncodingAz.PROMOTION_DIRS):
+                expected_dx = px * px_dir
+                expected_dy = py
+                if rel_dx == expected_dx and rel_dy == expected_dy:
+                    promo_type_index = MoveEncodingAz.PROMOTION_PIECES.index(move.promotion)
+                    plane = 64 + dir_idx * 3 + promo_type_index  # 64–72
+                    return from_square, plane
+
+        # 2. Sliding moves
         for dir_index, (sx, sy) in enumerate(MoveEncodingAz.SLIDING_DIRS):
             for distance in range(1, 8):
                 if (dx == sx * distance) and (dy == sy * distance):
                     plane = dir_index * 7 + (distance - 1)  # 0–55
                     return from_square, plane
 
-        # 2. Knight moves
+        # 3. Knight moves
         for knight_index, (kx, ky) in enumerate(MoveEncodingAz.KNIGHT_DIRS):
             if (dx == kx) and (dy == ky):
                 plane = 56 + knight_index  # 56–63
@@ -136,6 +150,12 @@ class MoveEncodingAz:
 
             if 0 <= tx < 8 and 0 <= ty < 8:
                 to_sq = tx * 8 + ty
+                # If this sliding move reaches the final rank for the side to move,
+                # interpret it as a queen promotion (AlphaZero encoding uses sliding
+                # plane for queen promotions). We don't have board context here,
+                # so assume promotions when moving to the last rank.
+                if (color_to_move == chess.WHITE and tx == 7) or (color_to_move == chess.BLACK and tx == 0):
+                    return chess.Move(from_square, to_sq, promotion=chess.QUEEN)
                 return chess.Move(from_square, to_sq)
 
         # --- 2. Knight moves ---
