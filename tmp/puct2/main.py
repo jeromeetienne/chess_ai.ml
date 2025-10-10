@@ -30,8 +30,7 @@ def play_game(num_simulations=200, max_moves=512, c_puct=1.4):
 
     # 2. Create dummy NN (replace with your PyTorch model later)
     model_name = ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D
-    model = ModelUtils.create_model(model_name)
-    ModelUtils.load_weights(model, model_folder_path)
+    model = ModelUtils.load_model(model_name, model_folder_path)
     policyValueNet = PolicyValueNetMine(model)
 
     # 3. Create PUCT instance
