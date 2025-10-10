@@ -4,6 +4,9 @@ help: ## show this help
 lint: ## Run lint checker on source files
 	pyright bin/**/*.py src/**/*.py
 
+pytest: ## Run pytest on test files
+	pytest -v tests/
+
 full_pipeline: clean build_boards_moves build_evals_outcome train play ## run the full pipeline
 
 train_deep_20: ## train a model with first 20 pgn files
