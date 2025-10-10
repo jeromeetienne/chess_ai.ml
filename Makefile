@@ -7,7 +7,13 @@ lint: ## Run lint checker on source files
 pytest: ## Run pytest on test files
 	pytest -v tests/
 
-full_pipeline: clean build_boards_moves build_evals_outcome train play ## run the full pipeline
+full_pipeline_slow: clean build_boards_moves build_evals_outcome train play ## run the full pipeline
+
+full_pipeline: clean ## run the full pipeline
+	./bin/build_boards_moves.py -fc 3
+	./bin/build_evals_outcome.py -fc 3
+	./bin/train.py -me 3
+	./bin/play.py
 
 train_deep_20: ## train a model with first 20 pgn files
 	./bin/build_boards_moves.py -fc 20

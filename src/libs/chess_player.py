@@ -12,10 +12,8 @@ import numpy as np
 # local imports
 from ..utils.uci2class_utils import Uci2ClassUtils
 from .encoding import Encoding
-from .chess_model import ChessModel
 from ..puct.policyvaluenet_mine import PolicyValueNetMine
 from ..puct.puct_batch import PUCTBatch
-from ..puct.puct_single import PUCTSingle
 from ..puct.gamestate_chess import ChessGameState
 
 

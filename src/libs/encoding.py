@@ -11,7 +11,6 @@ from src.libs.chess_extra import ChessExtra
 from src.utils.uci2class_utils import Uci2ClassUtils
 
 
-
 class Encoding:
 
     BOARD_DTYPE = torch.int32
@@ -24,7 +23,7 @@ class Encoding:
         uci2class_white = Uci2ClassUtils.get_uci2class(chess.WHITE)
         num_classes = len(uci2class_white)
         return (num_classes,)
-    
+
     @staticmethod
     def get_input_shape() -> tuple[int, int, int]:
         return (Encoding.PLANE.PLANE_COUNT, 8, 8)
@@ -118,8 +117,6 @@ class Encoding:
         #
         board_tensor = torch.tensor(board_numpy, dtype=Encoding.BOARD_DTYPE)
 
-        
-
         return board_tensor
 
     @staticmethod
@@ -202,86 +199,28 @@ class Encoding:
         return board
 
     # @staticmethod
-    # def board_tensor_flip(board_tensor: torch.Tensor, in_place: bool = False) -> torch.Tensor:
-    #     """
-    #     Flip the board tensor to switch perspective between white and black.
-    #     This involves rotating the piece planes and swapping the piece colors.
-    #     """
-
-    #     assert board_tensor.shape == Encoding.get_input_shape(), f"board_tensor shape must be {Encoding.get_input_shape()}, got {board_tensor.shape}"
-
-    #     # Rotate all planes by 180 degrees
-    #     rotated_tensor = torch.flip(input=board_tensor, dims=[1, 2])
-
-    #     if in_place == False:
-    #         return rotated_tensor
-
-    #     board_tensor.copy_(rotated_tensor)
-    #     return board_tensor
-
-    # @staticmethod
-    # def move_to_tensor(move_uci: str, uci_to_classindex: dict[str, int]) -> torch.Tensor:
-    #     """
-    #     Converts a move in UCI string format to a scalar tensor representing its class index.
-
-    #     Args:
-    #         move_uci (str): The move in UCI (Universal Chess Interface) string format (e.g., 'e2e4').
-    #         uci_to_classindex (dict[str, int]): A mapping from UCI move strings to their corresponding class indices.
-
-    #     Returns:
-    #         torch.Tensor: A scalar tensor containing the class index of the move, with dtype specified by Encoding.MOVE_DTYPE.
-
-    #     Raises:
-    #         KeyError: If the provided move_uci is not found in the uci_to_classindex mapping.
-    #     """
-    #     # convert move in UCI format to class index
-    #     class_index = uci_to_classindex[move_uci]
-    #     # convert class index to tensor
-    #     # moves_tensor_dtype = EncodingUtils.__numpy_dtype_to_torch(EncodingUtils.MOVE_DTYPE)
+    # def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
+    #     uci2class = Uci2ClassUtils.get_uci2class(color)
+    #     class_index = uci2class[move_uci]
     #     move_tensor = torch.tensor(class_index, dtype=Encoding.MOVE_DTYPE)
     #     return move_tensor
 
     # @staticmethod
-    # def move_from_tensor(move_tensor: torch.Tensor, classindex_to_uci: dict[int, str]) -> str:
-        # """
-        # Converts a scalar move tensor representing a class index into its corresponding UCI move string.
-        # Args:
-        #     move_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
-        #     classindex_to_uci (dict[int, str]): A mapping from class indices to UCI move strings.
-        # Returns:
-        #     str: The UCI string representation of the move.
-        # Raises:
-        #     AssertionError: If the input tensor shape is not scalar or if the encoding input shape is not as expected.
-        # """
+    # def move_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
+    #     """
+    #     Converts a scalar move tensor representing a class index into its corresponding UCI move string.
 
-        # assert Encoding.get_input_shape()[0] == 16, "not updated to new encoding"
+    #     Arguments:
+    #         moves_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
+    #         color (chess.Color): The color of the player making the move (chess.WHITE or chess.BLACK).
+    #     Returns:
+    #         str: The UCI string representation of the move.
+    #     """
+    #     class2uci = Uci2ClassUtils.get_class2uci(color)
+    #     class_index = int(moves_tensor.item())
+    #     move_uci = class2uci[class_index]
+    #     return move_uci
 
-        # assert move_tensor.shape == (), f"move_tensor shape must be (), got {move_tensor.shape}"
-        # move_uci = classindex_to_uci[int(move_tensor.item())]
-        # return move_uci
-
-    @staticmethod
-    def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
-        uci2class = Uci2ClassUtils.get_uci2class(color)
-        class_index = uci2class[move_uci]
-        move_tensor = torch.tensor(class_index, dtype=Encoding.MOVE_DTYPE)
-        return move_tensor
-
-    @staticmethod
-    def move_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
-        """
-        Converts a scalar move tensor representing a class index into its corresponding UCI move string.
-
-        Arguments:
-            moves_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
-            color (chess.Color): The color of the player making the move (chess.WHITE or chess.BLACK).
-        Returns:
-            str: The UCI string representation of the move.
-        """
-        class2uci = Uci2ClassUtils.get_class2uci(color)
-        class_index = int(moves_tensor.item())
-        move_uci = class2uci[class_index]
-        return move_uci
 
 if __name__ == "__main__":
     ###############################################################################
@@ -293,17 +232,11 @@ if __name__ == "__main__":
 
     board.push(chess.Move.from_uci("e2e4"))
     board.push(chess.Move.from_uci("c7c6"))
-    move = chess.Move.from_uci("a2a3")
 
-
-    print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
+    print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'}")
 
     board_tensor = Encoding.board_to_tensor(board)
-    move_tensor = Encoding.move_to_tensor(move.uci(), board.turn)
-
 
     reconstructed_board = Encoding.board_from_tensor(board_tensor)
-    reconstructed_move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
-    reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
-    print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}")
+    print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'}")
     print(reconstructed_board)

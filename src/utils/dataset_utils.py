@@ -14,6 +14,7 @@ from tqdm import tqdm
 from src.libs.chess_extra import ChessExtra
 from src.libs.encoding import Encoding
 from src.utils.uci2class_utils import Uci2ClassUtils
+from src.libs.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
 from src.utils.pgn_utils import PGNUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -238,7 +239,7 @@ class DatasetUtils:
             boards_tensor[position_index] = board_tensor
 
             # encode the best move in UCI format
-            moves_tensor[position_index] = Encoding.move_to_tensor(move.uci(), board.turn)
+            moves_tensor[position_index] = MoveEncoding.move_to_tensor(move.uci(), board.turn)
 
         # return the boards, moves and the mapping
         return boards_tensor, moves_tensor
@@ -297,7 +298,7 @@ class DatasetUtils:
 
             # encode the move
             pgn_move = pgn_moves[i]
-            move_uci = Encoding.move_from_tensor(moves_tensor[i], tensor_board.turn)
+            move_uci = MoveEncoding.move_from_tensor(moves_tensor[i], tensor_board.turn)
             tensor_move = chess.Move.from_uci(move_uci)
 
             # Check if the moves are equal
@@ -368,12 +369,12 @@ if __name__ == "__main__":
     print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
 
     board_tensor = Encoding.board_to_tensor(board)
-    move_tensor = Encoding.move_to_tensor(move.uci(), board.turn)
+    move_tensor = MoveEncoding.move_to_tensor(move.uci(), board.turn)
 
     print(f"move_tensor: {move_tensor}")
 
     reconstructed_board = Encoding.board_from_tensor(board_tensor)
-    reconstructed_move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
+    reconstructed_move_uci = MoveEncoding.move_from_tensor(move_tensor, board.turn)
     reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
 
     print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}")

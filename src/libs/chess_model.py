@@ -306,14 +306,3 @@ class AlphaZeroNet(nn.Module):
         v = torch.tanh(self.value_fc2(v))
 
         return p, v
-
-
-###############################################################################
-###############################################################################
-# 	 ChessModel class that wraps the original ChessModel
-###############################################################################
-###############################################################################
-# class ChessModel(ChessModelConv2d):
-class ChessModel(AlphaZeroNet):
-    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
-        super(ChessModel, self).__init__(input_shape, output_shape)
