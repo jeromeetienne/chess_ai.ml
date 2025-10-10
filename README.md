@@ -105,3 +105,23 @@ python ./src/play.py
 - [alpha vile](https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp) - the second version of alpha zero
 - [article](https://ar5iv.labs.arxiv.org/html/2304.14918) explaining why transformer may be unsuitable for chess
 - chess.com article [Another Silly Question: How Many Chess Moves Are There?](https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there)
+
+# Insight 2
+
+- "Look closely at your data—model problems often stem from hidden biases or imbalances in the dataset, not just the model itself."
+
+## Explanation
+im running a dual head model which predicts both the move and the game outcome (win/draw/loss) from a given position, so it does classification and regression
+at the same time. Unfortunatly the regression head is not learning efficiently, and the loss was varying widely.
+I tried to fix it with various strategies:
+- normalizing the outcome to be between 0 and 1 with a sigmoid
+- using a dynamic weighted loss. Useful to balance change in the classification and regression loss. i was hoping that if the regression loss is 
+  high, it will be weighted less
+- using mean absolute square error instead of mean square error. MAE is less sensitive to outliers.
+- using a smaller learning rate for the regression head.
+
+Nothing worked. :(
+
+after some time, independantly, i noticed my dataset was unbalanced. It was games from stockfish and stockfish **never resign**, so some games were very long 
+(e.g. 100 moves or more). I found that silly and i filtered out endgames from the dataset, using the [speelman criteria](https://www.chess.com/blog/introuble2/the-value-of-the-active-king)
+and suddently the regression head was learning much better, and the loss was more stable.
