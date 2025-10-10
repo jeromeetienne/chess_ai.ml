@@ -16,8 +16,10 @@
         "tmp": true
     },
     "makefile.configureOnOpen": false,
+    // Set a ruler at 160 characters for better readability
     "editor.rulers": [
         160
     ],
+    // Format the source code on save
     "editor.formatOnSave": true
 }
