@@ -2,6 +2,14 @@
 
 This repository is a small ML-based chess engine that learns a move policy from PGN games and integrates with a search/opening book. Below are the essential facts and patterns to be productive.
 
+### Coding style
+- Use explicit names for variables and functions.
+  - never use single-letter names
+  - prefer descriptive names over short names
+- Never use tabs; always 4 spaces.
+- Follow PEP8 and type hints (enforced by `make lint`).
+- Use f-strings for formatting (no `%` or `.format()`).
+
 ### Big picture
 - Data pipeline: PGN files (data/pgn, data/lichess_elite, data/fishtest_stockfish) -> scripts/pgn_splitter.py -> dataset builders (`bin/build_boards_moves.py`, `bin/build_evals_fishtest.py`) -> tensor files in `output/pgn_tensors/` (see naming in `DatasetUtils.FILE_SUFFIX`).
 - Model: PyTorch models live in `src/libs/chess_model.py` (ResNet/Conv variants). Models are saved/loaded via `src/utils/model_utils.py` to `output/model/model.pth`.
