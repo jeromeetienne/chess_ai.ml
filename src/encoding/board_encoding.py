@@ -2,12 +2,8 @@
 import numpy as np
 import torch
 import chess
-import chess.pgn
-import chess.polyglot
-from tqdm import tqdm
 
 # local imports
-from src.libs.chess_extra import ChessExtra
 from src.utils.uci2class_utils import Uci2ClassUtils
 
 
@@ -197,29 +193,6 @@ class BoardEncoding:
         assert board.is_valid(), "Reconstructed board is not valid"
 
         return board
-
-    # @staticmethod
-    # def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
-    #     uci2class = Uci2ClassUtils.get_uci2class(color)
-    #     class_index = uci2class[move_uci]
-    #     move_tensor = torch.tensor(class_index, dtype=Encoding.MOVE_DTYPE)
-    #     return move_tensor
-
-    # @staticmethod
-    # def move_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
-    #     """
-    #     Converts a scalar move tensor representing a class index into its corresponding UCI move string.
-
-    #     Arguments:
-    #         moves_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
-    #         color (chess.Color): The color of the player making the move (chess.WHITE or chess.BLACK).
-    #     Returns:
-    #         str: The UCI string representation of the move.
-    #     """
-    #     class2uci = Uci2ClassUtils.get_class2uci(color)
-    #     class_index = int(moves_tensor.item())
-    #     move_uci = class2uci[class_index]
-    #     return move_uci
 
 
 if __name__ == "__main__":
