@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
-import argparse
+# stdlib imports
 import os
 
+# pip imports
+import argparse
 import chess
 
+# local imports
 from src.libs.chess_extra import ChessExtra
 from src.encoding.board_encoding import BoardEncoding
+from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
 from src.utils.dataset_utils import DatasetUtils
-from src.utils.pgn_utils import PGNUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.join(__dirname__, "..", "output")
@@ -25,7 +28,7 @@ if __name__ == "__main__":
 
     for i, (board_tensor, move_tensor, eval_tensor, move_index) in enumerate(zip(boards_tensor, moves_tensor, evals_tensor, moves_index)):
         board = BoardEncoding.board_from_tensor(board_tensor)
-        move_uci = BoardEncoding.move_from_tensor(move_tensor, board.turn)
+        move_uci = MoveEncoding.move_from_tensor(move_tensor, board.turn)
         eval = eval_tensor.item()
 
         print(f"Board: {'white' if board.turn == chess.WHITE else 'black'} to move - {move_uci}")

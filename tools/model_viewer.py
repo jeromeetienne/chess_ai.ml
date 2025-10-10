@@ -9,14 +9,16 @@ import argparse
 
 # local imports
 from src.encoding.board_encoding import BoardEncoding
+from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
 from src.utils.model_utils import ModelUtils
-from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 model_folder_path = os.path.join(__dirname__, "../output/model/")
 
-
+# =============================================================================
+# Main entry point
+# =============================================================================
 if __name__ == "__main__":
     # Parse command line arguments
     argParser = argparse.ArgumentParser(description="Benchmark different model architectures.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -30,7 +32,7 @@ if __name__ == "__main__":
     )
     args = argParser.parse_args()
     input_shape = BoardEncoding.get_input_shape()
-    output_shape = BoardEncoding.get_output_shape()
+    output_shape = MoveEncoding.get_output_shape()
 
     # Create the model
     model_name = args.model_name
