@@ -6,14 +6,8 @@
     ],
     "python.testing.autoTestDiscoverOnSaveEnabled": true,
     "python.envFile": "${workspaceFolder}/.env",
-    "python.analysis.extraPaths": [
-        "${workspaceFolder}/src"
-    ],
     "files.exclude": {
-        "**/__pycache__": true,
-        "output": true,
-        "data": true,
-        "tmp": true
+        "**/__pycache__": true
     },
     "makefile.configureOnOpen": false,
     // Set a ruler at 160 characters for better readability
