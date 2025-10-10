@@ -267,8 +267,11 @@ def main() -> None:
 
     # create server
     if args.mode == "named_pipe":
+        print("[ucinet_engine] Starting in named pipe mode", file=sys.stderr)
+        print(f"Point the gui to the named pipe proxy: ./tools/ucinet_named_pipe_proxy.py", file=sys.stderr)
         server = UciNetServerNamedPipe()
     elif args.mode == "stdio":
+        print("[ucinet_engine] Starting in stdio mode", file=sys.stderr)
         server = UciNetServerStdinStdout()
     else:
         raise ValueError(f"Unknown mode: {args.mode}")
