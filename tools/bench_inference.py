@@ -10,7 +10,7 @@ import torch
 
 # local imports
 from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.model_utils import ModelUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     # get an random input
     batch_size = 1
-    test_input = torch.randn(batch_size, *Encoding.get_input_shape(), dtype=torch.float32)
+    test_input = torch.randn(batch_size, *BoardEncoding.get_input_shape(), dtype=torch.float32)
     test_input = test_input.to(device)
 
     ###############################################################################

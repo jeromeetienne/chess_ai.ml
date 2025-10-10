@@ -73,6 +73,13 @@ if __name__ == "__main__":
         choices=ModelUtils.get_supported_models(),
         help="Model architecture to use for playing",
     )
+    argParser.add_argument(
+        "--max-ply",
+        "-mp",
+        type=int,
+        default=200,
+        help="Maximum number of ply (half-moves) for the game. Default is 200.",
+    )
     args = argParser.parse_args()
 
     if args.debug is True:
@@ -94,4 +101,5 @@ if __name__ == "__main__":
         opponent_tech=opponent_tech,
         stockfish_elo=args.stockfish_elo,
         stockfish_depth=args.stockfish_depth,
+        max_ply=args.max_ply,
     )

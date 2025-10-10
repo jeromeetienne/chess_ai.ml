@@ -2,7 +2,7 @@ import pytest
 import chess
 import torch
 
-from src.libs.move_encoding_az import MoveEncodingAz
+from src.encoding.move_encoding_az import MoveEncodingAz
 
 
 def test_encode_decode_roundtrip_simple_moves():

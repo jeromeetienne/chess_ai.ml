@@ -1,6 +1,6 @@
 import chess
 
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 
 
 if __name__ == "__main__":
@@ -11,14 +11,14 @@ if __name__ == "__main__":
     print(board)
 
     # Encode the board
-    board_tensor = Encoding.board_to_tensor(board)
+    board_tensor = BoardEncoding.board_to_tensor(board)
     # print("Encoded Board Tensor:")
     # print(board_tensor)
 
-    print('ff')
+    print("ff")
 
     # Decode the tensor back to a board
-    decoded_board = Encoding.board_from_tensor(board_tensor)
+    decoded_board = BoardEncoding.board_from_tensor(board_tensor)
     print("Decoded Board:")
     print(decoded_board)
 

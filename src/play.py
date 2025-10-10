@@ -10,7 +10,7 @@ import dotenv
 
 
 # local imports
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.model_utils import ModelUtils
 from src.utils.uci2class_utils import Uci2ClassUtils
 from .libs.chess_player import ChessPlayer
@@ -44,6 +44,7 @@ class PlayCommand:
         opponent_tech: opponent_tech_t = "stockfish",
         stockfish_elo: int = 1350,
         stockfish_depth: int = 10,
+        max_ply: int = 200,
     ):
         """
         Play a game of chess between ChessBotML and an opponent (human or Stockfish).
@@ -177,6 +178,10 @@ class PlayCommand:
                 game_outcome = typing.cast(chess.Outcome, board.outcome())
                 outcome_str = "1-0" if game_outcome.winner is True else "0-1" if game_outcome.winner is False else "1/2-1/2"
                 print(f"Game Over! outcome: {TermcolorUtils.cyan(outcome_str)}")
+                break
+
+            if board.fullmove_number * 2 >= max_ply:
+                print(f"Maximum number of ply ({max_ply}) reached. Declaring the game a draw.")
                 break
 
         ###############################################################################

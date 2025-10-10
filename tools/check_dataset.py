@@ -9,7 +9,7 @@ import argparse
 
 # local imports
 from src.libs.chess_extra import ChessExtra
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.pgn_utils import PGNUtils
 from src.utils.dataset_utils import DatasetUtils
 

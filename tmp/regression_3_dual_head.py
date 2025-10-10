@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 # local imports
 from src.libs.early_stopper import EarlyStopper
 from src.utils.dataset_utils import DatasetUtils
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.uci2class_utils import Uci2ClassUtils
 
 
@@ -34,7 +34,7 @@ class DualHeadModel(torch.nn.Module):
 
         # feature extractor
         self.conv_layers = torch.nn.Sequential(
-            torch.nn.Conv2d(in_channels=Encoding.get_input_shape()[0], out_channels=32, kernel_size=3, padding=1),
+            torch.nn.Conv2d(in_channels=BoardEncoding.get_input_shape()[0], out_channels=32, kernel_size=3, padding=1),
             torch.nn.ReLU(),
             torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
             torch.nn.ReLU(),
@@ -141,7 +141,7 @@ def train() -> None:
 
     # torch.manual_seed(42)
 
-    boards_tensor, moves_tensor, evals_tensor = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=20)
+    boards_tensor, moves_tensor, evals_tensor, _ = DatasetUtils.load_datasets(tensors_folder_path, max_file_count=20)
     # moves_tensor is a scalar class index per sample (int)
     evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
 
@@ -178,7 +178,7 @@ def train() -> None:
     # 2. Instantiate Model, Loss, and Optimizer
     ################################################################
     # Build dual-head model
-    num_classes = Encoding.get_output_shape()[0]
+    num_classes = BoardEncoding.get_output_shape()[0]
     model = DualHeadModel(num_classes=num_classes).to(device)
 
     # Losses: classification + regression

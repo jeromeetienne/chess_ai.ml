@@ -6,7 +6,7 @@ import os
 import chess
 
 from src.libs.chess_extra import ChessExtra
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
 
@@ -24,8 +24,8 @@ if __name__ == "__main__":
     boards_tensor, moves_tensor, evals_tensor, moves_index = DatasetUtils.load_datasets(tensors_folder_path, args.max_files_count)
 
     for i, (board_tensor, move_tensor, eval_tensor, move_index) in enumerate(zip(boards_tensor, moves_tensor, evals_tensor, moves_index)):
-        board = Encoding.board_from_tensor(board_tensor)
-        move_uci = Encoding.move_from_tensor(move_tensor, board.turn)
+        board = BoardEncoding.board_from_tensor(board_tensor)
+        move_uci = BoardEncoding.move_from_tensor(move_tensor, board.turn)
         eval = eval_tensor.item()
 
         print(f"Board: {'white' if board.turn == chess.WHITE else 'black'} to move - {move_uci}")

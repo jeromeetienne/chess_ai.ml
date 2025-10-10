@@ -11,7 +11,7 @@ from src.libs.chess_extra import ChessExtra
 from src.utils.uci2class_utils import Uci2ClassUtils
 
 
-class Encoding:
+class BoardEncoding:
 
     BOARD_DTYPE = torch.int32
     MOVE_DTYPE = torch.int32  # class index as long
@@ -26,7 +26,7 @@ class Encoding:
 
     @staticmethod
     def get_input_shape() -> tuple[int, int, int]:
-        return (Encoding.PLANE.PLANE_COUNT, 8, 8)
+        return (BoardEncoding.PLANE.PLANE_COUNT, 8, 8)
 
     class PLANE:
         ACTIVE_PAWN = 0
@@ -66,7 +66,7 @@ class Encoding:
         opponent_color = chess.WHITE if active_color == chess.BLACK else chess.BLACK
 
         # create an empty tensor - Use numpy first, it is 3-4 faster than torch for this
-        board_numpy = np.zeros(Encoding.get_input_shape(), dtype=np.uint16)
+        board_numpy = np.zeros(BoardEncoding.get_input_shape(), dtype=np.uint16)
 
         ###############################################################################
         #   Piece planes
@@ -88,34 +88,34 @@ class Encoding:
         #
 
         # repetition_planes = np.zeros((repetition_plane_count, 8, 8))
-        board_numpy[Encoding.PLANE.REPETITION_2, :, :] = board.is_repetition(2)
-        board_numpy[Encoding.PLANE.REPETITION_3, :, :] = board.is_repetition(3)
+        board_numpy[BoardEncoding.PLANE.REPETITION_2, :, :] = board.is_repetition(2)
+        board_numpy[BoardEncoding.PLANE.REPETITION_3, :, :] = board.is_repetition(3)
 
         ###############################################################################
         #   Metadata planes
         #
 
         # Active player color
-        board_numpy[Encoding.PLANE.TURN, :, :] = int(board.turn)  # 1 for white, 0 for black
+        board_numpy[BoardEncoding.PLANE.TURN, :, :] = int(board.turn)  # 1 for white, 0 for black
 
         # White player castling rights
-        board_numpy[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(board.turn)
-        board_numpy[Encoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(board.turn)
+        board_numpy[BoardEncoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(board.turn)
+        board_numpy[BoardEncoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(board.turn)
 
         # Black player castling rights
-        board_numpy[Encoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(opponent_color)
-        board_numpy[Encoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(opponent_color)
+        board_numpy[BoardEncoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, :, :] = board.has_kingside_castling_rights(opponent_color)
+        board_numpy[BoardEncoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, :, :] = board.has_queenside_castling_rights(opponent_color)
 
         # Half-move clock
-        board_numpy[Encoding.PLANE.HALFMOVE_CLOCK, :, :] = board.halfmove_clock
+        board_numpy[BoardEncoding.PLANE.HALFMOVE_CLOCK, :, :] = board.halfmove_clock
 
         # Full move number
-        board_numpy[Encoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
+        board_numpy[BoardEncoding.PLANE.FULLMOVE_NUMBER, :, :] = board.fullmove_number
 
         ###############################################################################
         #   Return the board tensor
         #
-        board_tensor = torch.tensor(board_numpy, dtype=Encoding.BOARD_DTYPE)
+        board_tensor = torch.tensor(board_numpy, dtype=BoardEncoding.BOARD_DTYPE)
 
         return board_tensor
 
@@ -125,12 +125,12 @@ class Encoding:
         convert a board tensor of shape (21, 8, 8) to a chess.Board object
         """
 
-        assert board_tensor.shape == Encoding.get_input_shape(), f"board_tensor shape must be {Encoding.get_input_shape()}, got {board_tensor.shape}"
+        assert board_tensor.shape == BoardEncoding.get_input_shape(), f"board_tensor shape must be {BoardEncoding.get_input_shape()}, got {board_tensor.shape}"
 
         board = chess.Board()
         board.clear()  # clear the board
 
-        active_color = bool(board_tensor[Encoding.PLANE.TURN, 0, 0].item())
+        active_color = bool(board_tensor[BoardEncoding.PLANE.TURN, 0, 0].item())
         opponent_color = not active_color
 
         ###############################################################################
@@ -165,34 +165,34 @@ class Encoding:
         #
 
         # set turn
-        board.turn = bool(board_tensor[Encoding.PLANE.TURN, 0, 0].item())
+        board.turn = bool(board_tensor[BoardEncoding.PLANE.TURN, 0, 0].item())
         # set fullmove number
-        board.fullmove_number = int(board_tensor[Encoding.PLANE.FULLMOVE_NUMBER, 0, 0].item())
+        board.fullmove_number = int(board_tensor[BoardEncoding.PLANE.FULLMOVE_NUMBER, 0, 0].item())
         # set castling rights
         castling_fen = ""
         if active_color == chess.WHITE:
-            if board_tensor[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "K"
-            if board_tensor[Encoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "Q"
-            if board_tensor[Encoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "k"
-            if board_tensor[Encoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "q"
         else:
-            if board_tensor[Encoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.OPPONENT_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "K"
-            if board_tensor[Encoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.OPPONENT_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "Q"
-            if board_tensor[Encoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.ACTIVE_KINGSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "k"
-            if board_tensor[Encoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
+            if board_tensor[BoardEncoding.PLANE.ACTIVE_QUEENSIDE_CASTLING_RIGHTS, 0, 0].item():
                 castling_fen += "q"
         if castling_fen == "":
             castling_fen = "-"
         board.set_castling_fen(castling_fen)
         # set halfmove clock
-        board.halfmove_clock = int(board_tensor[Encoding.PLANE.HALFMOVE_CLOCK, 0, 0].item())
+        board.halfmove_clock = int(board_tensor[BoardEncoding.PLANE.HALFMOVE_CLOCK, 0, 0].item())
 
         assert board.is_valid(), "Reconstructed board is not valid"
 
@@ -235,8 +235,8 @@ if __name__ == "__main__":
 
     print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'}")
 
-    board_tensor = Encoding.board_to_tensor(board)
+    board_tensor = BoardEncoding.board_to_tensor(board)
 
-    reconstructed_board = Encoding.board_from_tensor(board_tensor)
+    reconstructed_board = BoardEncoding.board_from_tensor(board_tensor)
     print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'}")
     print(reconstructed_board)

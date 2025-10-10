@@ -12,7 +12,7 @@ import torch
 
 # local imports
 from .libs.chess_extra import ChessExtra
-from .libs.encoding import Encoding
+from .encoding.board_encoding import BoardEncoding
 from .utils.dataset_utils import DatasetUtils
 from .utils.pgn_utils import PGNUtils
 

@@ -12,9 +12,9 @@ from tqdm import tqdm
 
 # local imports
 from src.libs.chess_extra import ChessExtra
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.uci2class_utils import Uci2ClassUtils
-from src.libs.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
+from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
 from src.utils.pgn_utils import PGNUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -229,13 +229,13 @@ class DatasetUtils:
         assert len(boards) == len(moves), f"len(boards)={len(boards)} != len(moves)={len(moves)}"
 
         # create tensors to hold the boards and moves
-        boards_tensor = torch.zeros((len(boards), *Encoding.get_input_shape()), dtype=Encoding.BOARD_DTYPE)
-        moves_tensor = torch.zeros((len(boards),), dtype=Encoding.MOVE_DTYPE)
+        boards_tensor = torch.zeros((len(boards), *BoardEncoding.get_input_shape()), dtype=BoardEncoding.BOARD_DTYPE)
+        moves_tensor = torch.zeros((len(boards),), dtype=BoardEncoding.MOVE_DTYPE)
 
         # iterate through all positions and encode them
         for position_index, (board, move) in enumerate(zip(boards, moves)):
             # encode the current board position
-            board_tensor = Encoding.board_to_tensor(board)
+            board_tensor = BoardEncoding.board_to_tensor(board)
             boards_tensor[position_index] = board_tensor
 
             # encode the best move in UCI format
@@ -285,7 +285,7 @@ class DatasetUtils:
             pgn_board = pgn_boards[i]
 
             # encode the board
-            tensor_board = Encoding.board_from_tensor(boards_tensor[i])
+            tensor_board = BoardEncoding.board_from_tensor(boards_tensor[i])
 
             # Check if the board positions are equal using FEN
             board_is_equal = pgn_board.board_fen() == tensor_board.board_fen()
@@ -322,8 +322,8 @@ class DatasetUtils:
     def dataset_summary(boards_tensor: torch.Tensor, moves_tensor: torch.Tensor, evals_tensor: torch.Tensor) -> str:
         summary = f"""Dataset Summary:
 - Total positions: {len(boards_tensor):,}
-- Input: size {Encoding.get_input_shape()} (Channels, Height, Width), type {Encoding.BOARD_DTYPE}
-- Output shape: size {moves_tensor.shape} (Scalar class index), type {Encoding.MOVE_DTYPE}
+- Input: size {BoardEncoding.get_input_shape()} (Channels, Height, Width), type {BoardEncoding.BOARD_DTYPE}
+- Output shape: size {moves_tensor.shape} (Scalar class index), type {BoardEncoding.MOVE_DTYPE}
 """
         return summary
 
@@ -368,12 +368,12 @@ if __name__ == "__main__":
 
     print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
 
-    board_tensor = Encoding.board_to_tensor(board)
+    board_tensor = BoardEncoding.board_to_tensor(board)
     move_tensor = MoveEncoding.move_to_tensor(move.uci(), board.turn)
 
     print(f"move_tensor: {move_tensor}")
 
-    reconstructed_board = Encoding.board_from_tensor(board_tensor)
+    reconstructed_board = BoardEncoding.board_from_tensor(board_tensor)
     reconstructed_move_uci = MoveEncoding.move_from_tensor(move_tensor, board.turn)
     reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
 

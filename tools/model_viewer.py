@@ -8,11 +8,9 @@ import torchview
 import argparse
 
 # local imports
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.model_utils import ModelUtils
 from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
-
-
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -31,8 +29,8 @@ if __name__ == "__main__":
         help="Model architecture to use for training",
     )
     args = argParser.parse_args()
-    input_shape = Encoding.get_input_shape()
-    output_shape = Encoding.get_output_shape()
+    input_shape = BoardEncoding.get_input_shape()
+    output_shape = BoardEncoding.get_output_shape()
 
     # Create the model
     model_name = args.model_name
@@ -41,10 +39,9 @@ if __name__ == "__main__":
     # Input size for the model visualization (batch size 1, 21 channels, 8x8 image)
     input_size = (1, *input_shape)  # (1, 21, 8, 8)
 
-
     # Generate the model graph visualization with expanded nested modules
     dst_folder = os.path.join(__dirname__, "../")
-    model_graph = torchview.draw_graph(model, input_size=input_size, expand_nested=True, filename='chess_model', directory=dst_folder)
+    model_graph = torchview.draw_graph(model, input_size=input_size, expand_nested=True, filename="chess_model", directory=dst_folder)
 
     # # # Display the visual graph (in Jupyter, this will show the image)
     visual = model_graph.visual_graph

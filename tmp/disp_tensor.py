@@ -11,7 +11,7 @@ import chess.polyglot
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
 from src.libs.chess_extra import ChessExtra
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         # print(board_tensor)
 
         board_numpy = board_tensor.numpy()
-        feature_plane = board_numpy[Encoding.PLANE.ACTIVE_PAWN]
+        feature_plane = board_numpy[BoardEncoding.PLANE.ACTIVE_PAWN]
         print(f"Feature plane for active pawn:")
         print(feature_plane)
 

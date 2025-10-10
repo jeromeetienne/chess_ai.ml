@@ -9,7 +9,7 @@ from tqdm import tqdm
 # local imports
 from src.libs.chess_extra import ChessExtra
 from src.utils.uci2class_utils import Uci2ClassUtils
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 
 
 class MoveEncodingUci2Class:
@@ -18,7 +18,7 @@ class MoveEncodingUci2Class:
     def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
         uci2class = Uci2ClassUtils.get_uci2class(color)
         class_index = uci2class[move_uci]
-        move_tensor = torch.tensor(class_index, dtype=Encoding.MOVE_DTYPE)
+        move_tensor = torch.tensor(class_index, dtype=BoardEncoding.MOVE_DTYPE)
         return move_tensor
 
     @staticmethod

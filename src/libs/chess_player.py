@@ -11,7 +11,7 @@ import numpy as np
 
 # local imports
 from ..utils.uci2class_utils import Uci2ClassUtils
-from .encoding import Encoding
+from ..encoding.board_encoding import BoardEncoding
 from ..puct.policyvaluenet_mine import PolicyValueNetMine
 from ..puct.puct_batch import PUCTBatch
 from ..puct.gamestate_chess import ChessGameState
@@ -116,7 +116,7 @@ class ChessPlayer:
         device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
         # print(f"Using device: {device}")
 
-        boards_tensor = Encoding.board_to_tensor(board).unsqueeze(0).to(device)
+        boards_tensor = BoardEncoding.board_to_tensor(board).unsqueeze(0).to(device)
 
         # Set the model to evaluation mode
         self._model.eval()

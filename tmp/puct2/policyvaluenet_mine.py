@@ -13,7 +13,7 @@ from .gamestate_abc import GameState
 from .gamestate_chess import ChessGameState
 from .policyvaluenet_abc import PolicyValueNet
 from src.utils.model_utils import ModelUtils
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.uci2class_utils import Uci2ClassUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,7 @@ class PolicyValueNetMine(PolicyValueNet):
 
         chessState: ChessGameState = typing.cast(ChessGameState, state)
         board = chessState.board
-        board_tensor = Encoding.board_to_tensor(board)
+        board_tensor = BoardEncoding.board_to_tensor(board)
 
         # add the batch dimension and move to the device
         board_tensor = board_tensor.unsqueeze(0).to(self._device)
@@ -79,7 +79,7 @@ class PolicyValueNetMine(PolicyValueNet):
         for state in states:
             chessState = typing.cast(ChessGameState, state)
             chess_states.append(chessState)
-            board_tensors.append(Encoding.board_to_tensor(chessState.board))
+            board_tensors.append(BoardEncoding.board_to_tensor(chessState.board))
 
         batch = torch.stack(board_tensors, dim=0).to(self._device)
 

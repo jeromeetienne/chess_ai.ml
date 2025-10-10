@@ -14,7 +14,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # local imports
-from .libs.encoding import Encoding
+from .encoding.board_encoding import BoardEncoding
 from .libs.chess_model import ChessModelResNet, ChessModelConv2d
 from .libs.early_stopper import EarlyStopper
 from .utils.dataset_utils import DatasetUtils

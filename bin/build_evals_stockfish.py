@@ -14,7 +14,7 @@ import argparse
 import dotenv
 
 # local imports
-from src.libs.encoding import Encoding
+from src.encoding.board_encoding import BoardEncoding
 from src.utils.dataset_utils import DatasetUtils
 
 # Init dotenv to load environment variables from .env file
@@ -90,7 +90,7 @@ class AnalyserEnginePool:
             try:
                 # get chess.Board from tensor
                 board_tensor = boards_tensor[board_index]
-                board = Encoding.board_from_tensor(board_tensor)
+                board = BoardEncoding.board_from_tensor(board_tensor)
                 # analyse the board
                 info_dict = await engine.analyse(board, chess.engine.Limit(depth=max_depth), info=chess.engine.INFO_SCORE)
                 # extract the pov score
@@ -184,7 +184,7 @@ async def main(max_depth: int = 12, logical_cores: int | None = None) -> None:
         unified_scores: list[float] = [unify_engine_score(relative_score) for relative_score in relative_scores]
 
         # build eval tensor
-        eval_tensor = torch.tensor(unified_scores, dtype=Encoding.EVAL_DTYPE)
+        eval_tensor = torch.tensor(unified_scores, dtype=BoardEncoding.EVAL_DTYPE)
 
         # Save eval tensor
         torch.save(eval_tensor, evals_path)
