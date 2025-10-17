@@ -4,7 +4,7 @@ import chess
 import torch
 
 
-class MoveEncodingAz:
+class MoveEncodingAlphaZero:
     """Container for move encoding ala AlphaZero.
 
     From "Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm"  https://arxiv.org/pdf/1712.01815:
@@ -25,7 +25,7 @@ class MoveEncodingAz:
     # create a static property accesor for .OUTPUT_SHAPE
     @staticmethod
     def get_output_shape() -> tuple[int, int, int]:
-        return MoveEncodingAz.TENSOR_SHAPE
+        return MoveEncodingAlphaZero.TENSOR_SHAPE
 
     # =============================================================================
     # Constants and encoding/decoding functions
@@ -65,10 +65,10 @@ class MoveEncodingAz:
         """
         Return a tensor of shape (73, 8, 8) with 1 at move location and 0 elsewhere.
         """
-        from_square, plane = MoveEncodingAz._move_to_square_plane(move, color_to_move)
+        from_square, plane = MoveEncodingAlphaZero._move_to_square_plane(move, color_to_move)
 
         rank, file = divmod(from_square, 8)
-        move_tensor = torch.zeros(MoveEncodingAz.TENSOR_SHAPE, dtype=torch.float32)
+        move_tensor = torch.zeros(MoveEncodingAlphaZero.TENSOR_SHAPE, dtype=torch.float32)
         move_tensor[plane, rank, file] = 1.0
         return move_tensor
 
@@ -77,7 +77,7 @@ class MoveEncodingAz:
         """
         Decode a tensor of shape (73, 8, 8) back to a python-chess Move object.
         """
-        if move_tensor.shape != MoveEncodingAz.TENSOR_SHAPE:
+        if move_tensor.shape != MoveEncodingAlphaZero.TENSOR_SHAPE:
             raise ValueError("Invalid tensor shape")
 
         nonzero_indices = torch.nonzero(move_tensor)
@@ -87,7 +87,7 @@ class MoveEncodingAz:
         plane, rank, file = nonzero_indices[0].tolist()
         from_square = rank * 8 + file
 
-        move = MoveEncodingAz._move_from_square_plane(from_square, plane, color_to_move)
+        move = MoveEncodingAlphaZero._move_from_square_plane(from_square, plane, color_to_move)
 
         return move
 
@@ -109,40 +109,40 @@ class MoveEncodingAz:
 
         # 1. Underpromotion (must be checked before sliding moves so underpromotions
         #    to N/B/R are encoded in the last 9 planes rather than as a slide)
-        if move.promotion in MoveEncodingAz.PROMOTION_PIECES:
+        if move.promotion in MoveEncodingAlphaZero.PROMOTION_PIECES:
             px_dir = 1 if color_to_move == chess.WHITE else -1
             rel_dx = tx - fx
             rel_dy = ty - fy
-            for dir_idx, (px, py) in enumerate(MoveEncodingAz.PROMOTION_DIRS):
+            for dir_idx, (px, py) in enumerate(MoveEncodingAlphaZero.PROMOTION_DIRS):
                 expected_dx = px * px_dir
                 expected_dy = py
                 if rel_dx == expected_dx and rel_dy == expected_dy:
-                    promo_type_index = MoveEncodingAz.PROMOTION_PIECES.index(move.promotion)
+                    promo_type_index = MoveEncodingAlphaZero.PROMOTION_PIECES.index(move.promotion)
                     plane = 64 + dir_idx * 3 + promo_type_index  # 64–72
                     return from_square, plane
 
         # 2. Sliding moves
-        for dir_index, (sx, sy) in enumerate(MoveEncodingAz.SLIDING_DIRS):
+        for dir_index, (sx, sy) in enumerate(MoveEncodingAlphaZero.SLIDING_DIRS):
             for distance in range(1, 8):
                 if (dx == sx * distance) and (dy == sy * distance):
                     plane = dir_index * 7 + (distance - 1)  # 0–55
                     return from_square, plane
 
         # 3. Knight moves
-        for knight_index, (kx, ky) in enumerate(MoveEncodingAz.KNIGHT_DIRS):
+        for knight_index, (kx, ky) in enumerate(MoveEncodingAlphaZero.KNIGHT_DIRS):
             if (dx == kx) and (dy == ky):
                 plane = 56 + knight_index  # 56–63
                 return from_square, plane
 
         # 3. Underpromotion
-        if move.promotion in MoveEncodingAz.PROMOTION_PIECES:
+        if move.promotion in MoveEncodingAlphaZero.PROMOTION_PIECES:
             px_dir = 1 if color_to_move == chess.WHITE else -1
             rel_dx = tx - fx
             rel_dy = ty - fy
             if rel_dx == px_dir:
-                for dir_idx, (px, py) in enumerate(MoveEncodingAz.PROMOTION_DIRS):
+                for dir_idx, (px, py) in enumerate(MoveEncodingAlphaZero.PROMOTION_DIRS):
                     if px == rel_dx and py == rel_dy:
-                        promo_type_index = MoveEncodingAz.PROMOTION_PIECES.index(move.promotion)
+                        promo_type_index = MoveEncodingAlphaZero.PROMOTION_PIECES.index(move.promotion)
                         plane = 64 + dir_idx * 3 + promo_type_index  # 64–72
                         return from_square, plane
 
@@ -161,7 +161,7 @@ class MoveEncodingAz:
         if 0 <= plane <= 55:
             dir_index = plane // 7
             distance = (plane % 7) + 1
-            sx, sy = MoveEncodingAz.SLIDING_DIRS[dir_index]
+            sx, sy = MoveEncodingAlphaZero.SLIDING_DIRS[dir_index]
             tx = fx + sx * distance
             ty = fy + sy * distance
 
@@ -178,7 +178,7 @@ class MoveEncodingAz:
         # --- 2. Knight moves ---
         if 56 <= plane <= 63:
             knight_index = plane - 56
-            kx, ky = MoveEncodingAz.KNIGHT_DIRS[knight_index]
+            kx, ky = MoveEncodingAlphaZero.KNIGHT_DIRS[knight_index]
             tx = fx + kx
             ty = fy + ky
 
@@ -193,13 +193,13 @@ class MoveEncodingAz:
             dir_index = promo_plane // 3  # 0,1,2 for (↑, ↗, ↖)
             promo_index = promo_plane % 3  # 0 = knight, 1 = bishop, 2 = rook
 
-            sx, sy = MoveEncodingAz.PROMOTION_DIRS[dir_index]
+            sx, sy = MoveEncodingAlphaZero.PROMOTION_DIRS[dir_index]
             tx = fx + sx * px_dir  # Only forward by 1
             ty = fy + sy
 
             if 0 <= tx < 8 and 0 <= ty < 8:
                 to_sq = tx * 8 + ty
-                promo_piece = MoveEncodingAz.PROMOTION_PIECES[promo_index]
+                promo_piece = MoveEncodingAlphaZero.PROMOTION_PIECES[promo_index]
                 return chess.Move(from_square, to_sq, promotion=promo_piece)
 
         # raise an exception if move is illegal or cannot be decoded
@@ -214,7 +214,7 @@ class MoveEncodingAz:
         """
         Return a description of the move's encoding plane.
         """
-        from_square, plane = MoveEncodingAz._move_to_square_plane(move, color_to_move)
+        from_square, plane = MoveEncodingAlphaZero._move_to_square_plane(move, color_to_move)
 
         fx, fy = divmod(from_square, 8)
         from_name = chess.square_name(from_square)
@@ -223,13 +223,13 @@ class MoveEncodingAz:
         if 0 <= plane <= 55:
             dir_index = plane // 7
             distance = (plane % 7) + 1
-            direction = MoveEncodingAz.DIRECTION_NAMES[dir_index]
+            direction = MoveEncodingAlphaZero.DIRECTION_NAMES[dir_index]
             output_str = f"Slide {direction} by {distance} from {from_name}"
 
         # Knight moves:
         elif 56 <= plane <= 63:
             knight_index = plane - 56
-            delta_desc = MoveEncodingAz.KNIGHT_NAMES[knight_index]
+            delta_desc = MoveEncodingAlphaZero.KNIGHT_NAMES[knight_index]
             output_str = f"Knight jump {delta_desc} from {from_name}"
 
         # Underpromotion:
@@ -237,8 +237,8 @@ class MoveEncodingAz:
             promo_plane = plane - 64
             dir_index = promo_plane // 3
             promo_index = promo_plane % 3
-            direction_name = MoveEncodingAz.PROMO_DIR_NAMES[dir_index]
-            promo_piece = MoveEncodingAz.PROMO_PIECE_NAMES[MoveEncodingAz.PROMOTION_PIECES[promo_index]]
+            direction_name = MoveEncodingAlphaZero.PROMO_DIR_NAMES[dir_index]
+            promo_piece = MoveEncodingAlphaZero.PROMO_PIECE_NAMES[MoveEncodingAlphaZero.PROMOTION_PIECES[promo_index]]
             output_str = f"Underpromotion {direction_name} to {promo_piece} from {from_name}"
 
         else:
@@ -252,9 +252,9 @@ class MoveEncodingAz:
         Return a tensor (73, 8, 8) marking all legal moves with 1.0 at their encoded planes.
         Useful for masking policy logits.
         """
-        move_mask_tensor = torch.zeros(MoveEncodingAz.TENSOR_SHAPE, dtype=torch.float32)
+        move_mask_tensor = torch.zeros(MoveEncodingAlphaZero.TENSOR_SHAPE, dtype=torch.float32)
         for move in board.legal_moves:
-            from_square, plane = MoveEncodingAz._move_to_square_plane(move, board.turn)
+            from_square, plane = MoveEncodingAlphaZero._move_to_square_plane(move, board.turn)
             rank, file = divmod(from_square, 8)
             move_mask_tensor[plane, rank, file] = 1.0
         return move_mask_tensor
@@ -270,21 +270,21 @@ if __name__ == "__main__":
     # =============================================================================
     # legal move mask
     # =============================================================================
-    move_tensor = MoveEncodingAz.encode_move_tensor(move, board.turn)
-    legal_mask_tensor = MoveEncodingAz.encode_legal_moves_mask(board)
+    move_tensor = MoveEncodingAlphaZero.encode_move_tensor(move, board.turn)
+    legal_mask_tensor = MoveEncodingAlphaZero.encode_legal_moves_mask(board)
 
     print("Single move encoding (non-zero count):", move_tensor.sum().item())
     print("Legal move mask count:", legal_mask_tensor.sum().item())
     print("Legal move count:", board.legal_moves.count())
 
     # Encode
-    from_square, plane = MoveEncodingAz._move_to_square_plane(move, board.turn)
+    from_square, plane = MoveEncodingAlphaZero._move_to_square_plane(move, board.turn)
     print(f"Encoded: from_square={from_square}, plane={plane}")
 
     # Decode
-    decoded_move = MoveEncodingAz._move_from_square_plane(from_square, plane, board.turn)
+    decoded_move = MoveEncodingAlphaZero._move_from_square_plane(from_square, plane, board.turn)
     assert decoded_move != None, "Decoding failed"
     print("Decoded move:", decoded_move, "→", decoded_move.uci())
 
-    explanation = MoveEncodingAz.move_to_string(decoded_move, board.turn)
+    explanation = MoveEncodingAlphaZero.move_to_string(decoded_move, board.turn)
     print("Explanation:", explanation)
