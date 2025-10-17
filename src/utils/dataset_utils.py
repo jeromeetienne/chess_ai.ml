@@ -239,7 +239,7 @@ class DatasetUtils:
             boards_tensor[position_index] = board_tensor
 
             # encode the best move in UCI format
-            moves_tensor[position_index] = MoveEncoding.encode_move_tensor(move.uci(), board.turn)
+            moves_tensor[position_index] = MoveEncoding.encode_move_tensor(move, board.turn)
 
         # return the boards, moves and the mapping
         return boards_tensor, moves_tensor
@@ -298,8 +298,7 @@ class DatasetUtils:
 
             # encode the move
             pgn_move = pgn_moves[i]
-            move_uci = MoveEncoding.decode_move_tensor(moves_tensor[i], tensor_board.turn)
-            tensor_move = chess.Move.from_uci(move_uci)
+            tensor_move = MoveEncoding.decode_move_tensor(moves_tensor[i], tensor_board.turn)
 
             # Check if the moves are equal
             if pgn_move != tensor_move:
@@ -369,13 +368,12 @@ if __name__ == "__main__":
     print(f"Current board: {'white' if board.turn == chess.WHITE else 'black'} move {move.uci()}\n{board}")
 
     board_tensor = BoardEncoding.board_to_tensor(board)
-    move_tensor = MoveEncoding.encode_move_tensor(move.uci(), board.turn)
+    move_tensor = MoveEncoding.encode_move_tensor(move, board.turn)
 
     print(f"move_tensor: {move_tensor}")
 
     reconstructed_board = BoardEncoding.board_from_tensor(board_tensor)
-    reconstructed_move_uci = MoveEncoding.decode_move_tensor(move_tensor, board.turn)
-    reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
+    reconstructed_move = MoveEncoding.decode_move_tensor(move_tensor, board.turn)
 
     print(f"Reconstructed board: {'white' if reconstructed_board.turn == chess.WHITE else 'black'} move {reconstructed_move.uci()}")
     print(reconstructed_board)
