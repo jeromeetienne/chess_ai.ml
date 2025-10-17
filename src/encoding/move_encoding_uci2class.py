@@ -21,14 +21,14 @@ class MoveEncodingUci2Class:
     # move_to_tensor/move_from_tensor
     # =============================================================================
     @staticmethod
-    def move_to_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
+    def encode_move_tensor(move_uci: str, color: chess.Color) -> torch.Tensor:
         uci2class = Uci2ClassUtils.get_uci2class(color)
         class_index = uci2class[move_uci]
         move_tensor = torch.tensor(class_index, dtype=MoveEncodingUci2Class.MOVE_DTYPE)
         return move_tensor
 
     @staticmethod
-    def move_from_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
+    def decode_move_tensor(moves_tensor: torch.Tensor, color: chess.Color) -> str:
         """
         Converts a scalar move tensor representing a class index into its corresponding UCI move string.
 
@@ -51,8 +51,8 @@ if __name__ == "__main__":
     move = chess.Move.from_uci("a2a3")
     turn = chess.WHITE
 
-    move_tensor = MoveEncodingUci2Class.move_to_tensor(move.uci(), turn)
-    reconstructed_move_uci = MoveEncodingUci2Class.move_from_tensor(move_tensor, turn)
+    move_tensor = MoveEncodingUci2Class.encode_move_tensor(move.uci(), turn)
+    reconstructed_move_uci = MoveEncodingUci2Class.decode_move_tensor(move_tensor, turn)
     reconstructed_move = chess.Move.from_uci(reconstructed_move_uci)
     assert move == reconstructed_move
 

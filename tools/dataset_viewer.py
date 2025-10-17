@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     for i, (board_tensor, move_tensor, eval_tensor, move_index) in enumerate(zip(boards_tensor, moves_tensor, evals_tensor, moves_index)):
         board = BoardEncoding.board_from_tensor(board_tensor)
-        move_uci = MoveEncoding.move_from_tensor(move_tensor, board.turn)
+        move_uci = MoveEncoding.decode_move_tensor(move_tensor, board.turn)
         eval = eval_tensor.item()
 
         print(f"Board: {'white' if board.turn == chess.WHITE else 'black'} to move - {move_uci}")
