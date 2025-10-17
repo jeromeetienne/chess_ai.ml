@@ -4,8 +4,9 @@ help: ## show this help
 # ===============================================================================
 #   Test targets
 # ===============================================================================
+
 lint: ## Run lint checker on source files
-	pyright bin/**/*.py src/**/*.py tools/**/*.py tests/**/*.py
+	pyright bin/ src/ tools/ tests/
 
 pytest: ## Run pytest on test files
 	pytest -v tests/
