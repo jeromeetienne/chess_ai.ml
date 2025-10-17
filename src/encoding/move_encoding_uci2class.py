@@ -2,14 +2,9 @@
 import numpy as np
 import torch
 import chess
-import chess.pgn
-import chess.polyglot
-from tqdm import tqdm
 
 # local imports
-from src.libs.chess_extra import ChessExtra
 from src.utils.uci2class_utils import Uci2ClassUtils
-from src.encoding.board_encoding import BoardEncoding
 
 
 class MoveEncodingUci2Class:
