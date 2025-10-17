@@ -1,12 +1,8 @@
 # stdlib imports
 import os
-from pyexpat import model
-import sys
 import time
-import typing
 
 # pip imports
-import chess
 import tqdm
 import torch
 
@@ -66,8 +62,8 @@ class TrainCommand:
         # =============================================================================
 
         # Convert evals_tensor to numpy and display min/max
-        evals_np = evals_tensor.cpu().numpy()
-        print(f"evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
+        # evals_np = evals_tensor.cpu().numpy()
+        # print(f"evals_tensor: min={evals_np.min():.4f}, max={evals_np.max():.4f}")
 
         # Normalize evals to range [-1, 1] using sigmoid-like scaling
         # evals_tensor = DatasetUtils.normalize_evals_tensor(evals_tensor)
@@ -221,8 +217,8 @@ class TrainCommand:
                 TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, valid_loss, model)
 
                 # Now test the model on the test set
-                eval_accuracy = TrainCommand.evaluate_model_accuracy(model, test_dataloader, device)
-                print(f"Accuracy on test set: {eval_accuracy:.2f}%")
+                eval_cls_accuracy, eval_reg_mae = TrainCommand.evaluate_model(model, test_dataloader, device)
+                print(f"Test dataset: classification accuracy: {eval_cls_accuracy:.2f}% - regression MAE: {eval_reg_mae:.4f}")
 
             # honor must_stop: Stop training if no improvement for 'patience' epochs
             if must_stop:
@@ -234,8 +230,8 @@ class TrainCommand:
         print("Training complete.")
 
         # Now test the model on the test set
-        eval_accuracy = TrainCommand.evaluate_model_accuracy(model, test_dataloader, device)
-        print(f"Accuracy on test set: {eval_accuracy:.2f}%")
+        eval_cls_accuracy, eval_reg_mae = TrainCommand.evaluate_model(model, test_dataloader, device)
+        print(f"Test dataset: classification accuracy: {eval_cls_accuracy:.2f}% - regression MAE: {eval_reg_mae:.4f}")
 
     # =============================================================================
     # Helper methods
@@ -480,11 +476,16 @@ class TrainCommand:
         return valid_loss, valid_cls_loss, valid_reg_loss
 
     @staticmethod
-    def evaluate_model_accuracy(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, device: str) -> float:
+    def evaluate_model(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader, device: str) -> tuple[float, float]:
+        """
+        Evaluate the classification accuracy of the model on the given dataloader.
+        """
         # FIXME this function is buggy ?
         model.eval()
-        correct = 0
-        total = 0
+        accuracy_correct = 0
+        accuracy_total = 0
+        total_mae = 0.0
+        total_samples = 0
         with torch.no_grad():
             for boards_tensor, moves_tensor, evals_tensor in dataloader:
                 # Move tensors to the appropriate device
@@ -492,14 +493,19 @@ class TrainCommand:
                 moves_tensor = moves_tensor.to(device)
                 evals_tensor = evals_tensor.to(device)
 
-                # FIXME evaluate_model_accuracy() doesnt measure evals accuracy
-
                 # Model forward pass
                 move_logits, eval_pred = model(boards_tensor)
 
                 _, move_predictions = torch.max(move_logits, 1)  # Get the index of the max log-probability
-                total += moves_tensor.size(0)
-                correct += (move_predictions == moves_tensor).sum().item()
+                accuracy_total += moves_tensor.size(0)
+                accuracy_correct += (move_predictions == moves_tensor).sum().item()
 
-        accuracy = 100 * correct / total
-        return accuracy
+                # Compute Mean Absolute Error (MAE)
+                mae = torch.abs(eval_pred - evals_tensor).sum().item()
+                total_mae += mae
+                total_samples += evals_tensor.size(0)
+
+        mean_accuracy = 100 * accuracy_correct / accuracy_total
+        average_mae = total_mae / total_samples
+
+        return mean_accuracy, average_mae
