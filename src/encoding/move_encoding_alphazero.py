@@ -1,9 +1,12 @@
 # https://chatgpt.com/c/68e7d930-69ac-832b-8ae5-5fac5a399f6c
 
+# stdlib imports
+import math
+
+# pip imports
 import chess
 import torch
 import time
-import math
 
 
 class MoveEncodingAlphaZero:
@@ -22,14 +25,20 @@ class MoveEncodingAlphaZero:
     - Queen moves 56
     - Knight moves 8
     - Underpromotions 9
+
+    NOTE: the tensor representation is a single integer tensor representing the class index.
     """
 
     # create a static property accesor for .OUTPUT_SHAPE
     @staticmethod
-    def get_output_shape() -> tuple[int]:
-        tensor_shape: tuple[int, int, int] = MoveEncodingAlphaZero.TENSOR_SHAPE
-        output_shape: tuple[int] = (math.prod(tensor_shape),)
+    def get_shape_tensor_output() -> tuple[int]:
+        output_shape: tuple[int] = (MoveEncodingAlphaZero.CLASS_COUNT,)
         return output_shape
+
+    @staticmethod
+    def get_shape_tensor_classindex() -> tuple[int]:
+        classindex_shape: tuple[int] = (1,)
+        return classindex_shape
 
     # =============================================================================
     # Constants and encoding/decoding functions
@@ -37,8 +46,14 @@ class MoveEncodingAlphaZero:
     MOVE_DTYPE = torch.int32  # class index as long
     """Tensor dtype for move encoding."""
 
-    TENSOR_SHAPE = (73, 8, 8)
-    """Shape of the move encoding tensor: (planes, ranks, files)."""
+    PLANE_COUNT = 73
+    """Number of planes in the move encoding."""
+
+    CLASS_COUNT = PLANE_COUNT * 8 * 8
+    """Total number of move classes (73 planes x 64 from-squares)."""
+
+    # TENSOR_SHAPE = (73, 8, 8)
+    # """Shape of the move encoding tensor: (planes, ranks, files)."""
 
     SLIDING_DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
     """Directions for sliding pieces: N, S, E, W, NE, NW, SE, SW."""
@@ -65,32 +80,36 @@ class MoveEncodingAlphaZero:
     """Human-readable names for underpromotion directions."""
 
     @staticmethod
-    def encode_move_tensor(move: chess.Move, color_to_move: chess.Color) -> torch.Tensor:
+    def encode_move_tensor_classindex(move: chess.Move, color_to_move: chess.Color) -> torch.Tensor:
         """
         Return a tensor of shape (73, 8, 8) with 1 at move location and 0 elsewhere.
         """
         from_square, plane = MoveEncodingAlphaZero._move_to_square_plane(move, color_to_move)
 
-        rank, file = divmod(from_square, 8)
-        move_tensor = torch.zeros(MoveEncodingAlphaZero.TENSOR_SHAPE, dtype=torch.float32)
-        move_tensor[plane, rank, file] = 1.0
+        # compute class index
+        class_index = plane * 64 + from_square
+        # create tensor with single class_index
+        move_tensor = torch.tensor(class_index, dtype=MoveEncodingAlphaZero.MOVE_DTYPE).reshape(MoveEncodingAlphaZero.get_shape_tensor_classindex())
         return move_tensor
 
     @staticmethod
-    def decode_move_tensor(move_tensor: torch.Tensor, color_to_move: chess.Color) -> chess.Move:
+    def decode_move_tensor_classindex(move_tensor: torch.Tensor, color_to_move: chess.Color) -> chess.Move:
         """
-        Decode a tensor of shape (73, 8, 8) back to a python-chess Move object.
+        Decode a tensor of shape (73*8*8,) back to a python-chess Move object.
         """
-        if move_tensor.shape != MoveEncodingAlphaZero.TENSOR_SHAPE:
+        if move_tensor.shape != MoveEncodingAlphaZero.get_shape_tensor_classindex():
             raise ValueError("Invalid tensor shape")
 
-        nonzero_indices = torch.nonzero(move_tensor)
-        if nonzero_indices.size(0) != 1:
-            raise ValueError("Invalid tensor content Must have exactly one non-zero entry")
+        # extract the single class index
+        class_index = int(move_tensor.item())
 
-        plane, rank, file = nonzero_indices[0].tolist()
-        from_square = rank * 8 + file
+        if class_index < 0 or class_index >= MoveEncodingAlphaZero.CLASS_COUNT:
+            raise ValueError("Invalid class index in tensor")
 
+        # derive from_square and plane from class_index
+        plane = class_index // 64
+        from_square = class_index % 64
+        # decode move from from_square and plane
         move = MoveEncodingAlphaZero._move_from_square_plane(from_square, plane, color_to_move)
 
         return move
@@ -101,7 +120,16 @@ class MoveEncodingAlphaZero:
 
     @staticmethod
     def _move_to_square_plane(move: chess.Move, color_to_move: chess.Color) -> tuple[int, int]:
-        """Return (from_square, plane) or None."""
+        """
+        Encode a python-chess Move object into (from_square, plane).
+
+        Returns:
+            from_square (int): The square index (0-63) from which the piece is moved.
+            plane (int): The encoding plane index (0-72) representing the move type.
+
+        Raises:
+            ValueError: If the move cannot be encoded.
+        """
         from_square = move.from_square
         to_square = move.to_square
 
@@ -157,7 +185,16 @@ class MoveEncodingAlphaZero:
     def _move_from_square_plane(from_square: int, plane: int, color_to_move: chess.Color) -> chess.Move:
         """
         Decode a (from_square, plane) back to a python-chess Move object.
-        Returns None if decoding leads to an illegal move.
+
+        Arguments:
+            from_square (int): The square index (0-63) from which the piece is moved.
+            plane (int): The encoding plane index (0-72) representing the move type
+
+        Returns:
+            chess.Move: The decoded move.
+
+        Raises:
+            ValueError: If the move cannot be decoded.
         """
         fx, fy = divmod(from_square, 8)
 
@@ -250,18 +287,18 @@ class MoveEncodingAlphaZero:
 
         return output_str
 
-    @staticmethod
-    def encode_legal_moves_mask(board: chess.Board) -> torch.Tensor:
-        """
-        Return a tensor (73, 8, 8) marking all legal moves with 1.0 at their encoded planes.
-        Useful for masking policy logits.
-        """
-        move_mask_tensor = torch.zeros(MoveEncodingAlphaZero.TENSOR_SHAPE, dtype=torch.float32)
-        for move in board.legal_moves:
-            from_square, plane = MoveEncodingAlphaZero._move_to_square_plane(move, board.turn)
-            rank, file = divmod(from_square, 8)
-            move_mask_tensor[plane, rank, file] = 1.0
-        return move_mask_tensor
+    # @staticmethod
+    # def encode_legal_moves_mask(board: chess.Board) -> torch.Tensor:
+    #     """
+    #     Return a tensor (73, 8, 8) marking all legal moves with 1.0 at their encoded planes.
+    #     Useful for masking policy logits.
+    #     """
+    #     move_mask_tensor = torch.zeros(MoveEncodingAlphaZero.TENSOR_SHAPE, dtype=torch.float32)
+    #     for move in board.legal_moves:
+    #         from_square, plane = MoveEncodingAlphaZero._move_to_square_plane(move, board.turn)
+    #         rank, file = divmod(from_square, 8)
+    #         move_mask_tensor[plane, rank, file] = 1.0
+    #     return move_mask_tensor
 
 
 # =============================================================================
@@ -274,11 +311,11 @@ if __name__ == "__main__":
     # =============================================================================
     # legal move mask
     # =============================================================================
-    move_tensor = MoveEncodingAlphaZero.encode_move_tensor(move, board.turn)
-    legal_mask_tensor = MoveEncodingAlphaZero.encode_legal_moves_mask(board)
+    move_tensor = MoveEncodingAlphaZero.encode_move_tensor_classindex(move, board.turn)
+    # legal_mask_tensor = MoveEncodingAlphaZero.encode_legal_moves_mask(board)
 
     print("Single move encoding (non-zero count):", move_tensor.sum().item())
-    print("Legal move mask count:", legal_mask_tensor.sum().item())
+    # print("Legal move mask count:", legal_mask_tensor.sum().item())
     print("Legal move count:", board.legal_moves.count())
 
     # Encode
@@ -302,13 +339,13 @@ if __name__ == "__main__":
     # Benchmark .encode_move_tensor
     start_time = time.perf_counter()
     for _ in range(bench_iterations):
-        MoveEncodingAlphaZero.encode_move_tensor(move, board.turn)
+        MoveEncodingAlphaZero.encode_move_tensor_classindex(move, board.turn)
     end_time = time.perf_counter()
     print(f"Encoding time: {bench_iterations/(end_time - start_time):.0f} time per seconds")
 
     # Benchmark .decode_move_tensor
     start_time = time.perf_counter()
     for _ in range(bench_iterations):
-        MoveEncodingAlphaZero.decode_move_tensor(move_tensor, board.turn)
+        MoveEncodingAlphaZero.decode_move_tensor_classindex(move_tensor, board.turn)
     end_time = time.perf_counter()
     print(f"Decoding time: {bench_iterations/(end_time - start_time):.0f} time per seconds")

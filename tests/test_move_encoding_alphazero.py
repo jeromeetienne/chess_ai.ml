@@ -10,16 +10,16 @@ def test_encode_decode_roundtrip_simple_moves():
 
     # pawn two-step
     move_1 = chess.Move.from_uci("e2e4")
-    tensor_1 = MoveEncodingAlphaZero.encode_move_tensor(move_1, board.turn)
-    assert tensor_1.shape == MoveEncodingAlphaZero.TENSOR_SHAPE
-    move_decoded_1 = MoveEncodingAlphaZero.decode_move_tensor(tensor_1, board.turn)
+    tensor_1 = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_1, board.turn)
+    assert tensor_1.shape == MoveEncodingAlphaZero.get_shape_tensor_classindex()
+    move_decoded_1 = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_1, board.turn)
     assert move_decoded_1 == move_1
 
     # knight move
     move_2 = chess.Move.from_uci("g1f3")
-    tensor_2 = MoveEncodingAlphaZero.encode_move_tensor(move_2, board.turn)
-    assert tensor_2.shape == MoveEncodingAlphaZero.TENSOR_SHAPE
-    move_decoded_2 = MoveEncodingAlphaZero.decode_move_tensor(tensor_2, board.turn)
+    tensor_2 = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_2, board.turn)
+    assert tensor_2.shape == MoveEncodingAlphaZero.get_shape_tensor_classindex()
+    move_decoded_2 = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_2, board.turn)
     assert move_decoded_2 == move_2
 
     # sliding move (after playing pawn to free path)
@@ -29,9 +29,9 @@ def test_encode_decode_roundtrip_simple_moves():
     board.push(chess.Move.from_uci("g1f3"))
     board.push(chess.Move.from_uci("b8c6"))
     move_3 = chess.Move.from_uci("f1c4")
-    tensor_3 = MoveEncodingAlphaZero.encode_move_tensor(move_3, board.turn)
-    assert tensor_3.shape == MoveEncodingAlphaZero.TENSOR_SHAPE
-    move_decoded_3 = MoveEncodingAlphaZero.decode_move_tensor(tensor_3, board.turn)
+    tensor_3 = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_3, board.turn)
+    assert tensor_3.shape == MoveEncodingAlphaZero.get_shape_tensor_classindex()
+    move_decoded_3 = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_3, board.turn)
     assert move_decoded_3 == move_3
 
 
@@ -45,14 +45,14 @@ def test_underpromotion_encoding_white_and_black():
 
     # underpromotion to knight on a8 (forward)
     move_kn = chess.Move.from_uci("a7a8n")
-    tensor_kn = MoveEncodingAlphaZero.encode_move_tensor(move_kn, board_w.turn)
-    move_decoded_kn = MoveEncodingAlphaZero.decode_move_tensor(tensor_kn, board_w.turn)
+    tensor_kn = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_kn, board_w.turn)
+    move_decoded_kn = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_kn, board_w.turn)
     assert move_decoded_kn == move_kn
 
     # underpromotion to rook on a8 (forward)
     move_ro = chess.Move.from_uci("a7a8r")
-    tensor_ro = MoveEncodingAlphaZero.encode_move_tensor(move_ro, board_w.turn)
-    move_decoded_ro = MoveEncodingAlphaZero.decode_move_tensor(tensor_ro, board_w.turn)
+    tensor_ro = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_ro, board_w.turn)
+    move_decoded_ro = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_ro, board_w.turn)
     assert move_decoded_ro == move_ro
 
     # black underpromotion (black pawn on second rank moving to first)
@@ -61,8 +61,8 @@ def test_underpromotion_encoding_white_and_black():
     board_b.set_piece_at(chess.A2, chess.Piece(chess.PAWN, chess.BLACK))
     board_b.turn = chess.BLACK
     move_bq = chess.Move.from_uci("a2a1n")  # black promotes downwards, specify knight
-    tensor_bq = MoveEncodingAlphaZero.encode_move_tensor(move_bq, board_b.turn)
-    move_decoded_bq = MoveEncodingAlphaZero.decode_move_tensor(tensor_bq, board_b.turn)
+    tensor_bq = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_bq, board_b.turn)
+    move_decoded_bq = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_bq, board_b.turn)
     assert move_decoded_bq == move_bq
 
 
@@ -74,8 +74,8 @@ def test_queen_promotion_encoding_white_and_black():
     board_w.turn = chess.WHITE
 
     move_q = chess.Move.from_uci("a7a8q")
-    tensor_q = MoveEncodingAlphaZero.encode_move_tensor(move_q, board_w.turn)
-    move_decoded_q = MoveEncodingAlphaZero.decode_move_tensor(tensor_q, board_w.turn)
+    tensor_q = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_q, board_w.turn)
+    move_decoded_q = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_q, board_w.turn)
     assert move_decoded_q == move_q
 
     # Black queen promotion
@@ -85,8 +85,8 @@ def test_queen_promotion_encoding_white_and_black():
     board_b.turn = chess.BLACK
 
     move_qb = chess.Move.from_uci("h2h1q")
-    tensor_qb = MoveEncodingAlphaZero.encode_move_tensor(move_qb, board_b.turn)
-    move_decoded_qb = MoveEncodingAlphaZero.decode_move_tensor(tensor_qb, board_b.turn)
+    tensor_qb = MoveEncodingAlphaZero.encode_move_tensor_classindex(move_qb, board_b.turn)
+    move_decoded_qb = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor_qb, board_b.turn)
     assert move_decoded_qb == move_qb
 
 
@@ -120,28 +120,27 @@ def test_encode_decode_all_knight_moves():
         if 0 <= tx < 8 and 0 <= ty < 8:
             to_sq = tx * 8 + ty
             move = chess.Move(from_sq, to_sq)
-            tensor = MoveEncodingAlphaZero.encode_move_tensor(move, board.turn)
-            move_decoded = MoveEncodingAlphaZero.decode_move_tensor(tensor, board.turn)
+            tensor = MoveEncodingAlphaZero.encode_move_tensor_classindex(move, board.turn)
+            move_decoded = MoveEncodingAlphaZero.decode_move_tensor_classindex(tensor, board.turn)
             assert move_decoded == move
 
 
-def test_encode_legal_moves_mask_matches_board():
-    board = chess.Board()
-    mask = MoveEncodingAlphaZero.encode_legal_moves_mask(board)
-    # Count ones in mask should equal number of legal moves
-    ones = int(mask.sum().item())
-    assert ones == board.legal_moves.count()
+# def test_encode_legal_moves_mask_matches_board():
+#     board = chess.Board()
+#     mask = MoveEncodingAlphaZero.encode_legal_moves_mask(board)
+#     # Count ones in mask should equal number of legal moves
+#     ones = int(mask.sum().item())
+#     assert ones == board.legal_moves.count()
 
 
 def test_decode_invalid_tensor_shape_and_content_errors():
     # wrong shapemak
     bad = torch.zeros((72, 8, 8), dtype=torch.float32)
     with pytest.raises(ValueError):
-        MoveEncodingAlphaZero.decode_move_tensor(bad, chess.WHITE)
+        MoveEncodingAlphaZero.decode_move_tensor_classindex(bad, chess.WHITE)
 
     # multiple ones
-    multi = torch.zeros(MoveEncodingAlphaZero.TENSOR_SHAPE, dtype=torch.float32)
-    multi[0, 0, 0] = 1.0
-    multi[1, 0, 0] = 1.0
+    multi = torch.zeros(MoveEncodingAlphaZero.get_shape_tensor_classindex(), dtype=torch.float32)
+    multi[0] = 100000
     with pytest.raises(ValueError):
-        MoveEncodingAlphaZero.decode_move_tensor(multi, chess.WHITE)
+        MoveEncodingAlphaZero.decode_move_tensor_classindex(multi, chess.WHITE)
