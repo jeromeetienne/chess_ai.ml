@@ -13,11 +13,12 @@ import torch
 import matplotlib.pyplot as plt
 
 # local imports
-from src.libs.early_stopper import EarlyStopper
+from src.pytorch_extra.early_stopper import EarlyStopper
 from src.utils.model_utils import ModelUtils
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.model_utils import ModelUtils
 from src.utils.uci2class_utils import Uci2ClassUtils
+from src.pytorch_extra.model_summary import ModelSummary
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -133,7 +134,7 @@ class TrainCommand:
         ###############################################################################
         # Display model summary
 
-        print(ModelUtils.model_summary(model))
+        print(ModelSummary.to_string(model))
 
         # =============================================================================
         # Training loop
@@ -359,7 +360,7 @@ class TrainCommand:
 
 # Model Summary
 ```
-{ModelUtils.model_summary(model)}
+{ModelSummary.to_string(model)}
 ```
         """
         report_path = f"{model_folder_path}/TRAINING_REPORT.md"

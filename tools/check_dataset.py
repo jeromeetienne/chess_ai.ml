@@ -15,9 +15,10 @@ from src.utils.dataset_utils import DatasetUtils
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-data_folder_path = os.path.join(__dirname__, "..", "data")
-pgn_folder_path = os.path.join(data_folder_path, "pgn")
-tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
+data_folder_path = os.path.abspath(os.path.join(__dirname__, "..", "data"))
+output_folder_path = os.path.abspath(os.path.join(__dirname__, "..", "output"))
+pgn_folder_path = os.path.abspath(os.path.join(data_folder_path, "pgn"))
+tensor_folder_path = os.path.abspath(os.path.join(output_folder_path, "pgn_tensors"))
 
 ###############################################################################
 #   Main entry point

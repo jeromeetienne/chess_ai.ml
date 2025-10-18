@@ -14,14 +14,14 @@ from src.utils.model_utils import ModelUtils
 
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-model_folder_path = os.path.join(__dirname__, "../output/model/")
+model_folder_path = os.path.abspath(os.path.join(__dirname__, "../output/model/"))
 
 # =============================================================================
 # Main entry point
 # =============================================================================
 if __name__ == "__main__":
     # Parse command line arguments
-    argParser = argparse.ArgumentParser(description="Benchmark different model architectures.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    argParser = argparse.ArgumentParser(description="Generate model visualization in a PNG.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     argParser.add_argument(
         "--model_name",
         "-mn",

@@ -7,6 +7,8 @@ import torch
 # local imports
 from ..libs.chess_model import ChessModelConv2d, ChessModelResNet, AlphaZeroNet
 from ..encoding.board_encoding import BoardEncoding
+
+# from ..encoding.move_encoding_alphazero import MoveEncodingAlphaZero as MoveEncoding
 from ..encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
 
 
@@ -41,39 +43,39 @@ class ModelUtils:
 
         return model
 
-    @staticmethod
-    def model_summary(model: torch.nn.Module) -> str:
-        """
-        Prints a basic summary of the model including parameter count.
-        """
-        total_params = 0
-        trainable_params = 0
+    # @staticmethod
+    # def model_summary(model: torch.nn.Module) -> str:
+    #     """
+    #     Prints a basic summary of the model including parameter count.
+    #     """
+    #     total_params = 0
+    #     trainable_params = 0
 
-        output = []
-        output.append(f"\nModel Architecture: {model.__class__.__name__}")
-        output.append("-" * 60)
-        output.append(f"{'Layer Name':<30} {'Param Count':>15} {'Trainable':>10}")
-        output.append("=" * 60)
+    #     output = []
+    #     output.append(f"\nModel Architecture: {model.__class__.__name__}")
+    #     output.append("-" * 60)
+    #     output.append(f"{'Layer Name':<30} {'Param Count':>15} {'Trainable':>10}")
+    #     output.append("=" * 60)
 
-        for name, parameter in model.named_parameters():
-            if not parameter.requires_grad:
-                continue
+    #     for name, parameter in model.named_parameters():
+    #         if not parameter.requires_grad:
+    #             continue
 
-            param = parameter.numel()
-            total_params += param
+    #         param = parameter.numel()
+    #         total_params += param
 
-            if parameter.requires_grad:
-                trainable_params += param
+    #         if parameter.requires_grad:
+    #             trainable_params += param
 
-            output.append(f"{name:<30} {param:>15,} {'Yes' if parameter.requires_grad else 'No':>10}")
+    #         output.append(f"{name:<30} {param:>15,} {'Yes' if parameter.requires_grad else 'No':>10}")
 
-        output.append("=" * 60)
-        output.append(f"Total Parameters: {total_params:,}")
-        output.append(f"Trainable Parameters: {trainable_params:,}")
-        output.append(f"Non-trainable Parameters: {total_params - trainable_params:,}")
-        output.append("-" * 60)
+    #     output.append("=" * 60)
+    #     output.append(f"Total Parameters: {total_params:,}")
+    #     output.append(f"Trainable Parameters: {trainable_params:,}")
+    #     output.append(f"Non-trainable Parameters: {total_params - trainable_params:,}")
+    #     output.append("-" * 60)
 
-        return "\n".join(output)
+    #     return "\n".join(output)
 
     @staticmethod
     def load_weights(model: torch.nn.Module, folder_path: str) -> None:

@@ -13,13 +13,14 @@ from tqdm import tqdm
 # local imports
 from src.libs.chess_extra import ChessExtra
 from src.encoding.board_encoding import BoardEncoding
-from src.utils.uci2class_utils import Uci2ClassUtils
-from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
 from src.utils.pgn_utils import PGNUtils
 
+# from src.encoding.move_encoding_alphazero import MoveEncodingAlphaZero as MoveEncoding
+from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
+
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
-data_folder_path = os.path.join(__dirname__, "../../data")
-tensor_folder_path = os.path.join(data_folder_path, "pgn_tensors")
+output_folder_path = os.path.abspath(os.path.join(__dirname__, "../../output"))
+tensor_folder_path = os.path.abspath(os.path.join(output_folder_path, "pgn_tensors"))
 
 
 class DatasetUtils:
@@ -255,6 +256,26 @@ class DatasetUtils:
         """
         pgn_basename = os.path.basename(pgn_path).replace(".pgn", "")
 
+        # =============================================================================
+        # Check if the dataset files are present
+        # =============================================================================
+        boards_path = DatasetUtils.boards_tensor_path(tensor_folder_path, pgn_basename)
+        moves_path = DatasetUtils.moves_tensor_path(tensor_folder_path, pgn_basename)
+        evals_path = DatasetUtils.evals_tensor_path(tensor_folder_path, pgn_basename)
+        moves_index_path = DatasetUtils.moves_index_path(tensor_folder_path, pgn_basename)
+
+        if not os.path.exists(boards_path):
+            raise FileNotFoundError(f"Boards tensor file not found: {boards_path}")
+        if not os.path.exists(moves_path):
+            raise FileNotFoundError(f"Moves tensor file not found: {moves_path}")
+        if not os.path.exists(evals_path):
+            raise FileNotFoundError(f"Evals tensor file not found: {evals_path}")
+        if not os.path.exists(moves_index_path):
+            raise FileNotFoundError(f"Moves index file not found: {moves_index_path}")
+
+        # =============================================================================
+        # Load the dataset
+        # =============================================================================
         print(f"Loading tensors for {pgn_basename}")
         boards_tensor, moves_tensor, evals_tensor, moves_index = DatasetUtils.load_dataset(tensor_folder_path, pgn_basename)
 
