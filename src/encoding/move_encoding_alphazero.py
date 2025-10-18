@@ -52,9 +52,6 @@ class MoveEncodingAlphaZero:
     CLASS_COUNT = PLANE_COUNT * 8 * 8
     """Total number of move classes (73 planes x 64 from-squares)."""
 
-    # TENSOR_SHAPE = (73, 8, 8)
-    # """Shape of the move encoding tensor: (planes, ranks, files)."""
-
     SLIDING_DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
     """Directions for sliding pieces: N, S, E, W, NE, NW, SE, SW."""
 
