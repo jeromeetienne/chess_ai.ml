@@ -2,6 +2,8 @@
 
 import chess
 import torch
+import time
+import math
 
 
 class MoveEncodingAlphaZero:
@@ -24,8 +26,10 @@ class MoveEncodingAlphaZero:
 
     # create a static property accesor for .OUTPUT_SHAPE
     @staticmethod
-    def get_output_shape() -> tuple[int, int, int]:
-        return MoveEncodingAlphaZero.TENSOR_SHAPE
+    def get_output_shape() -> tuple[int]:
+        tensor_shape: tuple[int, int, int] = MoveEncodingAlphaZero.TENSOR_SHAPE
+        output_shape: tuple[int] = (math.prod(tensor_shape),)
+        return output_shape
 
     # =============================================================================
     # Constants and encoding/decoding functions
@@ -288,3 +292,23 @@ if __name__ == "__main__":
 
     explanation = MoveEncodingAlphaZero.move_to_string(decoded_move, board.turn)
     print("Explanation:", explanation)
+
+    # =============================================================================
+    # benchmark .encode_move_tensor and .decode_move_tensor
+    # =============================================================================
+
+    bench_iterations = 100000
+
+    # Benchmark .encode_move_tensor
+    start_time = time.perf_counter()
+    for _ in range(bench_iterations):
+        MoveEncodingAlphaZero.encode_move_tensor(move, board.turn)
+    end_time = time.perf_counter()
+    print(f"Encoding time: {bench_iterations/(end_time - start_time):.0f} time per seconds")
+
+    # Benchmark .decode_move_tensor
+    start_time = time.perf_counter()
+    for _ in range(bench_iterations):
+        MoveEncodingAlphaZero.decode_move_tensor(move_tensor, board.turn)
+    end_time = time.perf_counter()
+    print(f"Decoding time: {bench_iterations/(end_time - start_time):.0f} time per seconds")
