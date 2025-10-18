@@ -15,7 +15,8 @@ class MoveEncodingUci2Class:
     class index of the move according to the UCI2Class mapping.
     """
 
-    MOVE_DTYPE = torch.int32  # class index as long
+    MOVE_DTYPE = torch.int32
+    """Data type for move tensors. class index as long."""
 
     # create a static property accesor for .OUTPUT_SHAPE
     @staticmethod
@@ -34,6 +35,9 @@ class MoveEncodingUci2Class:
     # =============================================================================
     @staticmethod
     def encode_move_tensor_classindex(move: chess.Move, color: chess.Color) -> torch.Tensor:
+        """
+        Converts a chess.Move into a scalar tensor representing its class index.
+        """
         uci2class = Uci2ClassUtils.get_uci2class(color)
         class_index = uci2class[move.uci()]
         move_tensor = torch.tensor(class_index, dtype=MoveEncodingUci2Class.MOVE_DTYPE)

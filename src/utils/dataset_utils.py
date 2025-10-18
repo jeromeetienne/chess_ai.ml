@@ -14,9 +14,7 @@ from tqdm import tqdm
 from src.libs.chess_extra import ChessExtra
 from src.encoding.board_encoding import BoardEncoding
 from src.utils.pgn_utils import PGNUtils
-
-# from src.encoding.move_encoding_alphazero import MoveEncodingAlphaZero as MoveEncoding
-from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
+from src.encoding.move_encoding import MoveEncoding
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 output_folder_path = os.path.abspath(os.path.join(__dirname__, "../../output"))

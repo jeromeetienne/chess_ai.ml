@@ -9,7 +9,7 @@ import argparse
 
 # local imports
 from src.encoding.board_encoding import BoardEncoding
-from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
+from src.encoding.move_encoding import MoveEncoding
 from src.utils.model_utils import ModelUtils
 
 

@@ -17,28 +17,11 @@ test: lint pytest ## Run all tests
 #   Misc
 # ===============================================================================
 
-full_pipeline_slow: clean build_boards_moves build_evals_outcome train play ## run the full pipeline
-
-full_pipeline: clean ## run the full pipeline
+test_full_pipeline: clean ## run the full pipeline
 	./bin/build_boards_moves.py -fc 3
 	./bin/build_evals_outcome.py -fc 3
 	./bin/train.py -me 3
-# 	./bin/play.py -mp 30
-
-train_deep_20: ## train a model with first 20 pgn files
-	./bin/build_boards_moves.py -fc 20
-	./bin/build_evals_fishtest.py -fc 20
-	./bin/train.py -fc 20
-
-train_deep_25: ## train a model with first 25 pgn files
-	./bin/build_boards_moves.py -fc 25
-	./bin/build_evals_fishtest.py -fc 25
-	./bin/train.py -fc 25
-
-train_deep_35: ## train a model with first 35 pgn files
-	./bin/build_boards_moves.py -fc 35
-	./bin/build_evals_fishtest.py -fc 35
-	./bin/train.py -fc 35
+	./bin/play.py -mp 20
 
 bench_inference: ## benchmark the model
 	./tools/bench_inference.py
@@ -85,11 +68,49 @@ build_evals_fishtest: ## build the evals for the dataset using fishtest pgns
 build_evals_stockfish: ## build the evals for the dataset using stockfish evaluations computed live (slow)
 	./bin/build_evals_stockfish.py
 
+build_dataset_outcome_10: ## build dataset with 10 files
+	./bin/build_boards_moves.py -fc 10
+	./bin/build_evals_outcome.py -fc 10
+
+build_dataset_outcome_20: ## build dataset with 20 files
+	./bin/build_boards_moves.py -fc 20
+	./bin/build_evals_outcome.py -fc 20
+
+build_dataset_outcome_30: ## build dataset with 30 files
+	./bin/build_boards_moves.py -fc 30
+	./bin/build_evals_outcome.py -fc 30
+
+build_dataset_outcome_40: ## build dataset with 40 files
+	./bin/build_boards_moves.py -fc 40
+	./bin/build_evals_outcome.py -fc 40	
+
+build_dataset_outcome_50: ## build dataset with 50 files
+	./bin/build_boards_moves.py -fc 50
+	./bin/build_evals_outcome.py -fc 50
 ###############################################################################
-#   Model targets
+#   train targets
 #
 train: ## train the model
 	./bin/train.py
+
+train_10: build_dataset_outcome_10	## train the model with 10 files
+	./bin/train.py -fc 10
+
+train_20: build_dataset_outcome_20	## train the model with 20 files
+	./bin/train.py -fc 20
+
+train_30: build_dataset_outcome_30	## train the model with 30 files
+	./bin/train.py -fc 30
+
+train_40: build_dataset_outcome_40	## train the model with 40 files
+	./bin/train.py -fc 40
+
+train_50: build_dataset_outcome_50	## train the model with 50 files
+	./bin/train.py -fc 50
+
+###############################################################################
+#   play targets
+#
 
 play: play_stockfish ## play the model vs stockfish
 

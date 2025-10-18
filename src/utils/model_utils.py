@@ -7,10 +7,7 @@ import torch
 # local imports
 from ..libs.chess_model import ChessModelConv2d, ChessModelResNet, AlphaZeroNet
 from ..encoding.board_encoding import BoardEncoding
-
-# from ..encoding.move_encoding_alphazero import MoveEncodingAlphaZero as MoveEncoding
-from ..encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
-
+from ..encoding.move_encoding import MoveEncoding
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
 data_folder_path = os.path.join(__dirname__, "../../data")

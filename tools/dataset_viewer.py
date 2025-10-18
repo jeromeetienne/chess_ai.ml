@@ -10,7 +10,7 @@ import chess
 # local imports
 from src.libs.chess_extra import ChessExtra
 from src.encoding.board_encoding import BoardEncoding
-from src.encoding.move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
+from src.encoding.move_encoding import MoveEncoding
 from src.utils.dataset_utils import DatasetUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
