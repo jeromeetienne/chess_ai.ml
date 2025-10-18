@@ -84,9 +84,30 @@ build_dataset_outcome_40: ## build dataset with 40 files
 	./bin/build_boards_moves.py -fc 40
 	./bin/build_evals_outcome.py -fc 40	
 
-build_dataset_outcome_50: ## build dataset with 50 files
-	./bin/build_boards_moves.py -fc 50
-	./bin/build_evals_outcome.py -fc 50
+build_dataset_outcome_60: ## build dataset with 60 files
+	./bin/build_boards_moves.py -fc 60
+	./bin/build_evals_outcome.py -fc 60
+
+build_dataset_outcome_80: ## build dataset with 80 files
+	./bin/build_boards_moves.py -fc 80
+	./bin/build_evals_outcome.py -fc 80
+
+build_dataset_outcome_100: ## build dataset with 100 files
+	./bin/build_boards_moves.py -fc 100
+	./bin/build_evals_outcome.py -fc 100
+
+build_dataset_outcome_120: ## build dataset with 120 files
+	./bin/build_boards_moves.py -fc 120
+	./bin/build_evals_outcome.py -fc 120
+
+build_dataset_outcome_140: ## build dataset with 140 files
+	./bin/build_boards_moves.py -fc 140
+	./bin/build_evals_outcome.py -fc 140
+
+build_dataset_outcome_160: ## build dataset with 160 files
+	./bin/build_boards_moves.py -fc 160
+	./bin/build_evals_outcome.py -fc 160
+
 ###############################################################################
 #   train targets
 #
@@ -105,8 +126,23 @@ train_30: build_dataset_outcome_30	## train the model with 30 files
 train_40: build_dataset_outcome_40	## train the model with 40 files
 	./bin/train.py -fc 40
 
-train_50: build_dataset_outcome_50	## train the model with 50 files
-	./bin/train.py -fc 50
+train_60: build_dataset_outcome_60	## train the model with 60 files
+	./bin/train.py -fc 60
+
+train_80: build_dataset_outcome_80	## train the model with 80 files
+	./bin/train.py -fc 80
+
+train_100: build_dataset_outcome_100	## train the model with 100 files
+	./bin/train.py -fc 100
+
+train_120: build_dataset_outcome_120	## train the model with 120 files
+	./bin/train.py -fc 120	
+
+train_140: build_dataset_outcome_140	## train the model with 140 files
+	./bin/train.py -fc 140
+
+train_160: build_dataset_outcome_160	## train the model with 160 files
+	./bin/train.py -fc 160
 
 ###############################################################################
 #   play targets

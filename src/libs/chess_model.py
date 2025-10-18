@@ -36,18 +36,25 @@ class ChessModelOriginal(nn.Module):
 #
 class ChessModelConv2d(nn.Module):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
+        """
+        A Convolutional Neural Network (CNN) model for classifying chess board states.
+
+        Args:
+            input_shape (tuple): A tuple representing the shape of the input tensor (channels, height, width).
+            output_shape (tuple): A tuple representing the shape of the output tensor (number of classes,).
+        """
         super(ChessModelConv2d, self).__init__()
 
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        conv1_out_channels = 64
-        conv2_out_channels = 128
-        conv3_out_channels = 256
-        cls_fc_size = 128
-        reg_fc_size = 64
-        cls_dropoutProbability = 0.5
-        reg_dropoutProbability = 0.5
+        # conv1_out_channels = 64
+        # conv2_out_channels = 128
+        # conv3_out_channels = 256
+        # cls_fc_size = 128
+        # reg_fc_size = 64
+        # cls_dropoutProbability = 0.2
+        # reg_dropoutProbability = 0.2
 
         # conv1_out_channels = 32
         # conv2_out_channels = 64
@@ -57,13 +64,13 @@ class ChessModelConv2d(nn.Module):
         # cls_dropoutProbability = 0.0
         # reg_dropoutProbability = 0.0
 
-        # conv1_out_channels = 16
-        # conv2_out_channels = 32
-        # conv3_out_channels = 128
-        # cls_fc_size = 64
-        # reg_fc_size = 64
-        # cls_dropoutProbability = 0.3
-        # reg_dropoutProbability = 0.2
+        conv1_out_channels = 16
+        conv2_out_channels = 32
+        conv3_out_channels = 64
+        cls_fc_size = 64
+        reg_fc_size = 64
+        cls_dropoutProbability = 0.3
+        reg_dropoutProbability = 0.2
 
         # dropoutProbability = 0.2
         # conv1_out_channels = 16

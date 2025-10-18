@@ -1,49 +1,59 @@
 # TODO
-- output encoding Good https://chatgpt.com/c/68e7d930-69ac-832b-8ae5-5fac5a399f6c
-- accuracy for win/loss/draw probability in training - for reggression head
-- output encoding in alpha-zero - https://chatgpt.com/c/68e47024-d17c-832d-aa46-dc37f265647b
-  - action_size = 4672  # for chess: 73 possible moves from each square
-  - it keeps spatialisation
-  - it would means that the maximum number of legal move from any square is 73
-  - is that a better encoding than the uci2classindex ? which is an unstructured encoding... each is just a class index
-- stockfish never give up... many game got 200 moves
-  - remove those from the dataset
-  - ask AI for a good heuristic to detect endgame - https://gemini.google.com/app/98b4cfd00112caa8
+
+- DONE in ./bin/train.py
+  - add option for -scheduler_patience, -early_stopping_patience
+  - same for `threshold`
+- in ./bin/train.py
+  - add possibility to start again from the model on disk
+- hyperparameter tuning
+  - which library to use ? optuna, ray tune, ... ?
+  - optuna seems good
 - see about the reg+cls layer with convnet in them like alpha-zero
 - improve the loss weighting ?
-  - some dynamic technique exists - https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g
+  - some dynamic technique exists - <https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g>
   - "Loss Weights Based on Task Uncertainty" seems to be a good one
-  - https://chatgpt.com/c/68e456bf-ee34-832d-b241-9faee3f1e24f <- this could explain the wide variation in regularization weight
+  - <https://chatgpt.com/c/68e456bf-ee34-832d-b241-9faee3f1e24f> <- this could explain the wide variation in regularization weight
 - start to look at the MTCS + NN integration
   - in the player
   - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
   - see PUCT (mcts + nn) vs UCT (mcts only)
-  - not bad https://chatgpt.com/c/68e44feb-ec2c-8326-a512-bee4f5496e9a
+  - not bad <https://chatgpt.com/c/68e44feb-ec2c-8326-a512-bee4f5496e9a>
   - im coding a chess program with machine learning. i got a dual head model. it has a policy head which suggest the best move, and a value head which evaluate the board. show me a reusable class for PUCT. with all the type hinting. Make it working with python-chess
   - "show me a usage of this class with pychess pip package"
-  - good https://chatgpt.com/c/68e46055-e798-8333-8f9d-59c551540d64
+  - good <https://chatgpt.com/c/68e46055-e798-8333-8f9d-59c551540d64>
 - DONE move all function to datasetutils load/save function
   - nobody is allowed to do torch.load()/torch.save() directly
-- in the model, 
-  - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - https://gemini.google.com/app/cdfdec954e81eaff
+- in the model,
+  - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - <https://gemini.google.com/app/cdfdec954e81eaff>
   - add a dropout layer only after fully connected layer
-  - code model with self.fc_layers = nn.Sequential() pattern https://chatgpt.com/c/68de57d9-67f0-832b-aebb-c8d110effe48
+  - code model with self.fc_layers = nn.Sequential() pattern <https://chatgpt.com/c/68de57d9-67f0-832b-aebb-c8d110effe48>
 - how many chess move are there ?
-  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
-- https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp
+  - <https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there>
+- <https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp>
 - understand the alpha zero paper move encoding
-  - perplexity summarizing it - https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA
+  - perplexity summarizing it - <https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA>
   - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
 - make it play on lichess ?
 
-# DONE
+## DONE
+
+- DONE accuracy for win/loss/draw probability in training - for reggression head
+- DONE output encoding Good <https://chatgpt.com/c/68e7d930-69ac-832b-8ae5-5fac5a399f6c>
+- DONE output encoding in alpha-zero - <https://chatgpt.com/c/68e47024-d17c-832d-aa46-dc37f265647b>
+  - action_size = 4672  # for chess: 73 possible moves from each square
+  - it keeps spatialisation
+  - it would means that the maximum number of legal move from any square is 73
+  - is that a better encoding than the uci2classindex ? which is an unstructured encoding... each is just a class index
+- DONE stockfish never give up... many game got 200 moves
+  - remove those from the dataset
+  - ask AI for a good heuristic to detect endgame - <https://gemini.google.com/app/98b4cfd00112caa8>
 - DONE regression output dataset and alphazero
-  - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
+  - <https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e>
   - for each move it return if the player to move won or lost the game, +1 if won, -1 if lost, 0 if draw
   - so no stockfish eval is needed
   - TODO change the build_evals for that
 - DONE make support UCI protocol
-  - https://www.perplexity.ai/search/what-is-the-minimal-implementa-StscaKhDSbqMc46SZmE5LA
+  - <https://www.perplexity.ai/search/what-is-the-minimal-implementa-StscaKhDSbqMc46SZmE5LA>
   - chess x is UCI GUI good for debug
   - got an early version working - see `tmp/early_ucinet_support/ucinet_engine.py`
   - communication with chessx works...
@@ -54,7 +64,7 @@
 - DONE add a command line arg to select the model
   - in train and in play
 - DONE reproduce exactly the alpha zero model
-  - as seen here - https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e
+  - as seen here - <https://chatgpt.com/c/68e468a0-e3c8-832f-ba03-6c5e1ed31f1e>
 - DONE move the multi-head model to a separate file to residual network
 - DONE display the min in training_validation_loss.png
   - red dot + x axis. like regression_3_dual_head.py
@@ -63,8 +73,8 @@
   - load eval tensor if present
   - do i force it the eval to be present ? maybe i can create a fake eval of 0... YES
 - DONE do a multi head model in a corner to see how it goes
-  - perplexity - https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg
-- DONE multi-head network: good for alpha alpha-zero 
+  - perplexity - <https://www.perplexity.ai/search/explain-mcts-in-machine-ai-to-BwJw_pPYTL6nU8Y5KPN.Mg>
+- DONE multi-head network: good for alpha alpha-zero
   - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
   - see PUCT (mcts + nn) vs UCT (mcts only)
 - WONTDO code a way to train on a special range of moves, not the whole game
@@ -72,16 +82,16 @@
   - later by dynamically detecting opening, midgame, endgame
   - generate multiple dataset files for each stage of the game
 - DONE make a small script which compute the list of all move type at chess
-  - https://gemini.google.com/app/b876c2f17d4fde4e
-  - https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions
-  - https://www.chess.com/blog/the_real_greco/move-finding-the-engine-way
-  - https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there
+  - <https://gemini.google.com/app/b876c2f17d4fde4e>
+  - <https://www.chess.com/blog/the_real_greco/why-is-the-queen-strongest-answering-two-silly-questions>
+  - <https://www.chess.com/blog/the_real_greco/move-finding-the-engine-way>
+  - <https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there>
   - AI seems to contradict the alpha zero paper which says there are 4672 possible moves
   - brute force all possible moves on an empty board
 - DONE do a bench of inference - thus i can compare the model inference speed
-- DONE do a regression in a corner 
+- DONE do a regression in a corner
   - it should not have the same issue that the classification with 1972 classes
-  - https://gemini.google.com/app/b8047920ab1f4b67
+  - <https://gemini.google.com/app/b8047920ab1f4b67>
   - `tmp/regression.py`
 - DONE reorganize folders
   - ./data/pgn_splits -> ./output
@@ -91,10 +101,10 @@
 - DONE use that everywhere    class FILE_SUFFIX:
         BOARDS = "_boards_tensor.pt"
         MOVES = "_moves_tensor.pt"
-        EVALS = "_evals_tensor.pt" 
+        EVALS = "_evals_tensor.pt"
 - DONE use this pgn... it has the position from stockfish and its evaluation
   - keep the folders structure to keep track of the source
-  - https://huggingface.co/datasets/official-stockfish/fishtest_pgns
+  - <https://huggingface.co/datasets/official-stockfish/fishtest_pgns>
   - read it thru the usual build_dataset.py
   - do a special `build_evals.py` for it
   - `build_evals_stockfish.py`
@@ -119,7 +129,7 @@
   - check with your own list of all possible moves (you are missing 4 moves)
   - no need to have uci_to_classindex everywhere
   - thus i can encode all the dataset once and for all
-  - for all position in the dataset, i store 
+  - for all position in the dataset, i store
     - the next move which has been player
     - the board tensor
     - the eval tensor
@@ -132,10 +142,10 @@
   - one mapping if it is white to play, another if it is black to play
   - and you store both mapping in the dataset
   - easy and backward compatible
-  - `uci2class.mapping[turn]` 
+  - `uci2class.mapping[turn]`
   - `uci2class.num_classes`
 - DONE fix the bug in the board encoding
-  - https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py
+  - <https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/board_encoding.py>
   - encode every as alpha-zero as it is the FEN standard
   - except the 14 previous moves, encode only the last move
   - encode all this thru constants - it will keep the information in the source
@@ -156,7 +166,7 @@
   - will be used for large pgn files - stockfish or lichess
   - `{original_basename}_{N}_on_{total}.pgn`
   - pgn_splitter.py -mgp 200 *.pgn
-    - --max-games <int> : maximum number of games per output file (default: 1000)
+    - --max-games int : maximum number of games per output file (default: 1000)
   - be efficient when scanning the pgn file
     - first pass: count the number of games, and the byte offset of each game
     - second pass: write the games to the output files
@@ -170,23 +180,23 @@
   - allow to specify a game + move index - would help push it in chess.com
 - DONE whem building dataset, drop position which are in the opening phase
 - DONE experiment with the attacked squares feature
-  - https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.attacks
+  - <https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.attacks>
   - add it to the input tensor
   - see if it improves the model
 - DONE organize `./libs`
 - DONE the type used in input/output is a mess. Sometimes float32, sometimes long
   - search for ".float" or ".long" or ".int"
-  - centralize it and then set it 
+  - centralize it and then set it
   - best setting: likely int8 for input, and int16 for output
 - DONE read opening books
-  - here are some pgn https://sites.google.com/site/computerschess/download
-  - more polyglot opening books https://github.com/michaeldv/donna_opening_books/
-  - several collection https://chess.stackexchange.com/questions/35448/looking-for-polyglot-opening-books
-  - how to use it https://chess.stackexchange.com/questions/24738/how-to-use-opening-books-on-mac-linux
+  - here are some pgn <https://sites.google.com/site/computerschess/download>
+  - more polyglot opening books <https://github.com/michaeldv/donna_opening_books/>
+  - several collection <https://chess.stackexchange.com/questions/35448/looking-for-polyglot-opening-books>
+  - how to use it <https://chess.stackexchange.com/questions/24738/how-to-use-opening-books-on-mac-linux>
 - DONE implement better looking board display - between ascii art and color - it is possible to do something more readable
-  - https://rebel13.nl/download/books.html
+  - <https://rebel13.nl/download/books.html>
 - WONTDO plug stockfish into python chess
-  - https://python-chess.readthedocs.io/en/latest/engine.html
+  - <https://python-chess.readthedocs.io/en/latest/engine.html>
 - DONE do early stopping during training
 - DONE evaluate the model on a validation set during training
 - DONE add proper logs in `./train.py` and `./predict.py`

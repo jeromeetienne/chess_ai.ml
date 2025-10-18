@@ -132,7 +132,9 @@ class DatasetUtils:
         return boards_tensor, moves_tensor, evals_tensor, moves_index
 
     @staticmethod
-    def load_datasets(tensors_folder_path: str, max_file_count: int = 15) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, list["DatasetUtils.MoveIndex"]]:
+    def load_datasets(
+        tensors_folder_path: str, max_file_count: int = 15, verbose: bool = True
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, list["DatasetUtils.MoveIndex"]]:
         # gather all tensor file paths
         basenames = sorted(os.listdir(tensors_folder_path))
         boards_basenames = [basename for basename in basenames if basename.endswith(DatasetUtils.FILE_SUFFIX.BOARDS)]
@@ -168,7 +170,8 @@ class DatasetUtils:
         assert boards_count == moves_index_count, f"boards_tensor has {boards_count} positions but moves_index has {moves_index_count} positions"
 
         # log the event
-        print(f"Loading dataset from {len(basename_prefixes)} files, total {boards_count:,} positions")
+        if verbose:
+            print(f"Loading dataset from {len(basename_prefixes)} files, total {boards_count:,} positions")
 
         # concatenate all tensors
         boards_tensor = torch.cat(boards_tensors, dim=0)
