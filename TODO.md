@@ -5,7 +5,7 @@
   - same for `threshold`
 - in ./bin/train.py
   - add possibility to start again from the model on disk
-- hyperparameter tuning
+- DONE hyperparameter tuning
   - which library to use ? optuna, ray tune, ... ?
   - optuna seems good
 - see about the reg+cls layer with convnet in them like alpha-zero
