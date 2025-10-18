@@ -54,10 +54,13 @@ class TrainCommand:
         boards_tensor, moves_tensor, evals_tensor, moves_index = DatasetUtils.load_datasets(tensors_folder_path, max_file_count)
         print(DatasetUtils.dataset_summary(boards_tensor, moves_tensor, evals_tensor))
 
-        # FIXME why is this needed on evals_tensor but not moves_tensor
-        # Reshape evals_tensor to (N, 1) to match the expected input shape for the model
-        evals_tensor = evals_tensor.view(-1, 1)  # Reshape to (N, 1)
+        # FIXME why is this needed on evals_tensor but not moves_tensor... because
+        # - evals is a regression and use SmoothL1Loss as loss function ?
+        # - moves is a classification problem and uses CrossEntropyLoss ?
 
+        # Reshape evals_tensor to (N, 1) to match the expected input shape for the model
+        evals_tensor = evals_tensor.reshape(-1, 1)  # Reshape to (N, 1)
+        # moves_tensor = moves_tensor.reshape(-1, 1)  # Reshape to (N,)
         num_classes = Uci2ClassUtils.get_num_classes()
 
         # =============================================================================

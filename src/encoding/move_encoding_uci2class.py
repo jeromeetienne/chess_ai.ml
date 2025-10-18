@@ -8,6 +8,13 @@ from src.utils.uci2class_utils import Uci2ClassUtils
 
 
 class MoveEncodingUci2Class:
+    """
+    Move encoding using UCI to class index mapping.
+
+    NOTE: the tensor representation is a single integer tensor representing the
+    class index of the move according to the UCI2Class mapping.
+    """
+
     MOVE_DTYPE = torch.int32  # class index as long
 
     # create a static property accesor for .OUTPUT_SHAPE
@@ -35,6 +42,7 @@ class MoveEncodingUci2Class:
         Arguments:
             moves_tensor (torch.Tensor): A scalar tensor containing the class index of the move.
             color (chess.Color): The color of the player making the move (chess.WHITE or chess.BLACK).
+
         Returns:
             str: The UCI string representation of the move.
         """
