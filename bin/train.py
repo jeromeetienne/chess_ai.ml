@@ -45,6 +45,7 @@ class TrainCommand:
         scheduler_threshold: float = 0.1,
         train_test_split_ratio: float = 0.7,
         max_file_count: int = 15,
+        reuse_existing_model: bool = False,
         random_seed: int | None = None,
         verbose: bool = True,
     ) -> float:
@@ -52,16 +53,22 @@ class TrainCommand:
         Train a chess model using PyTorch.
 
         Args:
-            model_name (str): Name of the model architecture to use.
+            model_name: Name of the model architecture to use.
             max_epoch_count (int): Maximum number of training epochs.
             batch_size (int): Batch size for training.
             learning_rate (float): Learning rate for the optimizer.
+            early_stopping_patience (int): Number of epochs with no improvement before stopping.
+            early_stopping_threshold (float): Minimum relative improvement to reset early stopping.
+            scheduler_patience (int): Number of epochs with no improvement before reducing LR.
+            scheduler_threshold (float): Threshold for the LR scheduler to consider improvement.
             train_test_split_ratio (float): Ratio of training data to total data.
             max_file_count (int): Maximum number of PGN files to process. 0 for no limit.
-            random_seed (int | None): Random seed for reproducibility. None for random seed.
+            reuse_existing_model (bool): If True, load existing model weights when available.
+            random_seed (int | None): Random seed for reproducibility. None means no fixed seed.
             verbose (bool): Whether to print verbose output.
+
         Returns:
-            model_accuracy_final (float): Final accuracy of the trained model.
+            float: Final weighted metric for the trained model (classification accuracy + regression MAE).
         """
 
         # set random seed for reproducibility
@@ -77,9 +84,15 @@ class TrainCommand:
             print(f"- Max epoch count: {max_epoch_count}")
             print(f"- Batch size: {batch_size}")
             print(f"- Learning rate: {learning_rate}")
+            print(f"- Early stopping patience: {early_stopping_patience}")
+            print(f"- Early stopping threshold: {early_stopping_threshold}")
+            print(f"- Scheduler patience: {scheduler_patience}")
+            print(f"- Scheduler threshold: {scheduler_threshold}")
             print(f"- Train/test split ratio: {train_test_split_ratio}")
             print(f"- Max file count: {max_file_count if max_file_count > 0 else 'No limit'}")
+            print(f"- Reuse existing model: {reuse_existing_model}")
             print(f"- Random seed: {random_seed}")
+            print(f"- Verbose: {verbose}")
 
         # =============================================================================
         # Load the dataset
@@ -152,6 +165,12 @@ class TrainCommand:
         # =============================================================================
 
         model = ModelUtils.create_model(model_name)
+        model_path = ModelUtils.model_path(model_folder_path)
+        if os.path.exists(model_path) and reuse_existing_model:
+            if verbose:
+                print(f"Loading existing model weights from {model_path}")
+            ModelUtils.load_weights(model, model_folder_path)
+
         model = model.to(device)
 
         # =============================================================================
@@ -593,6 +612,12 @@ if __name__ == "__main__":
         choices=ModelUtils.get_supported_models(),
         help="Model architecture to use for training",
     )
+    argParser.add_argument(
+        "--reuse_existing_model",
+        "-rem",
+        action="store_true",
+        help="If set, reuse existing model weights if found in the output folder",
+    )
     args = argParser.parse_args()
 
     if args.debug:
@@ -607,4 +632,5 @@ if __name__ == "__main__":
         learning_rate=args.learning_rate,
         train_test_split_ratio=args.train_test_split_ratio,
         max_file_count=args.max_files_count,
+        reuse_existing_model=args.reuse_existing_model,
     )

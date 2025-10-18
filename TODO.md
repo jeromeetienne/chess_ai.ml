@@ -1,13 +1,5 @@
 # TODO
 
-- DONE in ./bin/train.py
-  - add option for -scheduler_patience, -early_stopping_patience
-  - same for `threshold`
-- in ./bin/train.py
-  - add possibility to start again from the model on disk
-- DONE hyperparameter tuning
-  - which library to use ? optuna, ray tune, ... ?
-  - optuna seems good
 - see about the reg+cls layer with convnet in them like alpha-zero
 - improve the loss weighting ?
   - some dynamic technique exists - <https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g>
@@ -37,6 +29,14 @@
 
 ## DONE
 
+- DONE in ./bin/train.py
+  - add possibility to start again from the model on disk
+- DONE in ./bin/train.py
+  - add option for -scheduler_patience, -early_stopping_patience
+  - same for `threshold`
+- DONE hyperparameter tuning
+  - which library to use ? optuna, ray tune, ... ?
+  - optuna seems good
 - DONE accuracy for win/loss/draw probability in training - for reggression head
 - DONE output encoding Good <https://chatgpt.com/c/68e7d930-69ac-832b-8ae5-5fac5a399f6c>
 - DONE output encoding in alpha-zero - <https://chatgpt.com/c/68e47024-d17c-832d-aa46-dc37f265647b>
