@@ -30,7 +30,7 @@ class ModelUtils:
 
     @staticmethod
     def create_model(model_name: str) -> torch.nn.Module:
-        input_shape, output_shape = BoardEncoding.get_input_shape(), MoveEncoding.get_output_shape()
+        input_shape, output_shape = BoardEncoding.get_input_shape(), MoveEncoding.get_shape_tensor_output()
         # Create the model
         if model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
             model = ChessModelConv2d(input_shape=input_shape, output_shape=output_shape)

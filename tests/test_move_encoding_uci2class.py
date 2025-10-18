@@ -10,9 +10,9 @@ from src.utils.uci2class_utils import Uci2ClassUtils
 def round_trip(move_uci: str, color: chess.Color) -> str:
     """Helper: encode a UCI move to tensor and decode back to UCI string."""
     move = chess.Move.from_uci(move_uci)
-    tensor = MoveEncodingUci2Class.encode_move_tensor(move, color)
+    tensor = MoveEncodingUci2Class.encode_move_tensor_classindex(move, color)
     assert isinstance(tensor, torch.Tensor)
-    decoded = MoveEncodingUci2Class.decode_move_tensor(tensor, color)
+    decoded = MoveEncodingUci2Class.decode_move_tensor_classindex(tensor, color)
     return decoded.uci()
 
 
@@ -64,4 +64,4 @@ def test_invalid_move_raises_keyerror():
     # If a move is not present in the mapping, move_to_tensor should raise KeyError
     with pytest.raises(chess.InvalidMoveError):
         move = chess.Move.from_uci("zz1zz2")
-        MoveEncodingUci2Class.encode_move_tensor(move, chess.WHITE)
+        MoveEncodingUci2Class.encode_move_tensor_classindex(move, chess.WHITE)

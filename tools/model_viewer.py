@@ -32,7 +32,7 @@ if __name__ == "__main__":
     )
     args = argParser.parse_args()
     input_shape = BoardEncoding.get_input_shape()
-    output_shape = MoveEncoding.get_output_shape()
+    output_shape = MoveEncoding.get_shape_tensor_output()
 
     # Create the model
     model_name = args.model_name
