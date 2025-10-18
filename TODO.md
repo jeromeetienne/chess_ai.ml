@@ -5,16 +5,6 @@
   - some dynamic technique exists - <https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g>
   - "Loss Weights Based on Task Uncertainty" seems to be a good one
   - <https://chatgpt.com/c/68e456bf-ee34-832d-b241-9faee3f1e24f> <- this could explain the wide variation in regularization weight
-- start to look at the MTCS + NN integration
-  - in the player
-  - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
-  - see PUCT (mcts + nn) vs UCT (mcts only)
-  - not bad <https://chatgpt.com/c/68e44feb-ec2c-8326-a512-bee4f5496e9a>
-  - im coding a chess program with machine learning. i got a dual head model. it has a policy head which suggest the best move, and a value head which evaluate the board. show me a reusable class for PUCT. with all the type hinting. Make it working with python-chess
-  - "show me a usage of this class with pychess pip package"
-  - good <https://chatgpt.com/c/68e46055-e798-8333-8f9d-59c551540d64>
-- DONE move all function to datasetutils load/save function
-  - nobody is allowed to do torch.load()/torch.save() directly
 - in the model,
   - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - <https://gemini.google.com/app/cdfdec954e81eaff>
   - add a dropout layer only after fully connected layer
@@ -22,13 +12,23 @@
 - how many chess move are there ?
   - <https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there>
 - <https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp>
-- understand the alpha zero paper move encoding
-  - perplexity summarizing it - <https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA>
-  - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
 - make it play on lichess ?
 
 ## DONE
 
+- DONE understand the alpha zero paper move encoding
+  - perplexity summarizing it - <https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA>
+  - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
+- DONE move all function to datasetutils load/save function
+  - nobody is allowed to do torch.load()/torch.save() directly
+- DONE start to look at the MTCS + NN integration
+  - in the player
+  - mcts + 2 models (one to pick the best move during mcts, one to evaluate the board on the leaf nodes)
+  - see PUCT (mcts + nn) vs UCT (mcts only)
+  - not bad <https://chatgpt.com/c/68e44feb-ec2c-8326-a512-bee4f5496e9a>
+  - im coding a chess program with machine learning. i got a dual head model. it has a policy head which suggest the best move, and a value head which evaluate the board. show me a reusable class for PUCT. with all the type hinting. Make it working with python-chess
+  - "show me a usage of this class with pychess pip package"
+  - good <https://chatgpt.com/c/68e46055-e798-8333-8f9d-59c551540d64>
 - DONE in ./bin/train.py
   - add possibility to start again from the model on disk
 - DONE in ./bin/train.py
