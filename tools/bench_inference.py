@@ -100,4 +100,4 @@ if __name__ == "__main__":
         #   Display results for this model
         #
         inference_per_sec = inference_count / time_elapsed
-        print(f"Time taken for {inference_count} predictions: {time_elapsed:.4f} sec. {inference_per_sec:.2f} predictions/sec")
+        print(f"Time taken for {inference_count} predictions: {time_elapsed:.2f} sec. {inference_per_sec:.0f} predictions/sec")
