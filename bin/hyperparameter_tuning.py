@@ -8,6 +8,7 @@ import optuna
 
 # local imports
 from bin.train import TrainCommand
+from src.libs.chess_model import ChessModelParams, ChessModelConv2dParams, ChessModelResnetParams
 from src.utils.model_utils import ModelUtils
 
 
@@ -36,8 +37,10 @@ class HyperParameterTuning:
 
     def objective(self, trial: optuna.trial.Trial) -> float:
         """Objective function for Optuna to minimize."""
+        model_name: str = ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D
 
         # define hyperparameters to tune
+        model_params: ChessModelParams | None = None
         learning_rate: float | None = None
         batch_size: int | None = None
         train_test_split_ratio: float | None = None
@@ -47,7 +50,8 @@ class HyperParameterTuning:
         scheduler_threshold: float | None = None
 
         # set values which wont be tuned
-        # learning_rate = 0.00025
+        # model_params = ChessModelConv2dParams()
+        learning_rate = 0.00025
         batch_size = 32
         train_test_split_ratio = 0.7
         early_stopping_patience = 10
@@ -55,7 +59,23 @@ class HyperParameterTuning:
         scheduler_patience = 3
         scheduler_threshold = 0.1
 
-        # define the hyperparameters to be tuned by optuna
+        if model_params is None:
+            # NOTE: workaround for Optuna not supporting list type directly
+            conv_out_channels_categories = {
+                "[32, 64]": [32, 64],
+                "[64, 128]": [64, 128],
+                "[128, 256]": [128, 256],
+            }
+            conv_out_channels_name = trial.suggest_categorical("conv_out_channels_option", list(conv_out_channels_categories.keys()))
+            conv_out_channels = conv_out_channels_categories[conv_out_channels_name]
+            # set model params
+            model_params = ChessModelConv2dParams(
+                conv_out_channels=conv_out_channels,
+                cls_fc_size=trial.suggest_categorical("cls_fc_size", [64, 128, 256]),
+                reg_fc_size=trial.suggest_categorical("reg_fc_size", [32, 64, 128]),
+                cls_dropout=trial.suggest_float("cls_dropoutProbability", 0.0, 0.5),
+                reg_dropout=trial.suggest_float("reg_dropoutProbability", 0.0, 0.5),
+            )
         if learning_rate is None:
             learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-1, log=True)
         if batch_size is None:
@@ -99,6 +119,17 @@ class HyperParameterTuning:
 
 if __name__ == "__main__":
     argParser = argparse.ArgumentParser(description="Perform hyperparameter tuning using Optuna.")
+    # add -v --verbose argument
+    argParser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output.")
+    # -tc --trial_count argument
+    argParser.add_argument("-tc", "--trial_count", type=int, default=10, help="Number of trials for hyperparameter tuning.")
+    # -fc --max_file_count argument
+    argParser.add_argument("-fc", "--max_file_count", type=int, default=20, help="Maximum number of training files to use.")
+    # -me --max_epoch_count argument
+    argParser.add_argument("-me", "--max_epoch_count", type=int, default=5, help="Maximum number of epochs for training.")
+    args = argParser.parse_args()
 
-    hyper_parameter_tuning = HyperParameterTuning(verbose=False, trial_count=20, max_file_count=15, max_epoch_count=10)
+    hyper_parameter_tuning = HyperParameterTuning(
+        verbose=args.verbose, trial_count=args.trial_count, max_file_count=args.max_file_count, max_epoch_count=args.max_epoch_count
+    )
     hyper_parameter_tuning.run()

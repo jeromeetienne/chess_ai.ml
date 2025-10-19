@@ -13,7 +13,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # local imports
-from src.libs.chess_model import ChessModelParams
+from src.libs.chess_model import ChessModelParams, ChessModelConv2dParams
 from src.pytorch_extra.early_stopper import EarlyStopper
 from src.utils.model_utils import ModelUtils
 from src.utils.dataset_utils import DatasetUtils
@@ -37,7 +37,7 @@ class TrainCommand:
     @staticmethod
     def train(
         model_name=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
-        model_params: ChessModelParams = ChessModelParams(),
+        model_params: ChessModelConv2dParams = ChessModelConv2dParams(),
         max_epoch_count: int = 20,
         batch_size: int = 2048,
         learning_rate: float = 0.001,
@@ -605,7 +605,7 @@ if __name__ == "__main__":
     argParser.add_argument("--train_test_split_ratio", "-ts", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
     argParser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
     argParser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")
-    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument("--max_files_count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     argParser.add_argument(
         "--model_name",
         "-mn",

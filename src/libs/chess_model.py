@@ -72,10 +72,15 @@ class ChessModelConv2dParams(ChessModelParams):
     """
 
     conv_out_channels: list[int] = dataclasses.field(default_factory=lambda: [32, 64, 128])
+    """ List of output channels for each convolutional layer. """
     cls_fc_size: int = 128
+    """ Size of the fully connected layer in the classification head. """
     reg_fc_size: int = 64
-    cls_dropoutProbability: float = 0.2
-    reg_dropoutProbability: float = 0.2
+    """ Size of the fully connected layer in the regression head. """
+    cls_dropout: float = 0.2
+    """ Dropout probability for the classification head. """
+    reg_dropout: float = 0.2
+    """ Dropout probability for the regression head. """
 
 
 # Predefined parameter sets for different speed/accuracy trade-offs
@@ -83,16 +88,16 @@ chessModelConv2dParamsFast = ChessModelConv2dParams(
     conv_out_channels=[16, 32, 64],
     cls_fc_size=64,
     reg_fc_size=64,
-    cls_dropoutProbability=0.0,
-    reg_dropoutProbability=0.0,
+    cls_dropout=0.0,
+    reg_dropout=0.0,
 )
 
 chessModelConv2dParamsSlow = ChessModelConv2dParams(
     conv_out_channels=[16, 64, 128, 256],
     cls_fc_size=256,
     reg_fc_size=128,
-    cls_dropoutProbability=0.3,
-    reg_dropoutProbability=0.3,
+    cls_dropout=0.3,
+    reg_dropout=0.3,
 )
 
 
@@ -148,7 +153,7 @@ class ChessModelConv2d(ChessModel):
             nn.Linear(flat_features, conv2d_params.cls_fc_size),
             nn.BatchNorm1d(conv2d_params.cls_fc_size),
             nn.ReLU(),
-            nn.Dropout(conv2d_params.cls_dropoutProbability),
+            nn.Dropout(conv2d_params.cls_dropout),
             nn.Linear(conv2d_params.cls_fc_size, output_width),
         )
 
@@ -160,7 +165,7 @@ class ChessModelConv2d(ChessModel):
             torch.nn.Linear(flat_features, conv2d_params.reg_fc_size),
             nn.BatchNorm1d(conv2d_params.reg_fc_size),
             torch.nn.ReLU(),
-            nn.Dropout(conv2d_params.reg_dropoutProbability),
+            nn.Dropout(conv2d_params.reg_dropout),
             torch.nn.Linear(conv2d_params.reg_fc_size, 1),
         )
 
@@ -194,11 +199,17 @@ class ChessModelResnetParams(ChessModelParams):
     """
 
     res_block_sizes: list[int] = dataclasses.field(default_factory=lambda: [64, 128])
+    """ List of output channels for each residual block layer. """
     res_block_counts: list[int] = dataclasses.field(default_factory=lambda: [2, 2])
+    """ List of number of residual blocks for each layer. """
     cls_fc_size: int = 256
+    """ Size of the fully connected layer in the classification head. """
     reg_fc_size: int = 128
+    """ Size of the fully connected layer in the regression head. """
     cls_fc_dropout: float = 0.2
+    """ Dropout probability for the classification head. """
     reg_fc_dropout: float = 0.2
+    """ Dropout probability for the regression head. """
 
 
 chessModelResNetParamsFast = ChessModelResnetParams(
@@ -347,6 +358,7 @@ class ChessModelAlphaZeroNetParams(ChessModelParams):
     Parameters for the AlphaZeroNet model.
     """
 
+    # not done for now
     pass
 
 
@@ -375,9 +387,22 @@ class AlphaZeroNet(ChessModel):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
         super().__init__()
 
+        # =============================================================================
+        # Handle arguments
+        # =============================================================================
+
         in_channels, board_size, _ = input_shape
         action_size = output_shape[0]
         num_res_blocks = 10  # Number of residual blocks
+
+        # Validate and convert parameters
+        # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
+        assert isinstance(params, ChessModelParams), "params must be an instance of ChessModelParams"
+        alphaZeroNet_params: ChessModelAlphaZeroNetParams = params if isinstance(params, ChessModelAlphaZeroNetParams) else ChessModelAlphaZeroNetParams()
+
+        # =============================================================================
+        #
+        # =============================================================================
 
         self.conv = nn.Conv2d(in_channels, 256, kernel_size=3, padding=1)
         self.bn = nn.BatchNorm2d(256)
