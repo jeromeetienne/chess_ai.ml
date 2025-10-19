@@ -58,13 +58,19 @@ class ChessModelOriginal(ChessModel):
         return x
 
 
-###############################################################################
-#   Improved ChessModel with more conv layers and dropout
-#
+# =============================================================================
+# =============================================================================
+# ChessModelConv2d
+# =============================================================================
+# =============================================================================
 
 
 @dataclasses.dataclass
 class ChessModelConv2dParams(ChessModelParams):
+    """
+    Parameters for the ChessModelConv2d model.
+    """
+
     conv_out_channels: list[int] = dataclasses.field(default_factory=lambda: [32, 64, 128])
     cls_fc_size: int = 128
     reg_fc_size: int = 64
@@ -72,20 +78,13 @@ class ChessModelConv2dParams(ChessModelParams):
     reg_dropoutProbability: float = 0.2
 
 
+# Predefined parameter sets for different speed/accuracy trade-offs
 chessModelConv2dParamsFast = ChessModelConv2dParams(
     conv_out_channels=[16, 32, 64],
     cls_fc_size=64,
     reg_fc_size=64,
     cls_dropoutProbability=0.0,
     reg_dropoutProbability=0.0,
-)
-
-chessModelConv2dParamsDefault = ChessModelConv2dParams(
-    conv_out_channels=[32, 64, 128],
-    cls_fc_size=128,
-    reg_fc_size=64,
-    cls_dropoutProbability=0.2,
-    reg_dropoutProbability=0.2,
 )
 
 chessModelConv2dParamsSlow = ChessModelConv2dParams(
@@ -98,7 +97,7 @@ chessModelConv2dParamsSlow = ChessModelConv2dParams(
 
 
 class ChessModelConv2d(ChessModel):
-    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams = ChessModelConv2dParams()):
+    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
         """
         A Convolutional Neural Network (CNN) model for classifying chess board states.
 
@@ -119,7 +118,8 @@ class ChessModelConv2d(ChessModel):
 
         # Validate and convert parameters
         # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
-        conv2d_params: ChessModelConv2dParams = params if isinstance(params, ChessModelConv2dParams) else chessModelConv2dParamsDefault
+        assert isinstance(params, ChessModelParams), "params must be an instance of ChessModelParams"
+        conv2d_params: ChessModelConv2dParams = params if isinstance(params, ChessModelConv2dParams) else ChessModelConv2dParams()
 
         # =============================================================================
         # Build the conv_layers
@@ -187,6 +187,30 @@ class ChessModelConv2d(ChessModel):
 #
 
 
+@dataclasses.dataclass
+class ChessModelResnetParams(ChessModelParams):
+    """
+    Parameters for the ChessModelResNet model.
+    """
+
+    res_block_sizes: list[int] = dataclasses.field(default_factory=lambda: [64, 128])
+    res_block_counts: list[int] = dataclasses.field(default_factory=lambda: [2, 2])
+    cls_fc_size: int = 256
+    reg_fc_size: int = 128
+    cls_fc_dropout: float = 0.2
+    reg_fc_dropout: float = 0.2
+
+
+chessModelResNetParamsFast = ChessModelResnetParams(
+    res_block_sizes=[32, 64],
+    res_block_counts=[3, 3],
+    cls_fc_size=128,
+    reg_fc_size=64,
+    cls_fc_dropout=0.0,
+    reg_fc_dropout=0.0,
+)
+
+
 class ChessModelResNet_ResidualBlock(nn.Module):
     def __init__(self, channels: int):
         super().__init__()
@@ -222,85 +246,112 @@ class ChessModelResNet(ChessModel):
     - Output: A tensor of logits of shape (N, 1968).
     """
 
-    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
+    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
+        super().__init__()
+
+        # =============================================================================
+        # Handle arguments
+        # =============================================================================
 
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # res_block1_size = 64
-        # res_block1_count = 2
-        # res_block2_size = 128
-        # res_block2_count = 2
-        # cls_fc_size = 256
-        # cls_fc_dropout = 0.2
-        # reg_fc_size = 128
-        # reg_fc_dropout = 0.2
+        # Validate and convert parameters
+        # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
+        assert isinstance(params, ChessModelParams), "params must be an instance of ChessModelParams"
+        resnet_params: ChessModelResnetParams = params if isinstance(params, ChessModelResnetParams) else ChessModelResnetParams()
 
-        res_block1_size = 32
-        res_block2_size = 64
-        res_block1_count = 3
-        res_block2_count = 3
-        cls_fc_size = 128
-        reg_fc_size = 64
-        cls_fc_dropout = 0.0
-        reg_fc_dropout = 0.0
+        # sanity checks
+        assert len(resnet_params.res_block_sizes) == len(
+            resnet_params.res_block_counts
+        ), f"res_block_sizes and res_block_counts must have the same length, got {len(resnet_params.res_block_sizes)} and {len(resnet_params.res_block_counts)}"
 
-        super().__init__()
+        # =============================================================================
+        # Build the residual blocks
+        # =============================================================================
 
-        # Residual tower
-        self.res_blocks1 = nn.Sequential(
-            nn.Conv2d(input_channels, res_block1_size, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(res_block1_size),
-            nn.ReLU(),
-            *[ChessModelResNet_ResidualBlock(res_block1_size) for _ in range(res_block1_count)],
+        res_block_sizes = resnet_params.res_block_sizes
+        res_block_counts = resnet_params.res_block_counts
+        res_layers: list[nn.Module] = []
+        for layer_idx in range(len(res_block_sizes)):
+            in_channels = input_channels if layer_idx == 0 else res_block_sizes[layer_idx - 1]
+            out_channels = res_block_sizes[layer_idx]
+
+            # Initial conv layer to change number of channels
+            res_layers.append(nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, bias=False))
+            res_layers.append(nn.BatchNorm2d(out_channels))
+            res_layers.append(nn.ReLU())
+
+            # Add the specified number of residual blocks
+            for _ in range(res_block_counts[layer_idx]):
+                res_layers.append(ChessModelResNet_ResidualBlock(out_channels))
+
+        self.res_layers = nn.Sequential(
+            *res_layers,
+            torch.nn.Flatten(),
         )
 
-        # Residual tower
-        self.res_blocks2 = nn.Sequential(
-            nn.Conv2d(res_block1_size, res_block2_size, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(res_block2_size),
-            nn.ReLU(),
-            *[ChessModelResNet_ResidualBlock(res_block2_size) for _ in range(res_block2_count)],
-        )
+        # =============================================================================
+        # Build the classification head (move prediction))
+        # =============================================================================
 
-        flat_features = res_block2_size * 8 * 8
+        flat_features = res_block_sizes[-1] * 8 * 8
 
         # classification head (move prediction)
         self.cls_head = nn.Sequential(
             # fully connected layers
-            nn.Flatten(),
-            nn.Linear(flat_features, cls_fc_size),
+            nn.Linear(flat_features, resnet_params.cls_fc_size),
             nn.ReLU(),
-            nn.Dropout(cls_fc_dropout),
+            nn.Dropout(resnet_params.cls_fc_dropout),
             # Final classifier layer
-            nn.Linear(cls_fc_size, output_width),
+            nn.Linear(resnet_params.cls_fc_size, output_width),
         )
 
+        # =============================================================================
+        # Build the regression head (eval prediction)
+        # =============================================================================
+
         self.reg_head = torch.nn.Sequential(
-            torch.nn.Flatten(),
-            torch.nn.Linear(flat_features, reg_fc_size),
-            nn.BatchNorm1d(reg_fc_size),
+            torch.nn.Linear(flat_features, resnet_params.reg_fc_size),
+            nn.BatchNorm1d(resnet_params.reg_fc_size),
             torch.nn.ReLU(),
-            nn.Dropout(reg_fc_dropout),
-            torch.nn.Linear(reg_fc_size, 1),
+            nn.Dropout(resnet_params.reg_fc_dropout),
+            torch.nn.Linear(resnet_params.reg_fc_size, 1),
         )
 
     def forward(self, x):
         # x: (batch, 21, 8, 8)
         features = x.to(torch.float32)
 
-        features = self.res_blocks1(features)
-        features = self.res_blocks2(features)
+        # apply the residual towers
+        features = self.res_layers(features)
 
+        # apply the move head
         move_logits = self.cls_head(features)
+
+        # apply the eval head
         eval_pred = self.reg_head(features)
 
+        # return both predictions
         return move_logits, eval_pred
 
 
 # =============================================================================
 # AlphaZero exact model - NOT USED
 # =============================================================================
+
+
+@dataclasses.dataclass
+class ChessModelAlphaZeroNetParams(ChessModelParams):
+    """
+    Parameters for the AlphaZeroNet model.
+    """
+
+    pass
+
+
+chessModelAlphaZeroNetParamsDefault = ChessModelAlphaZeroNetParams()
+""" Default parameters for ChessModelAlphaZeroNet."""
 
 
 class AlphaZeroNet_ResidualBlock(nn.Module):
@@ -321,7 +372,7 @@ class AlphaZeroNet_ResidualBlock(nn.Module):
 
 
 class AlphaZeroNet(ChessModel):
-    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
+    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
         super().__init__()
 
         in_channels, board_size, _ = input_shape

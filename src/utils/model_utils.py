@@ -32,9 +32,9 @@ class ModelUtils:
         if model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
             model = ChessModelConv2d(input_shape=input_shape, output_shape=output_shape, params=model_params)
         elif model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
-            model = ChessModelResNet(input_shape=input_shape, output_shape=output_shape)
+            model = ChessModelResNet(input_shape=input_shape, output_shape=output_shape, params=model_params)
         elif model_name == ModelUtils.MODEL_NAME.ALPHA_ZERO_NET:
-            model = AlphaZeroNet(input_shape=input_shape, output_shape=output_shape)
+            model = AlphaZeroNet(input_shape=input_shape, output_shape=output_shape, params=model_params)
         else:
             assert False, f"Unknown model name: {model_name}"
 
