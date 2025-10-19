@@ -77,9 +77,9 @@ class ChessModelConv2dParams(ChessModelParams):
     """ Size of the fully connected layer in the classification head. """
     reg_fc_size: int = 64
     """ Size of the fully connected layer in the regression head. """
-    cls_dropout: float = 0.2
+    cls_head_dropout: float = 0.2
     """ Dropout probability for the classification head. """
-    reg_dropout: float = 0.2
+    reg_head_dropout: float = 0.2
     """ Dropout probability for the regression head. """
 
 
@@ -88,16 +88,16 @@ chessModelConv2dParamsFast = ChessModelConv2dParams(
     conv_out_channels=[16, 32, 64],
     cls_fc_size=64,
     reg_fc_size=64,
-    cls_dropout=0.0,
-    reg_dropout=0.0,
+    cls_head_dropout=0.0,
+    reg_head_dropout=0.0,
 )
 
 chessModelConv2dParamsSlow = ChessModelConv2dParams(
     conv_out_channels=[16, 64, 128, 256],
     cls_fc_size=256,
     reg_fc_size=128,
-    cls_dropout=0.3,
-    reg_dropout=0.3,
+    cls_head_dropout=0.3,
+    reg_head_dropout=0.3,
 )
 
 
@@ -153,7 +153,7 @@ class ChessModelConv2d(ChessModel):
             nn.Linear(flat_features, conv2d_params.cls_fc_size),
             nn.BatchNorm1d(conv2d_params.cls_fc_size),
             nn.ReLU(),
-            nn.Dropout(conv2d_params.cls_dropout),
+            nn.Dropout(conv2d_params.cls_head_dropout),
             nn.Linear(conv2d_params.cls_fc_size, output_width),
         )
 
@@ -165,7 +165,7 @@ class ChessModelConv2d(ChessModel):
             torch.nn.Linear(flat_features, conv2d_params.reg_fc_size),
             nn.BatchNorm1d(conv2d_params.reg_fc_size),
             torch.nn.ReLU(),
-            nn.Dropout(conv2d_params.reg_dropout),
+            nn.Dropout(conv2d_params.reg_head_dropout),
             torch.nn.Linear(conv2d_params.reg_fc_size, 1),
         )
 
@@ -202,23 +202,23 @@ class ChessModelResnetParams(ChessModelParams):
     """ List of output channels for each residual block layer. """
     res_block_counts: list[int] = dataclasses.field(default_factory=lambda: [2, 2])
     """ List of number of residual blocks for each layer. """
-    cls_fc_size: int = 256
+    cls_head_size: int = 256
     """ Size of the fully connected layer in the classification head. """
-    reg_fc_size: int = 128
+    reg_head_size: int = 128
     """ Size of the fully connected layer in the regression head. """
-    cls_fc_dropout: float = 0.2
+    cls_head_dropout: float = 0.2
     """ Dropout probability for the classification head. """
-    reg_fc_dropout: float = 0.2
+    reg_head_dropout: float = 0.2
     """ Dropout probability for the regression head. """
 
 
 chessModelResNetParamsFast = ChessModelResnetParams(
     res_block_sizes=[32, 64],
     res_block_counts=[3, 3],
-    cls_fc_size=128,
-    reg_fc_size=64,
-    cls_fc_dropout=0.0,
-    reg_fc_dropout=0.0,
+    cls_head_size=128,
+    reg_head_size=64,
+    cls_head_dropout=0.0,
+    reg_head_dropout=0.0,
 )
 
 
@@ -311,11 +311,11 @@ class ChessModelResNet(ChessModel):
         # classification head (move prediction)
         self.cls_head = nn.Sequential(
             # fully connected layers
-            nn.Linear(flat_features, resnet_params.cls_fc_size),
+            nn.Linear(flat_features, resnet_params.cls_head_size),
             nn.ReLU(),
-            nn.Dropout(resnet_params.cls_fc_dropout),
+            nn.Dropout(resnet_params.cls_head_dropout),
             # Final classifier layer
-            nn.Linear(resnet_params.cls_fc_size, output_width),
+            nn.Linear(resnet_params.cls_head_size, output_width),
         )
 
         # =============================================================================
@@ -323,11 +323,11 @@ class ChessModelResNet(ChessModel):
         # =============================================================================
 
         self.reg_head = torch.nn.Sequential(
-            torch.nn.Linear(flat_features, resnet_params.reg_fc_size),
-            nn.BatchNorm1d(resnet_params.reg_fc_size),
+            torch.nn.Linear(flat_features, resnet_params.reg_head_size),
+            nn.BatchNorm1d(resnet_params.reg_head_size),
             torch.nn.ReLU(),
-            nn.Dropout(resnet_params.reg_fc_dropout),
-            torch.nn.Linear(resnet_params.reg_fc_size, 1),
+            nn.Dropout(resnet_params.reg_head_dropout),
+            torch.nn.Linear(resnet_params.reg_head_size, 1),
         )
 
     def forward(self, x):

@@ -96,17 +96,17 @@ build_dataset_outcome_100: ## build dataset with 100 files
 	./bin/build_boards_moves.py -fc 100
 	./bin/build_evals_outcome.py -fc 100
 
-build_dataset_outcome_120: ## build dataset with 120 files
-	./bin/build_boards_moves.py -fc 120
-	./bin/build_evals_outcome.py -fc 120
+build_dataset_outcome_150: ## build dataset with 150 files
+	./bin/build_boards_moves.py -fc 150
+	./bin/build_evals_outcome.py -fc 150
 
-build_dataset_outcome_140: ## build dataset with 140 files
-	./bin/build_boards_moves.py -fc 140
-	./bin/build_evals_outcome.py -fc 140
+build_dataset_outcome_200: ## build dataset with 200 files
+	./bin/build_boards_moves.py -fc 200
+	./bin/build_evals_outcome.py -fc 200
 
-build_dataset_outcome_160: ## build dataset with 160 files
-	./bin/build_boards_moves.py -fc 160
-	./bin/build_evals_outcome.py -fc 160
+build_dataset_outcome_250: ## build dataset with 250 files
+	./bin/build_boards_moves.py -fc 250
+	./bin/build_evals_outcome.py -fc 250
 
 ###############################################################################
 #   train targets
@@ -135,14 +135,27 @@ train_80: build_dataset_outcome_80	## train the model with 80 files
 train_100: build_dataset_outcome_100	## train the model with 100 files
 	./bin/train.py -fc 100
 
-train_120: build_dataset_outcome_120	## train the model with 120 files
-	./bin/train.py -fc 120	
+train_150: build_dataset_outcome_150	## train the model with 150 files
+	./bin/train.py -fc 150
 
-train_140: build_dataset_outcome_140	## train the model with 140 files
-	./bin/train.py -fc 140
+train_200: build_dataset_outcome_200	## train the model with 200 files
+	./bin/train.py -fc 200
 
-train_160: build_dataset_outcome_160	## train the model with 160 files
-	./bin/train.py -fc 160
+train_250: build_dataset_outcome_250	## train the model with 250 files
+	./bin/train.py -fc 250
+
+train_300: build_dataset_outcome_300	## train the model with 300 files
+	./bin/train.py -fc 300
+
+###############################################################################
+#   play targets
+#
+
+hyperparameter_tuning: ## run hyperparameter tuning
+	./bin/hyperparameter_tuning.py -v
+
+hyperparameter_dashboard: ## run optuna dashboard for hyperparameter tuning
+	optuna-dashboard sqlite:///output/model/optuna_study.db 
 
 ###############################################################################
 #   play targets

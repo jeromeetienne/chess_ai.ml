@@ -13,7 +13,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # local imports
-from src.libs.chess_model import ChessModelParams, ChessModelConv2dParams
+from src.libs.chess_model import ChessModelParams, ChessModelConv2dParams, ChessModelResNet, chessModelResNetParamsFast
 from src.pytorch_extra.early_stopper import EarlyStopper
 from src.utils.model_utils import ModelUtils
 from src.utils.dataset_utils import DatasetUtils
@@ -198,8 +198,8 @@ class TrainCommand:
         # Losses: classification + regression
         criterion_cls = torch.nn.CrossEntropyLoss()
         # criterion_reg = torch.nn.MSELoss()
-        # criterion_reg = torch.nn.L1Loss()
-        criterion_reg = torch.nn.SmoothL1Loss()
+        criterion_reg = torch.nn.L1Loss()
+        # criterion_reg = torch.nn.SmoothL1Loss()
 
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -226,7 +226,9 @@ class TrainCommand:
 
         # initial loss weights - To tune based on the losses observed during training
         loss_cls_weight = 0.05
-        loss_reg_weight = 1.95
+        loss_reg_weight = 2 - loss_cls_weight
+        # loss_cls_weight = 0.5
+        # loss_reg_weight = 2 - loss_cls_weight
 
         for epoch_index in range(max_epoch_count):
             epoch_start_time = time.time()
@@ -301,12 +303,15 @@ class TrainCommand:
                 ModelUtils.save_model(model, folder_path=model_folder_path)
 
                 # Save training report
-                TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, valid_loss, model)
+                TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, valid_loss, model, model_params)
 
                 # Now test the model on the test set
                 eval_cls_accuracy, eval_reg_mae = TrainCommand.evaluate_model(model, test_dataloader, device)
+                eval_model_accuracy = loss_cls_weight * eval_cls_accuracy + loss_reg_weight * eval_reg_mae
                 if verbose:
-                    print(f"Test dataset: classification accuracy: {eval_cls_accuracy:.2f}% - regression MAE: {eval_reg_mae:.4f}")
+                    print(
+                        f"Test dataset: classification accuracy: {eval_cls_accuracy:.2f}% - regression MAE: {eval_reg_mae:.4f} - weighted sum: {eval_model_accuracy:.4f}"
+                    )
 
             # honor must_stop: Stop training if no improvement for 'patience' epochs
             if must_stop:
@@ -320,13 +325,13 @@ class TrainCommand:
             print("Training complete.")
 
         # Now test the model on the test set
-        eval_cls_accuracy, eval_reg_mae = TrainCommand.evaluate_model(model, test_dataloader, device)
-        model_accuracy_final = loss_cls_weight * eval_cls_accuracy + loss_reg_weight * eval_reg_mae
+        test_cls_accuracy, test_reg_mae = TrainCommand.evaluate_model(model, test_dataloader, device)
+        test_model_accuracy = loss_cls_weight * test_cls_accuracy + loss_reg_weight * test_reg_mae
         if verbose:
             print(
-                f"Test dataset: classification accuracy: {eval_cls_accuracy:.2f}% - regression MAE: {eval_reg_mae:.4f} - weighted sum: {model_accuracy_final:.4f}"
+                f"Test dataset: classification accuracy: {test_cls_accuracy:.2f}% - regression MAE: {test_reg_mae:.4f} - weighted sum: {test_model_accuracy:.4f}"
             )
-        return model_accuracy_final
+        return test_model_accuracy
 
     # =============================================================================
     # Helper methods
@@ -440,8 +445,10 @@ class TrainCommand:
         epoch_index: int,
         validation_loss: float,
         model: torch.nn.Module,
+        model_params: ChessModelParams,
     ):
         file_content = f"""# Chess Model Training
+
 - Trained at {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
 - Model trained on {len(train_dataset)} game positions
 - Model validated on {len(validation_dataset)} game positions
@@ -450,7 +457,11 @@ class TrainCommand:
 - Number of epochs: {epoch_index + 1}
 - Final validation loss: {validation_loss:.4f}
 
-# Model Summary
+## Model Summary
+
+- model param {model_params}
+
+
 ```
 {ModelSummary.to_string(model)}
 ```
@@ -628,7 +639,7 @@ if __name__ == "__main__":
         type=str,
         default=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
         choices=ModelUtils.get_supported_models(),
-        help="Model architecture to use for training",
+        help="Model architecture to use",
     )
     argParser.add_argument(
         "--reuse_existing_model",
@@ -642,9 +653,24 @@ if __name__ == "__main__":
         print(f"Arguments: {args}")
         print("Debug mode is ON")
 
+    # =============================================================================
+    # model_param from args.model_name
+    # =============================================================================
+    if args.model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
+        model_param = ChessModelConv2dParams(conv_out_channels=[16, 32, 64], cls_fc_size=256, reg_fc_size=32, cls_head_dropout=0.1, reg_head_dropout=0.2)
+    elif args.model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
+        model_param = chessModelResNetParamsFast
+    else:
+        raise ValueError(f"Unsupported model name: {args.model_name}")
+
+    # =============================================================================
+    # Run training
+    # =============================================================================
+
     # Call the train function
     TrainCommand.train(
         model_name=args.model_name,
+        model_params=model_param,
         max_epoch_count=args.max_epoch,
         batch_size=args.batch_size,
         learning_rate=args.learning_rate,

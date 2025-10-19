@@ -2,11 +2,9 @@
 
 - remove src/libs/types.py
   - this is obsolete and useless
-- DONE add model architecture in the hyperparameter tuning
 - save in a new folder every run, the folder contains the date
-- see vscode support for pytorch
-  - <https://code.visualstudio.com/docs/datascience/pytorch-support>
-  - <https://marketplace.visualstudio.com/items?itemName=ms-toolsai.datawrangler>
+- technically regression head is more important than classification head
+  - make a fix weighting in the loss function
 - see about the reg+cls layer with convnet in them like alpha-zero
 - improve the loss weighting ?
   - some dynamic technique exists - <https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g>
@@ -23,6 +21,10 @@
 
 ## DONE
 
+- DONE add model architecture in the hyperparameter tuning
+- DONE see vscode support for pytorch
+  - <https://code.visualstudio.com/docs/datascience/pytorch-support>
+  - <https://marketplace.visualstudio.com/items?itemName=ms-toolsai.datawrangler>
 - DONE understand the alpha zero paper move encoding
   - perplexity summarizing it - <https://www.perplexity.ai/search/how-alpha-zero-encode-chess-mo-RbG7COYhRFqvorVml7IRGA>
   - [gym chess move encoding](https://github.com/iamlucaswolf/gym-chess/blob/master/gym_chess/alphazero/move_encoding/)
