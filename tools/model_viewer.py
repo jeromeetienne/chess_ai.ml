@@ -10,6 +10,7 @@ import argparse
 # local imports
 from src.encoding.board_encoding import BoardEncoding
 from src.encoding.move_encoding import MoveEncoding
+from src.libs.chess_model import ChessModelParams
 from src.utils.model_utils import ModelUtils
 
 
@@ -36,7 +37,7 @@ if __name__ == "__main__":
 
     # Create the model
     model_name = args.model_name
-    model = ModelUtils.create_model(model_name)
+    model = ModelUtils.create_model(model_name, model_params=ChessModelParams())
 
     # Input size for the model visualization (batch size 1, 21 channels, 8x8 image)
     input_size = (1, *input_shape)  # (1, 21, 8, 8)

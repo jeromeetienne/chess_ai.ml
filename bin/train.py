@@ -13,6 +13,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # local imports
+from src.libs.chess_model import ChessModelParams
 from src.pytorch_extra.early_stopper import EarlyStopper
 from src.utils.model_utils import ModelUtils
 from src.utils.dataset_utils import DatasetUtils
@@ -36,6 +37,7 @@ class TrainCommand:
     @staticmethod
     def train(
         model_name=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
+        model_params: ChessModelParams = ChessModelParams(),
         max_epoch_count: int = 20,
         batch_size: int = 2048,
         learning_rate: float = 0.001,
@@ -164,7 +166,7 @@ class TrainCommand:
         # Create the model
         # =============================================================================
 
-        model = ModelUtils.create_model(model_name)
+        model = ModelUtils.create_model(model_name, model_params)
         model_path = ModelUtils.model_path(model_folder_path)
         if os.path.exists(model_path) and reuse_existing_model:
             if verbose:

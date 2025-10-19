@@ -5,7 +5,33 @@ import torch
 import torch.nn.functional as F
 
 
-class ChessModelOriginal(nn.Module):
+# =============================================================================
+# Base classes
+# =============================================================================
+class ChessModelParams:
+    """
+    Base class for chess model parameters.
+    All chess model parameter classes should inherit from this class.
+    """
+
+    pass
+
+
+class ChessModel(nn.Module):
+    """
+    Base class for chess models.
+    All chess models should inherit from this class.
+    """
+
+    pass
+
+
+# =============================================================================
+# Original Chess Model
+# =============================================================================
+
+
+class ChessModelOriginal(ChessModel):
     def __init__(self, num_classes):
         super(ChessModelOriginal, self).__init__()
         # conv1 -> relu -> conv2 -> relu -> flatten -> fc1 -> relu -> fc2
@@ -38,7 +64,7 @@ class ChessModelOriginal(nn.Module):
 
 
 @dataclasses.dataclass
-class ChessModelConv2dParams:
+class ChessModelConv2dParams(ChessModelParams):
     conv_out_channels: list[int] = dataclasses.field(default_factory=lambda: [32, 64, 128])
     cls_fc_size: int = 128
     reg_fc_size: int = 64
@@ -71,8 +97,8 @@ chessModelConv2dParamsSlow = ChessModelConv2dParams(
 )
 
 
-class ChessModelConv2d(nn.Module):
-    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelConv2dParams = chessModelConv2dParamsSlow):
+class ChessModelConv2d(ChessModel):
+    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams = ChessModelConv2dParams()):
         """
         A Convolutional Neural Network (CNN) model for classifying chess board states.
 
@@ -81,15 +107,25 @@ class ChessModelConv2d(nn.Module):
             output_shape (tuple): A tuple representing the shape of the output tensor (number of classes,).
             params (ChessModelConv2dParams): Hyperparameters for the model architecture.
         """
+
         super(ChessModelConv2d, self).__init__()
+
+        # =============================================================================
+        # Handle arguments
+        # =============================================================================
 
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
+        # Validate and convert parameters
+        # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
+        conv2d_params: ChessModelConv2dParams = params if isinstance(params, ChessModelConv2dParams) else chessModelConv2dParamsDefault
+
         # =============================================================================
         # Build the conv_layers
         # =============================================================================
-        conv_channels_out = params.conv_out_channels
+
+        conv_channels_out = conv2d_params.conv_out_channels
         conv_layers: list[nn.Module] = []
         for layer_idx in range(len(conv_channels_out)):
             in_channels = input_channels if layer_idx == 0 else conv_channels_out[layer_idx - 1]
@@ -109,11 +145,11 @@ class ChessModelConv2d(nn.Module):
 
         flat_features = conv_channels_out[-1] * 8 * 8
         self.cls_head = nn.Sequential(
-            nn.Linear(flat_features, params.cls_fc_size),
-            nn.BatchNorm1d(params.cls_fc_size),
+            nn.Linear(flat_features, conv2d_params.cls_fc_size),
+            nn.BatchNorm1d(conv2d_params.cls_fc_size),
             nn.ReLU(),
-            nn.Dropout(params.cls_dropoutProbability),
-            nn.Linear(params.cls_fc_size, output_width),
+            nn.Dropout(conv2d_params.cls_dropoutProbability),
+            nn.Linear(conv2d_params.cls_fc_size, output_width),
         )
 
         # =============================================================================
@@ -121,11 +157,11 @@ class ChessModelConv2d(nn.Module):
         # =============================================================================
 
         self.reg_head = torch.nn.Sequential(
-            torch.nn.Linear(flat_features, params.reg_fc_size),
-            nn.BatchNorm1d(params.reg_fc_size),
+            torch.nn.Linear(flat_features, conv2d_params.reg_fc_size),
+            nn.BatchNorm1d(conv2d_params.reg_fc_size),
             torch.nn.ReLU(),
-            nn.Dropout(params.reg_dropoutProbability),
-            torch.nn.Linear(params.reg_fc_size, 1),
+            nn.Dropout(conv2d_params.reg_dropoutProbability),
+            torch.nn.Linear(conv2d_params.reg_fc_size, 1),
         )
 
         # Initialize weights
@@ -179,7 +215,7 @@ class ChessModelResNet_ResidualBlock(nn.Module):
         return out
 
 
-class ChessModelResNet(nn.Module):
+class ChessModelResNet(ChessModel):
     """
     A ResNet-like model for classifying chess board states.
     - Input: A tensor of shape (N, 21, 8, 8) where N is the batch size.
@@ -284,7 +320,7 @@ class AlphaZeroNet_ResidualBlock(nn.Module):
         return x
 
 
-class AlphaZeroNet(nn.Module):
+class AlphaZeroNet(ChessModel):
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
         super().__init__()
 

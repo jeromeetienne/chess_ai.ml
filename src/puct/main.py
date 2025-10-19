@@ -5,6 +5,7 @@ import os
 import chess
 
 # from tmp.puct2.puct import PUCT
+from src.libs.chess_model import ChessModelParams
 from tmp.puct2.puct_batch import PUCTBatch
 from tmp.puct2.puct_single import PUCTSingle
 from tmp.puct2.gamestate_chess import ChessGameState
@@ -30,7 +31,8 @@ def play_game(num_simulations=200, max_moves=512, c_puct=1.4):
 
     # 2. Create dummy NN (replace with your PyTorch model later)
     model_name = ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D
-    model = ModelUtils.load_model(model_name, model_folder_path)
+    model_params = ChessModelParams()
+    model = ModelUtils.load_model(model_name, model_folder_path, model_params=model_params)
     policyValueNet = PolicyValueNetMine(model)
 
     # 3. Create PUCT instance

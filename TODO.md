@@ -1,5 +1,7 @@
 # TODO
 
+- remove src/libs/types.py
+  - this is obsolete and useless
 - add model architecture in the hyperparameter tuning
 - save in a new folder every run, the folder contains the date
 - see vscode support for pytorch

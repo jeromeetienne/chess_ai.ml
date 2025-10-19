@@ -40,6 +40,7 @@ import chess
 import chess.polyglot
 
 # local imports
+from src.libs.chess_model import ChessModelParams
 from src.libs.chess_player import ChessPlayer
 from src.utils.model_utils import ModelUtils
 
@@ -65,7 +66,8 @@ class UciNetEngine:
 
         # Load the model
         model_name = ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D
-        self._model = ModelUtils.load_model(model_name, model_folder_path)
+        model_params = ChessModelParams()
+        self._model = ModelUtils.load_model(model_name, model_folder_path, model_params=model_params)
 
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")

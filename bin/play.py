@@ -7,6 +7,7 @@ import argparse
 
 # local imports
 # from src.play import PlayCommand
+from src.libs.chess_model import ChessModelParams
 from src.utils.model_utils import ModelUtils
 
 # define the opponent PYTHON type
@@ -25,9 +26,7 @@ import dotenv
 
 
 # local imports
-from src.encoding.board_encoding import BoardEncoding
 from src.utils.model_utils import ModelUtils
-from src.utils.uci2class_utils import Uci2ClassUtils
 from src.libs.chess_player import ChessPlayer
 from src.utils.pgn_utils import PGNUtils
 from src.utils.termcolor_utils import TermcolorUtils
@@ -74,7 +73,7 @@ class PlayCommand:
         #
 
         # Load the model
-        model = ModelUtils.load_model(model_name, model_folder_path)
+        model = ModelUtils.load_model(model_name, model_folder_path, model_params=ChessModelParams())
 
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")

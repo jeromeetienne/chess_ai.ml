@@ -9,7 +9,7 @@ import argparse
 import torch
 
 # local imports
-from src.libs.chess_model import ChessModelConv2d, ChessModelResNet
+from src.libs.chess_model import ChessModelConv2d, ChessModelParams, ChessModelResNet
 from src.encoding.board_encoding import BoardEncoding
 from src.utils.model_utils import ModelUtils
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         print(f"\nBenchmarking model: {model_name}")
 
         # Create the model
-        model = ModelUtils.create_model(model_name)
+        model = ModelUtils.create_model(model_name, model_params=ChessModelParams())
 
         # =============================================================================
         # Load model weights if available
