@@ -1,4 +1,5 @@
 # pip imports
+import dataclasses
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
@@ -34,85 +35,97 @@ class ChessModelOriginal(nn.Module):
 ###############################################################################
 #   Improved ChessModel with more conv layers and dropout
 #
+
+
+@dataclasses.dataclass
+class ChessModelConv2dParams:
+    conv_out_channels: list[int] = dataclasses.field(default_factory=lambda: [32, 64, 128])
+    cls_fc_size: int = 128
+    reg_fc_size: int = 64
+    cls_dropoutProbability: float = 0.2
+    reg_dropoutProbability: float = 0.2
+
+
+chessModelConv2dParamsFast = ChessModelConv2dParams(
+    conv_out_channels=[16, 32, 64],
+    cls_fc_size=64,
+    reg_fc_size=64,
+    cls_dropoutProbability=0.0,
+    reg_dropoutProbability=0.0,
+)
+
+chessModelConv2dParamsDefault = ChessModelConv2dParams(
+    conv_out_channels=[32, 64, 128],
+    cls_fc_size=128,
+    reg_fc_size=64,
+    cls_dropoutProbability=0.2,
+    reg_dropoutProbability=0.2,
+)
+
+chessModelConv2dParamsSlow = ChessModelConv2dParams(
+    conv_out_channels=[16, 64, 128, 256],
+    cls_fc_size=256,
+    reg_fc_size=128,
+    cls_dropoutProbability=0.3,
+    reg_dropoutProbability=0.3,
+)
+
+
 class ChessModelConv2d(nn.Module):
-    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int]):
+    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelConv2dParams = chessModelConv2dParamsSlow):
         """
         A Convolutional Neural Network (CNN) model for classifying chess board states.
 
         Args:
             input_shape (tuple): A tuple representing the shape of the input tensor (channels, height, width).
             output_shape (tuple): A tuple representing the shape of the output tensor (number of classes,).
+            params (ChessModelConv2dParams): Hyperparameters for the model architecture.
         """
         super(ChessModelConv2d, self).__init__()
 
         output_width = output_shape[0]
         input_channels, input_height, input_width = input_shape
 
-        # conv1_out_channels = 64
-        # conv2_out_channels = 128
-        # conv3_out_channels = 256
-        # cls_fc_size = 128
-        # reg_fc_size = 64
-        # cls_dropoutProbability = 0.2
-        # reg_dropoutProbability = 0.2
-
-        # conv1_out_channels = 32
-        # conv2_out_channels = 64
-        # conv3_out_channels = 128
-        # cls_fc_size = 128
-        # reg_fc_size = 64
-        # cls_dropoutProbability = 0.0
-        # reg_dropoutProbability = 0.0
-
-        conv1_out_channels = 16
-        conv2_out_channels = 32
-        conv3_out_channels = 64
-        cls_fc_size = 64
-        reg_fc_size = 64
-        cls_dropoutProbability = 0.3
-        reg_dropoutProbability = 0.2
-
-        # dropoutProbability = 0.2
-        # conv1_out_channels = 16
-        # conv2_out_channels = 32
-        # fc_intermediate_size = 256
-
-        # dropoutProbability = 0.0
-        # conv1_out_channels = 8
-        # conv2_out_channels = 16
-        # fc_intermediate_size = 256
+        # =============================================================================
+        # Build the conv_layers
+        # =============================================================================
+        conv_channels_out = params.conv_out_channels
+        conv_layers: list[nn.Module] = []
+        for layer_idx in range(len(conv_channels_out)):
+            in_channels = input_channels if layer_idx == 0 else conv_channels_out[layer_idx - 1]
+            out_channels = conv_channels_out[layer_idx]
+            conv_layers.append(nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1))
+            conv_layers.append(nn.BatchNorm2d(out_channels))
+            conv_layers.append(nn.ReLU())
 
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(input_channels, conv1_out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(conv1_out_channels),
-            nn.ReLU(),
-            nn.Conv2d(conv1_out_channels, conv2_out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(conv2_out_channels),
-            nn.ReLU(),
-            nn.Conv2d(conv2_out_channels, conv3_out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(conv3_out_channels),
-            nn.ReLU(),
+            *conv_layers,
             torch.nn.Flatten(),
         )
 
-        flat_features = conv3_out_channels * 8 * 8
+        # =============================================================================
+        # Build the classification head (move prediction))
+        # =============================================================================
 
-        # classification head (move prediction)
+        flat_features = conv_channels_out[-1] * 8 * 8
         self.cls_head = nn.Sequential(
-            nn.Linear(flat_features, cls_fc_size),
-            nn.BatchNorm1d(cls_fc_size),
+            nn.Linear(flat_features, params.cls_fc_size),
+            nn.BatchNorm1d(params.cls_fc_size),
             nn.ReLU(),
-            nn.Dropout(cls_dropoutProbability),
-            nn.Linear(cls_fc_size, output_width),
+            nn.Dropout(params.cls_dropoutProbability),
+            nn.Linear(params.cls_fc_size, output_width),
         )
 
-        # regression head (eval prediction)
+        # =============================================================================
+        # Build the regression head (eval prediction)
+        # =============================================================================
+
         self.reg_head = torch.nn.Sequential(
-            torch.nn.Linear(flat_features, reg_fc_size),
-            nn.BatchNorm1d(reg_fc_size),
+            torch.nn.Linear(flat_features, params.reg_fc_size),
+            nn.BatchNorm1d(params.reg_fc_size),
             torch.nn.ReLU(),
-            nn.Dropout(reg_dropoutProbability),
-            torch.nn.Linear(reg_fc_size, 1),
+            nn.Dropout(params.reg_dropoutProbability),
+            torch.nn.Linear(params.reg_fc_size, 1),
         )
 
         # Initialize weights
