@@ -250,7 +250,10 @@ def main() -> None:
     # =============================================================================
     # Argument parsing
     # =============================================================================
-    argParser = argparse.ArgumentParser(description="UCI chess engine over named pipes or stdin/stdout")
+    argParser = argparse.ArgumentParser(
+        description="UCI chess engine over named pipes or stdin/stdout",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     argParser.add_argument(
         "--mode",
         "-m",

@@ -31,8 +31,6 @@ from src.libs.chess_player import ChessPlayer
 from src.utils.pgn_utils import PGNUtils
 from src.utils.termcolor_utils import TermcolorUtils
 from src.libs.chess_extra import ChessExtra
-from src.libs.types import opponent_tech_t, color_t
-
 
 # Init dotenv to load environment variables from .env file
 dotenv.load_dotenv()

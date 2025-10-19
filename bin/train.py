@@ -37,7 +37,7 @@ class TrainCommand:
     @staticmethod
     def train(
         model_name=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
-        model_params: ChessModelConv2dParams = ChessModelConv2dParams(),
+        model_params: ChessModelParams = ChessModelConv2dParams(),
         max_epoch_count: int = 20,
         batch_size: int = 2048,
         learning_rate: float = 0.001,
@@ -52,25 +52,40 @@ class TrainCommand:
         verbose: bool = True,
     ) -> float:
         """
-        Train a chess model using PyTorch.
+        Train the chess policy+value network (moves classification + eval regression).
+
+        This routine:
+        - Loads board/move/eval tensors via DatasetUtils from output/pgn_tensors/.
+        - Splits into train/validation/test using train_test_split_ratio.
+        - Builds the model with ModelUtils.create_model() and optional weight reuse.
+        - Trains with CrossEntropyLoss (moves) and SmoothL1Loss (evals) using Adam.
+        - Uses ReduceLROnPlateau scheduler and EarlyStopper on validation loss.
+        - Saves the best model and a training report/plots under output/model/.
 
         Args:
-            model_name: Name of the model architecture to use.
-            max_epoch_count (int): Maximum number of training epochs.
-            batch_size (int): Batch size for training.
-            learning_rate (float): Learning rate for the optimizer.
-            early_stopping_patience (int): Number of epochs with no improvement before stopping.
+            model_name (str): One of ModelUtils.get_supported_models().
+            model_params (ChessModelParams): Model hyperparameters.
+            max_epoch_count (int): Max number of training epochs.
+            batch_size (int): Mini-batch size.
+            learning_rate (float): Adam learning rate.
+            early_stopping_patience (int): Epochs with no validation improvement before stopping.
             early_stopping_threshold (float): Minimum relative improvement to reset early stopping.
-            scheduler_patience (int): Number of epochs with no improvement before reducing LR.
-            scheduler_threshold (float): Threshold for the LR scheduler to consider improvement.
-            train_test_split_ratio (float): Ratio of training data to total data.
-            max_file_count (int): Maximum number of PGN files to process. 0 for no limit.
-            reuse_existing_model (bool): If True, load existing model weights when available.
-            random_seed (int | None): Random seed for reproducibility. None means no fixed seed.
-            verbose (bool): Whether to print verbose output.
+            scheduler_patience (int): Epochs with no improvement before reducing LR.
+            scheduler_threshold (float): Minimum change to qualify as improvement for the scheduler.
+            train_test_split_ratio (float): Fraction of data used for training (0..1).
+            max_file_count (int): Max number of PGN tensor files to load; 0 means no limit.
+            reuse_existing_model (bool): If True, load existing weights when available.
+            random_seed (int | None): Seed for reproducibility; None disables seeding.
+            verbose (bool): If True, prints progress and shows tqdm bars.
 
         Returns:
-            float: Final weighted metric for the trained model (classification accuracy + regression MAE).
+            float: Final weighted metric computed on the test set:
+            loss_cls_weight * classification_accuracy(%) + loss_reg_weight * regression_MAE.
+            Note: units are heterogeneous; this is a convenience score for monitoring.
+
+        Side Effects:
+            - Saves best model to output/model/model.pth.
+            - Writes TRAINING_REPORT.md and training_validation_loss.png to output/model/.
         """
 
         # set random seed for reproducibility
@@ -83,6 +98,7 @@ class TrainCommand:
         if verbose:
             print("Training parameters:")
             print(f"- Model name: {model_name}")
+            print(f"- Model params: {model_params}")
             print(f"- Max epoch count: {max_epoch_count}")
             print(f"- Batch size: {batch_size}")
             print(f"- Learning rate: {learning_rate}")

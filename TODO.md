@@ -2,7 +2,7 @@
 
 - remove src/libs/types.py
   - this is obsolete and useless
-- add model architecture in the hyperparameter tuning
+- DONE add model architecture in the hyperparameter tuning
 - save in a new folder every run, the folder contains the date
 - see vscode support for pytorch
   - <https://code.visualstudio.com/docs/datascience/pytorch-support>

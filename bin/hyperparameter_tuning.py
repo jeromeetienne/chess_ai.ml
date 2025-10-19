@@ -52,9 +52,9 @@ class HyperParameterTuning:
         # set values which wont be tuned
         # model_params = ChessModelConv2dParams()
         learning_rate = 0.00025
-        batch_size = 32
+        batch_size = 128 * 2
         train_test_split_ratio = 0.7
-        early_stopping_patience = 10
+        early_stopping_patience = 20
         early_stopping_threshold = 0.01
         scheduler_patience = 3
         scheduler_threshold = 0.1
@@ -62,9 +62,12 @@ class HyperParameterTuning:
         if model_params is None:
             # NOTE: workaround for Optuna not supporting list type directly
             conv_out_channels_categories = {
-                "[32, 64]": [32, 64],
-                "[64, 128]": [64, 128],
-                "[128, 256]": [128, 256],
+                # "[32, 64]": [32, 64],
+                # "[64, 128]": [64, 128],
+                # "[128, 256]": [128, 256],
+                "[16, 32, 64]": [16, 32, 64],
+                "[32, 64, 128]": [32, 64, 128],
+                "[64, 128, 256]": [64, 128, 256],
             }
             conv_out_channels_name = trial.suggest_categorical("conv_out_channels_option", list(conv_out_channels_categories.keys()))
             conv_out_channels = conv_out_channels_categories[conv_out_channels_name]
@@ -93,6 +96,7 @@ class HyperParameterTuning:
 
         # Train the model with the suggested hyperparameters
         model_accuracy_final = TrainCommand.train(
+            model_params=model_params,
             batch_size=batch_size,
             learning_rate=learning_rate,
             train_test_split_ratio=train_test_split_ratio,
@@ -118,15 +122,14 @@ class HyperParameterTuning:
 # =============================================================================
 
 if __name__ == "__main__":
-    argParser = argparse.ArgumentParser(description="Perform hyperparameter tuning using Optuna.")
-    # add -v --verbose argument
+    argParser = argparse.ArgumentParser(
+        description="Perform hyperparameter tuning using Optuna.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     argParser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output.")
-    # -tc --trial_count argument
-    argParser.add_argument("-tc", "--trial_count", type=int, default=10, help="Number of trials for hyperparameter tuning.")
-    # -fc --max_file_count argument
-    argParser.add_argument("-fc", "--max_file_count", type=int, default=20, help="Maximum number of training files to use.")
-    # -me --max_epoch_count argument
-    argParser.add_argument("-me", "--max_epoch_count", type=int, default=5, help="Maximum number of epochs for training.")
+    argParser.add_argument("-tc", "--trial_count", type=int, default=20, help="Number of trials for hyperparameter tuning.")
+    argParser.add_argument("-fc", "--max_file_count", type=int, default=10, help="Maximum number of training files to use.")
+    argParser.add_argument("-me", "--max_epoch_count", type=int, default=10, help="Maximum number of epochs for training.")
     args = argParser.parse_args()
 
     hyper_parameter_tuning = HyperParameterTuning(
