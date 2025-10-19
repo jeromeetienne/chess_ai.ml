@@ -69,7 +69,16 @@ class ModelUtils:
 
     @staticmethod
     def guess_model_name_profile(folder_path: str) -> tuple[str | None, str | None]:
-        """Try to guess the model name and profile by attempting to load the model with each supported model and profile."""
+        """Try to guess the model name and profile by attempting to load the model with each supported model and profile.
+
+        - it just try them all until one works
+
+        Args:
+            folder_path (str): The folder path where the model is saved.
+
+        Returns:
+            tuple[str | None, str | None]: The guessed model name and profile, or (None, None) if not found.
+        """
         model_names = ModelUtils.get_supported_models()
         for model_name in model_names:
             # =============================================================================
@@ -91,6 +100,8 @@ class ModelUtils:
                 model = ModelUtils.create_model(model_name, model_params=model_params)
                 try:
                     ModelUtils.load_model(model_name, folder_path, model_params=model_params)
+
+                    # return the first one that works
                     return model_name, profile_name
                 except Exception:
                     continue

@@ -272,6 +272,9 @@ if __name__ == "__main__":
     )
     args = argParser.parse_args()
 
+    # =============================================================================
+    # Process options
+    # =============================================================================
     if args.debug is True:
         print(f"Arguments: {args}")
 
@@ -281,6 +284,10 @@ if __name__ == "__main__":
     else:
         chessbotml_color: color_t = args.color
     opponent_tech: opponent_tech_t = args.opponent
+
+    # =============================================================================
+    # Guess model_name and model_profile from file
+    # =============================================================================
 
     model_name, model_profile = ModelUtils.guess_model_name_profile(model_folder_path)
     if model_name is None or model_profile is None:
