@@ -66,3 +66,33 @@ class ModelUtils:
         # Save the model
         model_path = ModelUtils.model_path(folder_path)
         torch.save(model.state_dict(), model_path)
+
+    @staticmethod
+    def guess_model_name_profile(folder_path: str) -> tuple[str | None, str | None]:
+        """Try to guess the model name and profile by attempting to load the model with each supported model and profile."""
+        model_names = ModelUtils.get_supported_models()
+        for model_name in model_names:
+            # =============================================================================
+            # Get the model class
+            # =============================================================================
+            model_class = None
+            if model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
+                model_class = ChessModelConv2d
+            elif model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
+                model_class = ChessModelResNet
+            elif model_name == ModelUtils.MODEL_NAME.ALPHA_ZERO_NET:
+                model_class = AlphaZeroNet
+            else:
+                assert False, f"Unknown model name: {model_name}"
+
+            profile_names = model_class.PROFILE.keys()
+            for profile_name in profile_names:
+                model_params: ChessModelParams = model_class.PROFILE[profile_name]
+                model = ModelUtils.create_model(model_name, model_params=model_params)
+                try:
+                    ModelUtils.load_model(model_name, folder_path, model_params=model_params)
+                    return model_name, profile_name
+                except Exception:
+                    continue
+
+        return None, None

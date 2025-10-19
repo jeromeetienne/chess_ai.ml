@@ -4,15 +4,7 @@
 import random
 import typing
 import argparse
-
-# local imports
-# from src.play import PlayCommand
-from src.libs.chess_model import ChessModelParams
-from src.utils.model_utils import ModelUtils
-
-# define the opponent PYTHON type
-opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
-color_t = typing.Literal["white", "black"]
+import sys
 
 # stdlib imports
 import os
@@ -26,6 +18,7 @@ import dotenv
 
 
 # local imports
+from src.libs.chess_model import AlphaZeroNet, ChessModelParams, ChessModelConv2d, ChessModelResNet
 from src.utils.model_utils import ModelUtils
 from src.libs.chess_player import ChessPlayer
 from src.utils.pgn_utils import PGNUtils
@@ -41,6 +34,11 @@ model_folder_path = os.path.join(output_folder_path, "model")
 data_folder_path = os.path.join(__dirname__, "..", "data")
 
 
+# define the opponent PYTHON type
+opponent_tech_t = typing.Literal["human", "stockfish", "chessbotml"]
+color_t = typing.Literal["white", "black"]
+
+
 class PlayCommand:
 
     ###############################################################################
@@ -52,6 +50,7 @@ class PlayCommand:
     @staticmethod
     def play_game(
         model_name: str,
+        model_params: ChessModelParams = ChessModelParams(),
         chatbotml_color: color_t = "white",
         opponent_tech: opponent_tech_t = "stockfish",
         stockfish_elo: int = 1350,
@@ -71,7 +70,7 @@ class PlayCommand:
         #
 
         # Load the model
-        model = ModelUtils.load_model(model_name, model_folder_path, model_params=ChessModelParams())
+        model = ModelUtils.load_model(model_name, model_folder_path, model_params=model_params)
 
         # Read the polyglot opening book
         polyglot_path = os.path.join(data_folder_path, "./polyglot/lichess_pro_books/lpb-allbook.bin")
@@ -265,16 +264,8 @@ if __name__ == "__main__":
         help="Enable debug mode.",
     )
     argParser.add_argument(
-        "--model_name",
-        "-mn",
-        type=str,
-        default=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
-        choices=ModelUtils.get_supported_models(),
-        help="Model architecture to use for playing",
-    )
-    argParser.add_argument(
         "--max-ply",
-        "-mp",
+        "-mply",
         type=int,
         default=200,
         help="Maximum number of ply (half-moves) for the game. Default is 200.",
@@ -291,11 +282,30 @@ if __name__ == "__main__":
         chessbotml_color: color_t = args.color
     opponent_tech: opponent_tech_t = args.opponent
 
+    model_name, model_profile = ModelUtils.guess_model_name_profile(model_folder_path)
+    if model_name is None or model_profile is None:
+        print(f"Could not guess the model name and profile from the saved model at {model_folder_path}.")
+        sys.exit(1)
+    print(f"Guessed model name: {model_name}, profile: {model_profile} from the saved model at {model_folder_path}.")
+
+    # =============================================================================
+    # model_param from args.model_name
+    # =============================================================================
+    if model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
+        model_params = ChessModelConv2d.PROFILE[model_profile]
+    elif model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
+        model_params = ChessModelResNet.PROFILE[model_profile]
+    elif model_name == ModelUtils.MODEL_NAME.ALPHA_ZERO_NET:
+        model_params = AlphaZeroNet.PROFILE[model_profile]
+    else:
+        raise ValueError(f"Unsupported model name: {args.model_name}")
+
     ###############################################################################
     #   Start the game
     #
     PlayCommand.play_game(
-        model_name=args.model_name,
+        model_name=model_name,
+        model_params=model_params,
         chatbotml_color=chessbotml_color,
         opponent_tech=opponent_tech,
         stockfish_elo=args.stockfish_elo,

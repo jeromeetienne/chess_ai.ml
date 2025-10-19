@@ -3,6 +3,7 @@
 # stdlib imports
 import argparse
 import os
+import sys
 import time
 
 # pip imports
@@ -13,7 +14,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # local imports
-from src.libs.chess_model import ChessModelParams, ChessModelConv2dParams, ChessModelResNet, chessModelResNetParamsFast
+from src.libs.chess_model import AlphaZeroNet, ChessModelParams, ChessModelConv2d, ChessModelResNet
 from src.pytorch_extra.early_stopper import EarlyStopper
 from src.utils.model_utils import ModelUtils
 from src.utils.dataset_utils import DatasetUtils
@@ -37,7 +38,7 @@ class TrainCommand:
     @staticmethod
     def train(
         model_name=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
-        model_params: ChessModelParams = ChessModelConv2dParams(),
+        model_params: ChessModelParams = ChessModelParams(),
         max_epoch_count: int = 20,
         batch_size: int = 2048,
         learning_rate: float = 0.001,
@@ -238,17 +239,17 @@ class TrainCommand:
             # =============================================================================
             # Dynamic loss weighting based on recent training losses
             # TODO put that in a function
-            if True:
+            if False:
                 loss_count = min(10_000, len(train_cls_losses))
                 assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
-                loss_cls_weight = 1.0 / (sum(train_cls_losses[-loss_count:]) / loss_count + 1e-8) if loss_count > 1 else loss_cls_weight
-                loss_reg_weight = 1.0 / (sum(train_reg_losses[-loss_count:]) / loss_count + 1e-8) if loss_count > 1 else loss_reg_weight
+                loss_cls_weight = 1.0 / (sum(train_cls_losses[-loss_count:]) / loss_count + 1e-8) if loss_count > 0 else loss_cls_weight
+                loss_reg_weight = 1.0 / (sum(train_reg_losses[-loss_count:]) / loss_count + 1e-8) if loss_count > 0 else loss_reg_weight
                 # Normalize weights to keep total weight = 2.0
                 total_weight = loss_cls_weight + loss_reg_weight
                 loss_cls_weight = (loss_cls_weight / total_weight) * 2.0
                 loss_reg_weight = (loss_reg_weight / total_weight) * 2.0
             else:
-                loss_cls_weight = 0.5
+                loss_cls_weight = loss_cls_weight
                 loss_reg_weight = 2 - loss_cls_weight
 
             # =============================================================================
@@ -641,6 +642,14 @@ if __name__ == "__main__":
         choices=ModelUtils.get_supported_models(),
         help="Model architecture to use",
     )
+    # --model_profile -mp
+    argParser.add_argument(
+        "--model_profile",
+        "-mp",
+        type=str,
+        default="default",
+        help="Model profile to use",
+    )
     argParser.add_argument(
         "--reuse_existing_model",
         "-rem",
@@ -657,9 +666,20 @@ if __name__ == "__main__":
     # model_param from args.model_name
     # =============================================================================
     if args.model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
-        model_param = ChessModelConv2dParams(conv_out_channels=[16, 32, 64], cls_fc_size=256, reg_fc_size=32, cls_head_dropout=0.1, reg_head_dropout=0.2)
+        if args.model_profile not in ChessModelConv2d.PROFILE:
+            print(f"Unsupported model profile: {args.model_profile} for model {args.model_name}. Supported profiles: {list(ChessModelConv2d.PROFILE.keys())}")
+            sys.exit(1)
+        model_params = ChessModelConv2d.PROFILE[args.model_profile]
     elif args.model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
-        model_param = chessModelResNetParamsFast
+        if args.model_profile not in ChessModelResNet.PROFILE:
+            print(f"Unsupported model profile: {args.model_profile} for model {args.model_name}. Supported profiles: {list(ChessModelResNet.PROFILE.keys())}")
+            sys.exit(1)
+        model_params = ChessModelResNet.PROFILE[args.model_profile]
+    elif args.model_name == ModelUtils.MODEL_NAME.ALPHA_ZERO_NET:
+        if args.model_profile not in AlphaZeroNet.PROFILE:
+            print(f"Unsupported model profile: {args.model_profile} for model {args.model_name}. Supported profiles: {list(AlphaZeroNet.PROFILE.keys())}")
+            sys.exit(1)
+        model_params = AlphaZeroNet.PROFILE[args.model_profile]
     else:
         raise ValueError(f"Unsupported model name: {args.model_name}")
 
@@ -670,7 +690,7 @@ if __name__ == "__main__":
     # Call the train function
     TrainCommand.train(
         model_name=args.model_name,
-        model_params=model_param,
+        model_params=model_params,
         max_epoch_count=args.max_epoch,
         batch_size=args.batch_size,
         learning_rate=args.learning_rate,

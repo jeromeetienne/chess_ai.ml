@@ -71,37 +71,61 @@ class ChessModelConv2dParams(ChessModelParams):
     Parameters for the ChessModelConv2d model.
     """
 
-    conv_out_channels: list[int] = dataclasses.field(default_factory=lambda: [32, 64, 128])
+    conv_out_channels: list[int]
     """ List of output channels for each convolutional layer. """
-    cls_fc_size: int = 128
+    cls_fc_size: int
     """ Size of the fully connected layer in the classification head. """
-    reg_fc_size: int = 64
+    reg_fc_size: int
     """ Size of the fully connected layer in the regression head. """
-    cls_head_dropout: float = 0.2
+    cls_head_dropout: float
     """ Dropout probability for the classification head. """
-    reg_head_dropout: float = 0.2
+    reg_head_dropout: float
     """ Dropout probability for the regression head. """
 
-
-# Predefined parameter sets for different speed/accuracy trade-offs
-chessModelConv2dParamsFast = ChessModelConv2dParams(
-    conv_out_channels=[16, 32, 64],
-    cls_fc_size=64,
-    reg_fc_size=64,
-    cls_head_dropout=0.0,
-    reg_head_dropout=0.0,
-)
-
-chessModelConv2dParamsSlow = ChessModelConv2dParams(
-    conv_out_channels=[16, 64, 128, 256],
-    cls_fc_size=256,
-    reg_fc_size=128,
-    cls_head_dropout=0.3,
-    reg_head_dropout=0.3,
-)
+    # conv_out_channels: list[int] = dataclasses.field(default_factory=lambda: [32, 64, 128])
+    # """ List of output channels for each convolutional layer. """
+    # cls_fc_size: int = 128
+    # """ Size of the fully connected layer in the classification head. """
+    # reg_fc_size: int = 64
+    # """ Size of the fully connected layer in the regression head. """
+    # cls_head_dropout: float = 0.2
+    # """ Dropout probability for the classification head. """
+    # reg_head_dropout: float = 0.2
+    # """ Dropout probability for the regression head. """
 
 
 class ChessModelConv2d(ChessModel):
+    PROFILE: dict[str, ChessModelConv2dParams] = {
+        "fast": ChessModelConv2dParams(
+            conv_out_channels=[16, 32, 64],
+            cls_fc_size=64,
+            reg_fc_size=64,
+            cls_head_dropout=0.0,
+            reg_head_dropout=0.0,
+        ),
+        "default": ChessModelConv2dParams(
+            conv_out_channels=[16, 32, 64],
+            cls_fc_size=256,
+            reg_fc_size=32,
+            cls_head_dropout=0.1,
+            reg_head_dropout=0.2,
+        ),
+        "slow": ChessModelConv2dParams(
+            conv_out_channels=[16, 64, 128, 256],
+            cls_fc_size=256,
+            reg_fc_size=128,
+            cls_head_dropout=0.3,
+            reg_head_dropout=0.3,
+        ),
+        "optimized": ChessModelConv2dParams(
+            conv_out_channels=[16, 32, 64],
+            cls_fc_size=256,
+            reg_fc_size=32,
+            cls_head_dropout=0.1,
+            reg_head_dropout=0.2,
+        ),
+    }
+
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
         """
         A Convolutional Neural Network (CNN) model for classifying chess board states.
@@ -124,7 +148,7 @@ class ChessModelConv2d(ChessModel):
         # Validate and convert parameters
         # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
         assert isinstance(params, ChessModelParams), "params must be an instance of ChessModelParams"
-        conv2d_params: ChessModelConv2dParams = params if isinstance(params, ChessModelConv2dParams) else ChessModelConv2dParams()
+        conv2d_params: ChessModelConv2dParams = params if isinstance(params, ChessModelConv2dParams) else ChessModelConv2d.PROFILE["default"]
 
         # =============================================================================
         # Build the conv_layers
@@ -198,28 +222,18 @@ class ChessModelResnetParams(ChessModelParams):
     Parameters for the ChessModelResNet model.
     """
 
-    res_block_sizes: list[int] = dataclasses.field(default_factory=lambda: [64, 128])
+    res_block_sizes: list[int]
     """ List of output channels for each residual block layer. """
-    res_block_counts: list[int] = dataclasses.field(default_factory=lambda: [2, 2])
+    res_block_counts: list[int]
     """ List of number of residual blocks for each layer. """
-    cls_head_size: int = 256
+    cls_head_size: int
     """ Size of the fully connected layer in the classification head. """
-    reg_head_size: int = 128
+    reg_head_size: int
     """ Size of the fully connected layer in the regression head. """
-    cls_head_dropout: float = 0.2
+    cls_head_dropout: float
     """ Dropout probability for the classification head. """
-    reg_head_dropout: float = 0.2
+    reg_head_dropout: float
     """ Dropout probability for the regression head. """
-
-
-chessModelResNetParamsFast = ChessModelResnetParams(
-    res_block_sizes=[32, 64],
-    res_block_counts=[3, 3],
-    cls_head_size=128,
-    reg_head_size=64,
-    cls_head_dropout=0.0,
-    reg_head_dropout=0.0,
-)
 
 
 class ChessModelResNet_ResidualBlock(nn.Module):
@@ -257,6 +271,41 @@ class ChessModelResNet(ChessModel):
     - Output: A tensor of logits of shape (N, 1968).
     """
 
+    PROFILE: dict[str, ChessModelResnetParams] = {
+        "fast": ChessModelResnetParams(
+            res_block_sizes=[32, 64],
+            res_block_counts=[3, 3],
+            cls_head_size=128,
+            reg_head_size=64,
+            cls_head_dropout=0.0,
+            reg_head_dropout=0.0,
+        ),
+        "default": ChessModelResnetParams(
+            res_block_sizes=[64, 128],
+            res_block_counts=[2, 2],
+            cls_head_size=256,
+            reg_head_size=128,
+            cls_head_dropout=0.2,
+            reg_head_dropout=0.2,
+        ),
+        "slow": ChessModelResnetParams(
+            res_block_sizes=[128, 256],
+            res_block_counts=[3, 3],
+            cls_head_size=256,
+            reg_head_size=128,
+            cls_head_dropout=0.3,
+            reg_head_dropout=0.3,
+        ),
+        "optimized": ChessModelResnetParams(
+            res_block_sizes=[64],
+            res_block_counts=[1],
+            cls_head_size=256,
+            reg_head_size=64,
+            cls_head_dropout=0.0,
+            reg_head_dropout=0.3,
+        ),
+    }
+
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
         super().__init__()
 
@@ -270,7 +319,7 @@ class ChessModelResNet(ChessModel):
         # Validate and convert parameters
         # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
         assert isinstance(params, ChessModelParams), "params must be an instance of ChessModelParams"
-        resnet_params: ChessModelResnetParams = params if isinstance(params, ChessModelResnetParams) else ChessModelResnetParams()
+        resnet_params: ChessModelResnetParams = params if isinstance(params, ChessModelResnetParams) else ChessModelResNet.PROFILE["fast"]
 
         # sanity checks
         assert len(resnet_params.res_block_sizes) == len(
@@ -358,12 +407,7 @@ class ChessModelAlphaZeroNetParams(ChessModelParams):
     Parameters for the AlphaZeroNet model.
     """
 
-    # not done for now
-    pass
-
-
-chessModelAlphaZeroNetParamsDefault = ChessModelAlphaZeroNetParams()
-""" Default parameters for ChessModelAlphaZeroNet."""
+    res_block_count: int
 
 
 class AlphaZeroNet_ResidualBlock(nn.Module):
@@ -384,6 +428,13 @@ class AlphaZeroNet_ResidualBlock(nn.Module):
 
 
 class AlphaZeroNet(ChessModel):
+
+    PROFILE: dict[str, ChessModelAlphaZeroNetParams] = {
+        "default": ChessModelAlphaZeroNetParams(
+            res_block_count=10,
+        ),
+    }
+
     def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
         super().__init__()
 
@@ -393,12 +444,11 @@ class AlphaZeroNet(ChessModel):
 
         in_channels, board_size, _ = input_shape
         action_size = output_shape[0]
-        num_res_blocks = 10  # Number of residual blocks
 
         # Validate and convert parameters
         # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
         assert isinstance(params, ChessModelParams), "params must be an instance of ChessModelParams"
-        alphaZeroNet_params: ChessModelAlphaZeroNetParams = params if isinstance(params, ChessModelAlphaZeroNetParams) else ChessModelAlphaZeroNetParams()
+        alphaZeroNet_params: ChessModelAlphaZeroNetParams = params if isinstance(params, ChessModelAlphaZeroNetParams) else AlphaZeroNet.PROFILE["default"]
 
         # =============================================================================
         #
@@ -406,7 +456,7 @@ class AlphaZeroNet(ChessModel):
 
         self.conv = nn.Conv2d(in_channels, 256, kernel_size=3, padding=1)
         self.bn = nn.BatchNorm2d(256)
-        self.res_blocks = nn.ModuleList([AlphaZeroNet_ResidualBlock(256) for _ in range(num_res_blocks)])
+        self.res_blocks = nn.ModuleList([AlphaZeroNet_ResidualBlock(256) for _ in range(alphaZeroNet_params.res_block_count)])
 
         # Policy head
         self.policy_conv = nn.Conv2d(256, 2, kernel_size=1)

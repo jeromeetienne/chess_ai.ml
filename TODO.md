@@ -2,6 +2,10 @@
 
 - remove src/libs/types.py
   - this is obsolete and useless
+- in ./bin/train.py we modify the architecture hyperparameters directly in the code
+  - so if later you load the model in ./bin/play.py, you have to remember to change the architecture there too
+  - where to put it ?
+  - in chess_model.py store dict[str, Params]
 - save in a new folder every run, the folder contains the date
 - technically regression head is more important than classification head
   - make a fix weighting in the loss function

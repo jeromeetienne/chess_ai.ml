@@ -108,7 +108,7 @@ class HyperParameterTuning:
                 )
             else:
                 raise ValueError(f"Unsupported model name: {self._model_name}")
-        # learning_rate = 0.0003
+        learning_rate = 0.0008
         batch_size = 256
         train_test_split_ratio = 0.7
         early_stopping_patience = 10
