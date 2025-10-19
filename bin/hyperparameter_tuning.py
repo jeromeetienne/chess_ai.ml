@@ -50,6 +50,10 @@ class HyperParameterTuning:
         # learning_rate = 0.00025
         batch_size = 32
         train_test_split_ratio = 0.7
+        early_stopping_patience = 10
+        early_stopping_threshold = 0.01
+        scheduler_patience = 3
+        scheduler_threshold = 0.1
 
         # define the hyperparameters to be tuned by optuna
         if learning_rate is None:
@@ -76,9 +80,10 @@ class HyperParameterTuning:
             early_stopping_threshold=early_stopping_threshold,
             scheduler_patience=scheduler_patience,
             scheduler_threshold=scheduler_threshold,
-            max_file_count=self._max_file_count,
             # fixed parameters
+            max_file_count=self._max_file_count,
             model_name=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
+            # model_name=ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET,
             max_epoch_count=self._max_epoch_count,
             verbose=self._verbose,
             random_seed=100,

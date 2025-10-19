@@ -1,5 +1,9 @@
 # TODO
 
+- add model architecture in the hyperparameter tuning
+- save in a new folder every run, the folder contains the date
+- see vscode support for pytorch
+  - <https://code.visualstudio.com/docs/datascience/pytorch-support>
 - see about the reg+cls layer with convnet in them like alpha-zero
 - improve the loss weighting ?
   - some dynamic technique exists - <https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g>
