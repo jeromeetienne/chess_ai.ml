@@ -29,7 +29,7 @@ if __name__ == "__main__":
         description="Check the integrity of the dataset by comparing PGN files to their tensor representations.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument("--max_files_count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     argParser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output.")
     args = argParser.parse_args()
 

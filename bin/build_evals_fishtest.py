@@ -151,7 +151,7 @@ The evals are from the point of view of the player to move, and are the clamped 
 """,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument("--max_files_count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     args = argParser.parse_args()
     # args = argParser.parse_args(['-fc', '4'])  # for testing only, remove this line for production
 

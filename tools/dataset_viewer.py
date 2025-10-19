@@ -20,7 +20,7 @@ tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
 if __name__ == "__main__":
     # Parse command line arguments
     argParser = argparse.ArgumentParser(description="Build eval tensors from fishtest pgn files.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    argParser.add_argument("--max-files-count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
+    argParser.add_argument("--max_files_count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     args = argParser.parse_args()
 
     # Load datasets
