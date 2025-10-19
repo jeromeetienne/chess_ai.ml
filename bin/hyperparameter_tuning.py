@@ -50,25 +50,18 @@ class HyperParameterTuning:
         scheduler_threshold: float | None = None
 
         # set values which wont be tuned
-        # model_params = ChessModelConv2dParams()
-        learning_rate = 0.00025
+        model_params = ChessModelConv2dParams(conv_out_channels=[16, 32, 64], cls_fc_size=256, reg_fc_size=32, cls_dropout=0.1, reg_dropout=0.5)
+        learning_rate = 0.0003
         batch_size = 128 * 2
         train_test_split_ratio = 0.7
         early_stopping_patience = 20
         early_stopping_threshold = 0.01
-        scheduler_patience = 3
-        scheduler_threshold = 0.1
+        # scheduler_patience = 3
+        # scheduler_threshold = 0.1
 
         if model_params is None:
             # NOTE: workaround for Optuna not supporting list type directly
-            conv_out_channels_categories = {
-                # "[32, 64]": [32, 64],
-                # "[64, 128]": [64, 128],
-                # "[128, 256]": [128, 256],
-                "[16, 32, 64]": [16, 32, 64],
-                "[32, 64, 128]": [32, 64, 128],
-                "[64, 128, 256]": [64, 128, 256],
-            }
+            conv_out_channels_categories = {"[16, 32, 64]": [16, 32, 64], "[32, 64, 128]": [32, 64, 128], "[64, 128, 256]": [64, 128, 256]}
             conv_out_channels_name = trial.suggest_categorical("conv_out_channels_option", list(conv_out_channels_categories.keys()))
             conv_out_channels = conv_out_channels_categories[conv_out_channels_name]
             # set model params
@@ -76,8 +69,8 @@ class HyperParameterTuning:
                 conv_out_channels=conv_out_channels,
                 cls_fc_size=trial.suggest_categorical("cls_fc_size", [64, 128, 256]),
                 reg_fc_size=trial.suggest_categorical("reg_fc_size", [32, 64, 128]),
-                cls_dropout=trial.suggest_float("cls_dropoutProbability", 0.0, 0.5),
-                reg_dropout=trial.suggest_float("reg_dropoutProbability", 0.0, 0.5),
+                cls_dropout=trial.suggest_categorical("cls_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
+                reg_dropout=trial.suggest_categorical("reg_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
             )
         if learning_rate is None:
             learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-1, log=True)
