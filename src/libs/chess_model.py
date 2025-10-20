@@ -104,11 +104,11 @@ class ChessModelConv2d(ChessModel):
             reg_head_dropout=0.0,
         ),
         "default": ChessModelConv2dParams(
-            conv_out_channels=[16, 32, 64],
-            cls_fc_size=64,
+            conv_out_channels=[64, 128, 256],
+            cls_fc_size=128,
             reg_fc_size=64,
-            cls_head_dropout=0.3,
-            reg_head_dropout=0.2,
+            cls_head_dropout=0.5,
+            reg_head_dropout=0.5,
         ),
         "slow": ChessModelConv2dParams(
             conv_out_channels=[16, 64, 128, 256],

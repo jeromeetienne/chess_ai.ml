@@ -10,7 +10,7 @@ WARNING: when you change the move encoding here, you must also do the following 
 """
 
 # Enable this line to use AlphaZero move encoding
-from .move_encoding_alphazero import MoveEncodingAlphaZero as MoveEncoding
+# from .move_encoding_alphazero import MoveEncodingAlphaZero as MoveEncoding
 
 # Enable this line to use UCI2Class move encoding
-# from .move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding
+from .move_encoding_uci2class import MoveEncodingUci2Class as MoveEncoding

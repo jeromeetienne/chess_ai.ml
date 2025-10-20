@@ -1,5 +1,14 @@
 # TODO
 
+- <https://github.com/jeromeetienne/chess_ai.ml/commit/3cdff1c7b2c60a9b85f9d9999c111dff09d5b264>
+  - it is the last with the good learning
+  - ./bin/train.py -fc 20 -lr 0.0005
+  - going deep at 10 epochs - accuracy a little higher that epoch numbers
+  - record uci2class move encoding
+  - enable 42 random seed
+  - restore old loss weighting
+  - restore default model architecture - ChessModelConv2d
+    - <https://github.com/jeromeetienne/chess_ai.ml/blob/3cdff1c7b2c60a9b85f9d9999c111dff09d5b264/src/libs/chess_model.py#L44-L50>
 - remove src/libs/types.py
   - this is obsolete and useless
 - DONE in ./bin/train.py we modify the architecture hyperparameters directly in the code
