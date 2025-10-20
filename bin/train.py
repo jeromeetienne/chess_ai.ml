@@ -206,7 +206,7 @@ class TrainCommand:
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         # Add a learning rate scheduler to reduce LR over time
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=scheduler_patience, threshold=scheduler_threshold)
+        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=scheduler_patience, threshold=scheduler_threshold)
         # Initialize early stopper to stop training if no improvement for 'patience' epochs
         early_stopper = EarlyStopper(patience=early_stopping_patience, threshold=early_stopping_threshold)
 
@@ -272,7 +272,7 @@ class TrainCommand:
             # =============================================================================
 
             # Step the scheduler
-            scheduler.step(valid_loss)
+            lr_scheduler.step(valid_loss)
 
             # update training and validation losses array
             train_losses.append(train_loss)
@@ -288,7 +288,7 @@ class TrainCommand:
             # Print epoch summary
             if verbose:
                 print(f"Epoch {epoch_index + 1}/{max_epoch_count}", end=" | ")
-                print(f"lr={scheduler.get_last_lr()[0]} badEpoch={scheduler.num_bad_epochs}/{scheduler.patience}", end=" | ")
+                print(f"lr={lr_scheduler.get_last_lr()[0]} badEpoch={lr_scheduler.num_bad_epochs}/{lr_scheduler.patience}", end=" | ")
                 print(f"early-stop badEpoch={early_stopper.bad_epoch_count}/{early_stopper.patience}", end=" | ")
                 print(f"Train Loss: {train_loss:.4f} (cls={(train_cls_loss*loss_cls_weight):.4f} reg={(train_reg_loss*loss_reg_weight):.4f})", end=" | ")
                 print(f"Valid Loss: {valid_loss:.4f} (cls={(valid_cls_loss*loss_cls_weight):.4f} reg={(valid_reg_loss*loss_reg_weight):.4f})", end=" | ")
@@ -632,7 +632,7 @@ if __name__ == "__main__":
     argParser.add_argument("--max_epoch", "-me", type=int, default=100, help="Number of training epochs")
     argParser.add_argument("--batch_size", "-bs", type=int, default=2048, help="Batch size for training")
     argParser.add_argument("--train_test_split_ratio", "-ts", type=float, default=0.7, help="Train/test split ratio (between 0 and 1)")
-    argParser.add_argument("--learning_rate", "-lr", type=float, default=0.001, help="Learning rate for the optimizer")
+    argParser.add_argument("--learning_rate", "-lr", type=float, default=0.0005, help="Learning rate for the optimizer")
     argParser.add_argument("--debug", action="store_true", help="Enable debug mode with verbose output")
     argParser.add_argument("--max_files_count", "-fc", type=int, default=10, help="Maximum number of PGN files to process. 0 for no limit.")
     argParser.add_argument(
