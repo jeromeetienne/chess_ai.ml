@@ -1,24 +1,17 @@
 # TODO
 
-- <https://github.com/jeromeetienne/chess_ai.ml/commit/3cdff1c7b2c60a9b85f9d9999c111dff09d5b264>
-  - it is the last with the good learning
-  - ./bin/train.py -fc 20 -lr 0.0005
-  - going deep at 10 epochs - accuracy a little higher that epoch numbers
-  - record uci2class move encoding
-  - enable 42 random seed
-  - restore old loss weighting
-  - restore default model architecture - ChessModelConv2d
-    - <https://github.com/jeromeetienne/chess_ai.ml/blob/3cdff1c7b2c60a9b85f9d9999c111dff09d5b264/src/libs/chess_model.py#L44-L50>
-  - see how to restore with the next commit
-    - identify the part which broke the learning
-
 - remove src/libs/types.py
   - this is obsolete and useless
-- DONE in ./bin/train.py we modify the architecture hyperparameters directly in the code
-  - so if later you load the model in ./bin/play.py, you have to remember to change the architecture there too
-  - where to put it ?
-  - in chess_model.py store dict[str, Params]
 - save in a new folder every run, the folder contains the date
+- the regression loss seems wrong.. the one done on the test dataset is not the same number as the one during training
+  - maybe a bug in the dataset building
+
+```
+Training: 100%|████████████████████████████| 390/390 [00:28<00:00, 13.92batch/s]
+Epoch 9/100 | lr=0.0005 badEpoch=0/3 | early-stop badEpoch=0/20 | Train Loss: 0.4149 (cls=0.2378 reg=0.1771) | Valid Loss: 0.4055 (cls=0.2280 reg=0.1775) | Time: 30.47-sec (Saved)
+Test dataset: classification accuracy: 8.00% - regression MAE: 0.3068 - weighted sum: 0.9466
+```
+
 - technically regression head is more important than classification head
   - make a fix weighting in the loss function
 - see about the reg+cls layer with convnet in them like alpha-zero
@@ -37,6 +30,22 @@
 
 ## DONE
 
+- DONE in ./bin/train.py we modify the architecture hyperparameters directly in the code
+  - so if later you load the model in ./bin/play.py, you have to remember to change the architecture there too
+  - where to put it ?
+  - in chess_model.py store dict[str, Params]
+- DONE <https://github.com/jeromeetienne/chess_ai.ml/commit/3cdff1c7b2c60a9b85f9d9999c111dff09d5b264>
+  - it is the last with the good learning
+  - ./bin/train.py -fc 20 -lr 0.0005
+  - going deep at 10 epochs - accuracy a little higher that epoch numbers
+  - record uci2class move encoding
+  - enable 42 random seed
+  - restore old loss weighting
+  - restore default model architecture - ChessModelConv2d
+    - <https://github.com/jeromeetienne/chess_ai.ml/blob/3cdff1c7b2c60a9b85f9d9999c111dff09d5b264/src/libs/chess_model.py#L44-L50>
+  - see how to restore with the next commit
+    - identify the part which broke the learning
+  - NOTE: the issue was using `L1Loss` and no `SmoothL1Loss` for regression
 - DONE add model architecture in the hyperparameter tuning
 - DONE see vscode support for pytorch
   - <https://code.visualstudio.com/docs/datascience/pytorch-support>

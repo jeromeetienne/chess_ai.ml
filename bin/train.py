@@ -201,7 +201,7 @@ class TrainCommand:
         criterion_cls = torch.nn.CrossEntropyLoss()
         # criterion_reg = torch.nn.MSELoss()
         # criterion_reg = torch.nn.L1Loss()
-        criterion_reg = torch.nn.SmoothL1Loss()
+        criterion_reg = torch.nn.SmoothL1Loss()  # Huber loss - MSE for small errors (e.g. < 1), MAE for large errors
 
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -236,15 +236,15 @@ class TrainCommand:
             epoch_start_time = time.time()
 
             # =============================================================================
-            # Dynamic loss weighting
+            # Dynamic loss weighting between classification and regression losses
             # =============================================================================
             # Dynamic loss weighting based on recent training losses
             # TODO put that in a function
             if True:
                 n = min(10_000, len(train_cls_losses))
                 assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
-                loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else 0.10
-                loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else 1.90
+                loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else loss_cls_weight
+                loss_reg_weight = 1.0 / (sum(train_reg_losses[-n:]) / n + 1e-8) if n > 0 else loss_reg_weight
                 # Normalize weights to keep total weight = 2.0
                 total_weight = loss_cls_weight + loss_reg_weight
                 loss_cls_weight = (loss_cls_weight / total_weight) * 2.0
