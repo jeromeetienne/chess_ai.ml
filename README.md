@@ -139,5 +139,5 @@ and suddently the regression head was learning much better, and the loss was mor
   - it limits the gradient explosion, especially when batches are large.
 - Convolutional Layer learns spatial data (like chess boards) much better than undefined layers (e.g. list of class indexes)
   - consider using Conv2D layers for board representation instead of flattening the board into a 1D vector.
-  - NOTE: this is the motivation behind AlphaZero architecture: they picked a much larger representation the output (8x8x73 planes aka 4672 cells) to be able to use Conv2D layers.
+  - NOTE: this is the motivation behind AlphaZero output encoding: they picked a much larger representation the output (8x8x73 planes aka 4672 cells) to be able to use Conv2D layers.
   If you picked list of classes, it would have been 1968 classes (All legal move in chess, independantly of the position), which is not spatial anymore.
