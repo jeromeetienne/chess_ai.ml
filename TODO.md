@@ -9,6 +9,9 @@
   - restore old loss weighting
   - restore default model architecture - ChessModelConv2d
     - <https://github.com/jeromeetienne/chess_ai.ml/blob/3cdff1c7b2c60a9b85f9d9999c111dff09d5b264/src/libs/chess_model.py#L44-L50>
+  - see how to restore with the next commit
+    - identify the part which broke the learning
+
 - remove src/libs/types.py
   - this is obsolete and useless
 - DONE in ./bin/train.py we modify the architecture hyperparameters directly in the code
