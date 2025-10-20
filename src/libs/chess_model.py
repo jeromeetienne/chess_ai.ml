@@ -67,9 +67,7 @@ class ChessModelOriginal(ChessModel):
 
 @dataclasses.dataclass
 class ChessModelConv2dParams(ChessModelParams):
-    """
-    Parameters for the ChessModelConv2d model.
-    """
+    """Parameters for the ChessModelConv2d model."""
 
     conv_out_channels: list[int]
     """ List of output channels for each convolutional layer. """
@@ -81,17 +79,6 @@ class ChessModelConv2dParams(ChessModelParams):
     """ Dropout probability for the classification head. """
     reg_head_dropout: float
     """ Dropout probability for the regression head. """
-
-    # conv_out_channels: list[int] = dataclasses.field(default_factory=lambda: [32, 64, 128])
-    # """ List of output channels for each convolutional layer. """
-    # cls_fc_size: int = 128
-    # """ Size of the fully connected layer in the classification head. """
-    # reg_fc_size: int = 64
-    # """ Size of the fully connected layer in the regression head. """
-    # cls_head_dropout: float = 0.2
-    # """ Dropout probability for the classification head. """
-    # reg_head_dropout: float = 0.2
-    # """ Dropout probability for the regression head. """
 
 
 class ChessModelConv2d(ChessModel):
@@ -218,9 +205,7 @@ class ChessModelConv2d(ChessModel):
 
 @dataclasses.dataclass
 class ChessModelResnetParams(ChessModelParams):
-    """
-    Parameters for the ChessModelResNet model.
-    """
+    """Parameters for the ChessModelResNet model."""
 
     res_block_sizes: list[int]
     """ List of output channels for each residual block layer. """
