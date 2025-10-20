@@ -128,16 +128,18 @@ I tried to fix it with various strategies:
 
 Nothing worked. :(
 
-after some time, independantly, i noticed my dataset was unbalanced. It was games from stockfish and stockfish **never resign**, so some games were very long
+After some time, independantly, i noticed my dataset was unbalanced. It was games from stockfish and stockfish **never resign**, so some games were very long
 (e.g. 100 moves or more). I found that silly and i filtered out endgames from the dataset, using the [speelman criteria](https://www.chess.com/blog/introuble2/the-value-of-the-active-king)
 and suddently the regression head was learning much better, and the loss was more stable.
 
 ## Machine Learning Tips
 
-- if you use MeanAbsoluteError (L1Loss) for regression,
-  - consider using SmoothL1Loss (Huber loss) instead. It is less sensitive to outliers and can provide more stable gradients, leading to better convergence during training.
+- if you use MeanAbsoluteError (`L1Loss`) for regression,
+  - consider using `SmoothL1Loss` ([Huber loss](https://en.wikipedia.org/wiki/Huber_loss)) instead. It is less sensitive to outliers and can provide more stable gradients, leading to better convergence during training.
   - it limits the gradient explosion, especially when batches are large.
-- Convolutional Layer learns spatial data (like chess boards) much better than undefined layers (e.g. list of class indexes)
+  - `SmoothL1Loss` got the best of both worlds: it behaves like L2Loss when the error is small (which encourages convergence) and like L1Loss when the error is large (which reduces the influence of outliers).
+- [Convolutional Layer](https://en.wikipedia.org/wiki/Convolutional_layer) learns spatial data (like chess boards) much better than undefined
+layers (e.g. list of class indexes)
   - consider using Conv2D layers for board representation instead of flattening the board into a 1D vector.
-  - NOTE: this is the motivation behind AlphaZero output encoding: they picked a much larger representation the output (8x8x73 planes aka 4672 cells) to be able to use Conv2D layers.
+  - **NOTE**: this is the motivation behind AlphaZero output encoding: they picked a much larger representation the output (8x8x73 planes aka 4672 cells) to be able to use Conv2D layers.
   If you picked list of classes, it would have been 1968 classes (All legal move in chess, independantly of the position), which is not spatial anymore.
