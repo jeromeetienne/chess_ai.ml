@@ -38,7 +38,7 @@ class HyperParameterTuning:
 
         # get time in the form YYYYMMDD_HHMMSS
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        study_name = f"{timestamp}_chess_ai.ml_fc{self._max_file_count}_me{self._max_epoch_count}_tc{self._trial_count}"
+        study_name = f"chess_ai.ml_{timestamp}_fc{self._max_file_count}_me{self._max_epoch_count}_tc{self._trial_count}"
         module = optunahub.load_module(package="samplers/auto_sampler")
         # create study
         study = optuna.create_study(
@@ -97,18 +97,27 @@ class HyperParameterTuning:
         # Set the value which won't be tuned
         # =============================================================================
 
-        if True:
+        if False:
             if self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
                 model_params = ChessModelConv2dParams(
-                    conv_out_channels=[16, 32, 64], cls_fc_size=256, reg_fc_size=32, cls_head_dropout=0.1, reg_head_dropout=0.5
+                    conv_out_channels=[16, 32, 64],
+                    cls_fc_size=256,
+                    reg_fc_size=32,
+                    cls_head_dropout=0.1,
+                    reg_head_dropout=0.5,
                 )
             elif self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
                 model_params = ChessModelResnetParams(
-                    res_block_sizes=[64], res_block_counts=[1], cls_head_size=256, reg_head_size=64, cls_head_dropout=0.0, reg_head_dropout=0.3
+                    res_block_sizes=[64],
+                    res_block_counts=[1],
+                    cls_head_size=256,
+                    reg_head_size=32,
+                    cls_head_dropout=0.0,
+                    reg_head_dropout=0.5,
                 )
             else:
                 raise ValueError(f"Unsupported model name: {self._model_name}")
-        learning_rate = 0.0008
+        learning_rate = 0.0002
         batch_size = 256
         train_test_split_ratio = 0.7
         early_stopping_patience = 10
@@ -139,12 +148,12 @@ class HyperParameterTuning:
                 model_params = ChessModelResnetParams(
                     # res_block_sizes=HyperParameterTuning.suggest_categorical_listlist_int(trial, "res_block_sizes", [[64]]),
                     res_block_sizes=[64],
-                    # res_block_counts=HyperParameterTuning.suggest_categorical_listlist_int(trial, "res_block_counts", [[1]]),
+                    # res_block_counts=HyperParameterTuning.suggest_categorical_listlist_int(trial, "res_block_counts", [[1], [2], [3]]),
                     res_block_counts=[1],
-                    # cls_head_size=trial.suggest_categorical("cls_head_size", [64, 128, 256])
+                    # cls_head_size=trial.suggest_categorical("cls_head_size", [64, 128, 256]),
                     cls_head_size=256,
                     # reg_head_size=trial.suggest_categorical("reg_head_size", [32, 64, 128]),
-                    reg_head_size=64,
+                    reg_head_size=32,
                     cls_head_dropout=trial.suggest_categorical("cls_head_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
                     # cls_head_dropout=0.1,
                     reg_head_dropout=trial.suggest_categorical("reg_head_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),

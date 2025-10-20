@@ -92,7 +92,6 @@ class TrainCommand:
         # set random seed for reproducibility
         if random_seed is not None:
             torch.manual_seed(random_seed)
-        torch.manual_seed(42)
 
         # =============================================================================
         # Print arguments
@@ -643,7 +642,6 @@ if __name__ == "__main__":
         choices=ModelUtils.get_supported_models(),
         help="Model architecture to use",
     )
-    # --model_profile -mp
     argParser.add_argument(
         "--model_profile",
         "-mp",

@@ -138,6 +138,7 @@ and suddently the regression head was learning much better, and the loss was mor
   - consider using `SmoothL1Loss` ([Huber loss](https://en.wikipedia.org/wiki/Huber_loss)) instead. It is less sensitive to outliers and can provide more stable gradients, leading to better convergence during training.
   - it limits the gradient explosion, especially when batches are large.
   - `SmoothL1Loss` got the best of both worlds: it behaves like L2Loss when the error is small (which encourages convergence) and like L1Loss when the error is large (which reduces the influence of outliers).
+  - `huber loss is so much better than mae!!!`
 - [Convolutional Layer](https://en.wikipedia.org/wiki/Convolutional_layer) learns spatial data (like chess boards) much better than undefined
 layers (e.g. list of class indexes)
   - consider using Conv2D layers for board representation instead of flattening the board into a 1D vector.
