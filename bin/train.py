@@ -200,8 +200,8 @@ class TrainCommand:
         # Losses: classification + regression
         criterion_cls = torch.nn.CrossEntropyLoss()
         # criterion_reg = torch.nn.MSELoss()
-        criterion_reg = torch.nn.L1Loss()
-        # criterion_reg = torch.nn.SmoothL1Loss()
+        # criterion_reg = torch.nn.L1Loss()
+        criterion_reg = torch.nn.SmoothL1Loss()
 
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
