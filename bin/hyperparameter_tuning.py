@@ -101,8 +101,8 @@ class HyperParameterTuning:
             if self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
                 model_params = ChessModelConv2dParams(
                     conv_out_channels=[16, 32, 64],
-                    cls_fc_size=256,
-                    reg_fc_size=32,
+                    cls_head_size=256,
+                    reg_head_size=32,
                     cls_head_dropout=0.1,
                     reg_head_dropout=0.5,
                 )
@@ -138,8 +138,8 @@ class HyperParameterTuning:
                 # set model params
                 model_params = ChessModelConv2dParams(
                     conv_out_channels=conv_out_channels,
-                    cls_fc_size=trial.suggest_categorical("cls_fc_size", [64, 128, 256]),
-                    reg_fc_size=trial.suggest_categorical("reg_fc_size", [32, 64, 128]),
+                    cls_head_size=trial.suggest_categorical("cls_fc_size", [64, 128, 256]),
+                    reg_head_size=trial.suggest_categorical("reg_fc_size", [32, 64, 128]),
                     cls_head_dropout=trial.suggest_categorical("cls_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
                     reg_head_dropout=trial.suggest_categorical("reg_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
                 )

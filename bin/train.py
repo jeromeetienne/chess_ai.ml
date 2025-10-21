@@ -604,9 +604,18 @@ class TrainCommand:
                 # Model forward pass
                 move_logits, eval_pred = model(boards_tensor)
 
+                # _, move_predictions = torch.max(move_logits, 1)  # Get the index of the max log-probability
+                # accuracy_total += moves_tensor.size(0)
+                # accuracy_correct += (move_predictions == moves_tensor).sum().item()
+
                 _, move_predictions = torch.max(move_logits, 1)  # Get the index of the max log-probability
                 accuracy_total += moves_tensor.size(0)
                 accuracy_correct += (move_predictions == moves_tensor).sum().item()
+
+                # # Compute regression MAE using SmoothL1Loss directly
+                # smooth_l1_loss = torch.nn.SmoothL1Loss(reduction="sum")
+                # total_mae += smooth_l1_loss(eval_pred, evals_tensor).item()
+                # total_samples += evals_tensor.size(0)
 
                 # Compute Mean Absolute Error (MAE)
                 mae = torch.abs(eval_pred - evals_tensor).sum().item()

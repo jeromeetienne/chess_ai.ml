@@ -71,9 +71,9 @@ class ChessModelConv2dParams(ChessModelParams):
 
     conv_out_channels: list[int]
     """ List of output channels for each convolutional layer. """
-    cls_head_size: int
+    cls_fc_size: int
     """ Size of the fully connected layer in the classification head. """
-    reg_head_size: int
+    reg_fc_size: int
     """ Size of the fully connected layer in the regression head. """
     cls_head_dropout: float
     """ Dropout probability for the classification head. """
@@ -85,39 +85,38 @@ class ChessModelConv2d(ChessModel):
     PROFILE: dict[str, ChessModelConv2dParams] = {
         "fast": ChessModelConv2dParams(
             conv_out_channels=[16, 32, 64],
-            cls_head_size=64,
-            reg_head_size=64,
+            cls_fc_size=64,
+            reg_fc_size=64,
             cls_head_dropout=0.0,
             reg_head_dropout=0.0,
         ),
         "default": ChessModelConv2dParams(
             conv_out_channels=[64, 128, 256],
-            cls_head_size=128,
-            reg_head_size=64,
+            cls_fc_size=128,
+            reg_fc_size=64,
             cls_head_dropout=0.2,
             reg_head_dropout=0.2,
         ),
         "slow": ChessModelConv2dParams(
             conv_out_channels=[16, 64, 128, 256],
-            cls_head_size=256,
-            reg_head_size=128,
+            cls_fc_size=256,
+            reg_fc_size=128,
             cls_head_dropout=0.3,
             reg_head_dropout=0.3,
         ),
         "optimized": ChessModelConv2dParams(
             conv_out_channels=[64, 128, 256],
-            cls_head_size=128,
-            reg_head_size=64,
+            cls_fc_size=128,
+            reg_fc_size=64,
             cls_head_dropout=0.2,
             reg_head_dropout=0.2,
         ),
-        "testbed_convhead": ChessModelConv2dParams(
-            # conv_out_channels=[32, 64, 128, 256],
+        "testbed": ChessModelConv2dParams(
             conv_out_channels=[64, 128, 256],
-            cls_head_size=2,
-            reg_head_size=1,
+            cls_fc_size=128,
+            reg_fc_size=64,
             cls_head_dropout=0.2,
-            reg_head_dropout=0.5,
+            reg_head_dropout=0.2,
         ),
     }
 
@@ -160,51 +159,51 @@ class ChessModelConv2d(ChessModel):
 
         self.conv_layers = nn.Sequential(
             *conv_layers,
-            torch.nn.Flatten(),
+            # torch.nn.Flatten(),
         )
 
         # =============================================================================
         # Build the classification head (move prediction))
         # =============================================================================
 
-        flat_features = conv_channels_out[-1] * 8 * 8
-        self.cls_head = nn.Sequential(
-            nn.Linear(flat_features, conv2d_params.cls_head_size),
-            nn.BatchNorm1d(conv2d_params.cls_head_size),
-            nn.ReLU(),
-            nn.Dropout(conv2d_params.cls_head_dropout),
-            nn.Linear(conv2d_params.cls_head_size, output_width),
-        )
-
+        # flat_features = conv_channels_out[-1] * 8 * 8
         # self.cls_head = nn.Sequential(
-        #     nn.Conv2d(conv_channels_out[-1], conv2d_params.cls_head_size, kernel_size=1),
-        #     nn.BatchNorm2d(conv2d_params.cls_head_size),
+        #     nn.Linear(flat_features, conv2d_params.cls_fc_size),
+        #     nn.BatchNorm1d(conv2d_params.cls_fc_size),
         #     nn.ReLU(),
         #     nn.Dropout(conv2d_params.cls_head_dropout),
-        #     nn.Flatten(),
-        #     nn.Linear(conv2d_params.cls_head_size * board_size * board_size, output_width),
+        #     nn.Linear(conv2d_params.cls_fc_size, output_width),
         # )
+
+        self.cls_head = nn.Sequential(
+            nn.Conv2d(conv_channels_out[-1], 2, kernel_size=1),
+            nn.BatchNorm2d(2),
+            nn.ReLU(),
+            nn.Dropout(conv2d_params.cls_head_dropout),
+            nn.Flatten(),
+            nn.Linear(2 * board_size * board_size, output_width),
+        )
 
         # =============================================================================
         # Build the regression head (eval prediction)
         # =============================================================================
 
-        self.reg_head = torch.nn.Sequential(
-            torch.nn.Linear(flat_features, conv2d_params.reg_head_size),
-            nn.BatchNorm1d(conv2d_params.reg_head_size),
-            torch.nn.ReLU(),
-            nn.Dropout(conv2d_params.reg_head_dropout),
-            torch.nn.Linear(conv2d_params.reg_head_size, 1),
-        )
-
         # self.reg_head = torch.nn.Sequential(
-        #     nn.Conv2d(conv_channels_out[-1], conv2d_params.reg_head_size, kernel_size=1),
-        #     nn.BatchNorm2d(conv2d_params.reg_head_size),
-        #     nn.ReLU(),
+        #     torch.nn.Linear(flat_features, conv2d_params.reg_fc_size),
+        #     nn.BatchNorm1d(conv2d_params.reg_fc_size),
+        #     torch.nn.ReLU(),
         #     nn.Dropout(conv2d_params.reg_head_dropout),
-        #     nn.Flatten(),
-        #     torch.nn.Linear(conv2d_params.reg_head_size * board_size * board_size, 1),
+        #     torch.nn.Linear(conv2d_params.reg_fc_size, 1),
         # )
+
+        self.reg_head = torch.nn.Sequential(
+            nn.Conv2d(conv_channels_out[-1], 1, kernel_size=1),
+            nn.BatchNorm2d(1),
+            nn.ReLU(),
+            nn.Dropout(conv2d_params.reg_head_dropout),
+            nn.Flatten(),
+            torch.nn.Linear(1 * board_size * board_size, 1),
+        )
 
         # Initialize weights
         # nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')

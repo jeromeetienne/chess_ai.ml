@@ -1,9 +1,18 @@
 # TODO
 
+- see about the reg+cls layer with convnet in them like alpha-zero
+  - tried on convnet, did work very well
+  - define a new model architecture with those heads
+  - how ot call it ? `ChessModelFullConv`
+  - go heavy on the dropout
+  - Do it on the resnet too ... seems so close alpha zero architecture
+
 - remove src/libs/types.py
   - this is obsolete and useless
 - save in a new folder every run, the folder contains the date
+  - see how much it is hardcoded
 - the regression loss seems wrong.. the one done on the test dataset is not the same number as the one during training
+  - use the actual SmoothL1Loss function on the test dataset evaluation - pass it as argument
   - maybe a bug in the dataset building
 
 ```
@@ -14,7 +23,6 @@ Test dataset: classification accuracy: 8.00% - regression MAE: 0.3068 - weighted
 
 - technically regression head is more important than classification head
   - make a fix weighting in the loss function
-- see about the reg+cls layer with convnet in them like alpha-zero
 - improve the loss weighting ?
   - some dynamic technique exists - <https://www.perplexity.ai/search/in-machine-learning-with-dual-EmRdTNlqRuq5OpEIdK2z2g>
   - "Loss Weights Based on Task Uncertainty" seems to be a good one
