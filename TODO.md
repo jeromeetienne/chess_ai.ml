@@ -1,5 +1,14 @@
 # TODO
 
+- make a 'init_weight' function and add it in pytorch-extra
+  - <https://gemini.google.com/app/9b2f6bf85abea7f1>
+  - see if there is a difference in learning speed ?
+- try to log data in tensorboard
+  - <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>
+  - log training loss, validation loss
+  - log model graph
+  - log histograms of weights and biases
+  - log images of input data
 - see about the reg+cls layer with convnet in them like alpha-zero
   - tried on convnet, did work very well
   - define a new model architecture with those heads
