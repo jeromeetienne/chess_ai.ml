@@ -1,23 +1,26 @@
 # TODO
 
-- make a 'init_weight' function and add it in pytorch-extra
-  - <https://gemini.google.com/app/9b2f6bf85abea7f1>
-  - see if there is a difference in learning speed ?
+- init_weight function doesnt seems to make any difference
+- set vscode settings.json with tensorboard log directory
+    // Specify the log directory for TensorBoard
+    "tensorBoard.logDirectory": "${workspaceFolder}/output/tensorboard_logs"
 - try to log data in tensorboard
   - <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>
   - log training loss, validation loss
   - log model graph
   - log histograms of weights and biases
   - log images of input data
+- check the accuracy calculation for the whole model
+  - how to handle the dual head model
 - see about the reg+cls layer with convnet in them like alpha-zero
   - tried on convnet, did work very well
   - define a new model architecture with those heads
   - how ot call it ? `ChessModelFullConv`
   - go heavy on the dropout
   - Do it on the resnet too ... seems so close alpha zero architecture
-
-- remove src/libs/types.py
-  - this is obsolete and useless
+- Good for resume: publish pip packages on pypi
+  - publish pytorch-extra on pypi
+  - same for puct and mtcs
 - save in a new folder every run, the folder contains the date
   - see how much it is hardcoded
 - the regression loss seems wrong.. the one done on the test dataset is not the same number as the one during training
@@ -40,13 +43,18 @@ Test dataset: classification accuracy: 8.00% - regression MAE: 0.3068 - weighted
   - add Global Average Pooling (GAP), maybe a MaxPool2d after the conv layers - <https://gemini.google.com/app/cdfdec954e81eaff>
   - add a dropout layer only after fully connected layer
   - code model with self.fc_layers = nn.Sequential() pattern <https://chatgpt.com/c/68de57d9-67f0-832b-aebb-c8d110effe48>
-- how many chess move are there ?
-  - <https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there>
 - <https://www.informatik.tu-darmstadt.de/fb20/aktuelles_fb20/fb20_news/news_fb20_details_308928.en.jsp>
 - make it play on lichess ?
 
 ## DONE
 
+- DONE how many chess move are there ?
+  - <https://www.chess.com/blog/the_real_greco/another-silly-question-how-many-chess-moves-are-there>
+- DONE remove src/libs/types.py
+  - this is obsolete and useless
+- DONE make a 'init_weight' function and add it in pytorch-extra
+  - <https://gemini.google.com/app/9b2f6bf85abea7f1>
+  - see if there is a difference in learning speed ?
 - DONE in ./bin/train.py we modify the architecture hyperparameters directly in the code
   - so if later you load the model in ./bin/play.py, you have to remember to change the architecture there too
   - where to put it ?

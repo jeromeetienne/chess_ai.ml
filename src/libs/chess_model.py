@@ -94,8 +94,8 @@ class ChessModelFullConv(ChessModel):
             conv_out_channels=[64, 128, 256],
             cls_head_conv_width=3,
             reg_head_conv_width=1,
-            cls_head_dropout=0.2,
-            reg_head_dropout=0.1,
+            cls_head_dropout=0.0,
+            reg_head_dropout=0.3,
         ),
     }
 

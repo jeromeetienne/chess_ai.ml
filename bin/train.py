@@ -9,18 +9,17 @@ import time
 # pip imports
 import tqdm
 import torch
-
-# from torch.utils.data import DataLoader, TensorDataset
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # TODO remove the abreviation plt
+from torch.utils.tensorboard import SummaryWriter
 
 # local imports
 from src.libs.chess_model import AlphaZeroNet, ChessModelParams, ChessModelConv2d, ChessModelFullConv, ChessModelResNet
-from src.pytorch_extra.early_stopper import EarlyStopper
 from src.utils.model_utils import ModelUtils
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.model_utils import ModelUtils
 from src.utils.uci2class_utils import Uci2ClassUtils
-from src.pytorch_extra.model_summary import ModelSummary
+from src.encoding.board_encoding import BoardEncoding
+from src.pytorch_extra import ModelSummary, WeightInitializer, EarlyStopper
 
 # setup __dirname__
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +27,7 @@ output_folder_path = os.path.join(__dirname__, "..", "output")
 data_folder_path = os.path.join(__dirname__, "..", "data")
 model_folder_path = os.path.join(output_folder_path, "model")
 tensors_folder_path = os.path.join(output_folder_path, "pgn_tensors")
+tensorboard_logs_folder_path = os.path.join(output_folder_path, "tensorboard_logs")
 
 
 class TrainCommand:
@@ -114,6 +114,13 @@ class TrainCommand:
             print(f"- Verbose: {verbose}")
 
         # =============================================================================
+        # init tensorboard logs
+        # =============================================================================
+
+        tensorboard_logs_path = os.path.join(tensorboard_logs_folder_path, time.strftime("%Y%m%d-%H%M%S"))
+        tensorboard_writer = SummaryWriter(tensorboard_logs_path)
+
+        # =============================================================================
         # Load the dataset
         # =============================================================================
 
@@ -189,8 +196,15 @@ class TrainCommand:
             if verbose:
                 print(f"Loading existing model weights from {model_path}")
             ModelUtils.load_weights(model, model_folder_path)
+        else:
+            if verbose:
+                print("Initializing model weights to sensible defaults")
+            WeightInitializer.init_weights(model)
 
         model = model.to(device)
+
+        # Add the model graph to tensorboard
+        tensorboard_writer.add_graph(model, torch.zeros((1, *BoardEncoding.get_input_shape())).to(device))
 
         # =============================================================================
         # Setup training components: loss functions, optimizer, scheduler, early stopper
@@ -334,6 +348,15 @@ class TrainCommand:
             print(
                 f"Test dataset: classification accuracy: {test_cls_accuracy:.2f}% - regression MAE: {test_reg_mae:.4f} - weighted sum: {test_model_accuracy:.4f}"
             )
+
+        # =============================================================================
+        # Close tensorboard writer
+        # =============================================================================
+        tensorboard_writer.close()
+
+        # =============================================================================
+        # Return the model accuracy (useful for hyperparameters tuning)
+        # =============================================================================
         return test_model_accuracy
 
     # =============================================================================
