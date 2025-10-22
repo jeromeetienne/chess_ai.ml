@@ -5,7 +5,7 @@ import os
 import torch
 
 # local imports
-from ..libs.chess_model import ChessModel, ChessModelParams, ChessModelConv2d, ChessModelResNet, AlphaZeroNet
+from ..libs.chess_model import ChessModel, ChessModelParams, ChessModelConv2d, ChessModelFullConv, ChessModelResNet, AlphaZeroNet
 from ..encoding.board_encoding import BoardEncoding
 from ..encoding.move_encoding import MoveEncoding
 
@@ -16,6 +16,7 @@ data_folder_path = os.path.join(__dirname__, "../../data")
 class ModelUtils:
     class MODEL_NAME:
         CHESS_MODEL_CONV2D = "ChessModelConv2d"
+        CHESS_MODEL_FULL_CONV = "ChessModelFullConv"
         CHESS_MODEL_RESNET = "ChessModelResNet"
         ALPHA_ZERO_NET = "AlphaZeroNet"
 
@@ -31,6 +32,8 @@ class ModelUtils:
         # Create the model
         if model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
             model = ChessModelConv2d(input_shape=input_shape, output_shape=output_shape, params=model_params)
+        elif model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_FULL_CONV:
+            model = ChessModelFullConv(input_shape=input_shape, output_shape=output_shape, params=model_params)
         elif model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
             model = ChessModelResNet(input_shape=input_shape, output_shape=output_shape, params=model_params)
         elif model_name == ModelUtils.MODEL_NAME.ALPHA_ZERO_NET:

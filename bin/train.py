@@ -14,7 +14,7 @@ import torch
 import matplotlib.pyplot as plt
 
 # local imports
-from src.libs.chess_model import AlphaZeroNet, ChessModelParams, ChessModelConv2d, ChessModelResNet
+from src.libs.chess_model import AlphaZeroNet, ChessModelParams, ChessModelConv2d, ChessModelFullConv, ChessModelResNet
 from src.pytorch_extra.early_stopper import EarlyStopper
 from src.utils.model_utils import ModelUtils
 from src.utils.dataset_utils import DatasetUtils
@@ -44,8 +44,8 @@ class TrainCommand:
         learning_rate: float = 0.001,
         early_stopping_patience: int = 20,
         early_stopping_threshold: float = 0.001,
-        scheduler_patience: int = 3,
-        scheduler_threshold: float = 0.05,
+        lr_scheduler_patience: int = 3,
+        lr_scheduler_threshold: float = 0.05,
         train_test_split_ratio: float = 0.7,
         max_file_count: int = 15,
         reuse_existing_model: bool = False,
@@ -105,8 +105,8 @@ class TrainCommand:
             print(f"- Learning rate: {learning_rate}")
             print(f"- Early stopping patience: {early_stopping_patience}")
             print(f"- Early stopping threshold: {early_stopping_threshold}")
-            print(f"- Scheduler patience: {scheduler_patience}")
-            print(f"- Scheduler threshold: {scheduler_threshold}")
+            print(f"- Scheduler patience: {lr_scheduler_patience}")
+            print(f"- Scheduler threshold: {lr_scheduler_threshold}")
             print(f"- Train/test split ratio: {train_test_split_ratio}")
             print(f"- Max file count: {max_file_count if max_file_count > 0 else 'No limit'}")
             print(f"- Reuse existing model: {reuse_existing_model}")
@@ -205,7 +205,9 @@ class TrainCommand:
         # use Adam optimizer to update model weights
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         # Add a learning rate scheduler to reduce LR over time
-        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=scheduler_patience, threshold=scheduler_threshold)
+        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=0.5, patience=lr_scheduler_patience, threshold=lr_scheduler_threshold
+        )
         # Initialize early stopper to stop training if no improvement for 'patience' epochs
         early_stopper = EarlyStopper(patience=early_stopping_patience, threshold=early_stopping_threshold)
 
@@ -239,7 +241,7 @@ class TrainCommand:
             # =============================================================================
             # Dynamic loss weighting based on recent training losses
             # TODO put that in a function
-            if True:
+            if False:
                 n = min(10_000, len(train_cls_losses))
                 assert len(train_cls_losses) == len(train_reg_losses), "train_cls_losses and train_reg_losses must have the same length"
                 loss_cls_weight = 1.0 / (sum(train_cls_losses[-n:]) / n + 1e-8) if n > 0 else loss_cls_weight
@@ -462,11 +464,10 @@ class TrainCommand:
 
 - model param {model_params}
 
-
-```
+```text
 {ModelSummary.to_string(model)}
 ```
-        """
+"""
         report_path = f"{model_folder_path}/TRAINING_REPORT.md"
         with open(report_path, "w") as report_file:
             report_file.write(file_content)
@@ -612,15 +613,15 @@ class TrainCommand:
                 accuracy_total += moves_tensor.size(0)
                 accuracy_correct += (move_predictions == moves_tensor).sum().item()
 
-                # # Compute regression MAE using SmoothL1Loss directly
-                # smooth_l1_loss = torch.nn.SmoothL1Loss(reduction="sum")
-                # total_mae += smooth_l1_loss(eval_pred, evals_tensor).item()
-                # total_samples += evals_tensor.size(0)
-
-                # Compute Mean Absolute Error (MAE)
-                mae = torch.abs(eval_pred - evals_tensor).sum().item()
-                total_mae += mae
+                # Compute regression MAE using SmoothL1Loss directly
+                smooth_l1_loss = torch.nn.SmoothL1Loss(reduction="sum")
+                total_mae += smooth_l1_loss(eval_pred, evals_tensor).item()
                 total_samples += evals_tensor.size(0)
+
+                # # Compute Mean Absolute Error (MAE)
+                # mae = torch.abs(eval_pred - evals_tensor).sum().item()
+                # total_mae += mae
+                # total_samples += evals_tensor.size(0)
 
         mean_accuracy = 100 * accuracy_correct / accuracy_total
         average_mae = total_mae / total_samples
@@ -678,6 +679,11 @@ if __name__ == "__main__":
             print(f"Unsupported model profile: {args.model_profile} for model {args.model_name}. Supported profiles: {list(ChessModelConv2d.PROFILE.keys())}")
             sys.exit(1)
         model_params = ChessModelConv2d.PROFILE[args.model_profile]
+    elif args.model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_FULL_CONV:
+        if args.model_profile not in ChessModelFullConv.PROFILE:
+            print(f"Unsupported model profile: {args.model_profile} for model {args.model_name}. Supported profiles: {list(ChessModelFullConv.PROFILE.keys())}")
+            sys.exit(1)
+        model_params = ChessModelFullConv.PROFILE[args.model_profile]
     elif args.model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
         if args.model_profile not in ChessModelResNet.PROFILE:
             print(f"Unsupported model profile: {args.model_profile} for model {args.model_name}. Supported profiles: {list(ChessModelResNet.PROFILE.keys())}")

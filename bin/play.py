@@ -18,7 +18,7 @@ import dotenv
 
 
 # local imports
-from src.libs.chess_model import AlphaZeroNet, ChessModelParams, ChessModelConv2d, ChessModelResNet
+from src.libs.chess_model import AlphaZeroNet, ChessModelParams, ChessModelConv2d, ChessModelFullConv, ChessModelResNet
 from src.utils.model_utils import ModelUtils
 from src.libs.chess_player import ChessPlayer
 from src.utils.pgn_utils import PGNUtils

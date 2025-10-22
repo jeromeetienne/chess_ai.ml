@@ -9,7 +9,7 @@ import argparse
 import torch
 
 # local imports
-from src.libs.chess_model import ChessModelConv2d, ChessModelParams, ChessModelResNet
+from src.libs.chess_model import ChessModelParams
 from src.encoding.board_encoding import BoardEncoding
 from src.utils.model_utils import ModelUtils
 

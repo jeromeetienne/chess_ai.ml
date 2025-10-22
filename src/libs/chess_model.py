@@ -60,6 +60,152 @@ class ChessModelOriginal(ChessModel):
 
 # =============================================================================
 # =============================================================================
+# ChessModelFullConv
+# =============================================================================
+# =============================================================================
+
+
+@dataclasses.dataclass
+class ChessModelFullConvParams(ChessModelParams):
+    """Parameters for the ChessModelFullConv model."""
+
+    conv_out_channels: list[int]
+    """ List of output channels for each convolutional layer. """
+    cls_head_conv_width: int
+    """ Size of the fully connected layer in the classification head. """
+    reg_head_conv_width: int
+    """ Size of the fully connected layer in the regression head. """
+    cls_head_dropout: float
+    """ Dropout probability for the classification head. """
+    reg_head_dropout: float
+    """ Dropout probability for the regression head. """
+
+
+class ChessModelFullConv(ChessModel):
+    PROFILE: dict[str, ChessModelFullConvParams] = {
+        "default": ChessModelFullConvParams(
+            conv_out_channels=[64, 128, 256],
+            cls_head_conv_width=3,
+            reg_head_conv_width=1,
+            cls_head_dropout=0.0,
+            reg_head_dropout=0.3,
+        ),
+        "testbed": ChessModelFullConvParams(
+            conv_out_channels=[64, 128, 256],
+            cls_head_conv_width=3,
+            reg_head_conv_width=1,
+            cls_head_dropout=0.2,
+            reg_head_dropout=0.1,
+        ),
+    }
+
+    def __init__(self, input_shape: tuple[int, int, int], output_shape: tuple[int], params: ChessModelParams):
+        """
+        A Convolutional Neural Network (CNN) model for classifying chess board states.
+
+        Args:
+            input_shape (tuple): A tuple representing the shape of the input tensor (channels, height, width).
+            output_shape (tuple): A tuple representing the shape of the output tensor (number of classes,).
+            params (ChessModelFullConvParams): Hyperparameters for the model architecture.
+        """
+
+        super(ChessModelFullConv, self).__init__()
+
+        # =============================================================================
+        # Handle arguments
+        # =============================================================================
+
+        output_width = output_shape[0]
+        input_channels, board_size, input_width = input_shape
+
+        # Validate and convert parameters
+        # - Sometime we might get a base class, so we need get the default of the base class as a placeholder
+        assert isinstance(params, ChessModelParams), "params must be an instance of ChessModelParams"
+        full_conv_params: ChessModelFullConvParams = params if isinstance(params, ChessModelFullConvParams) else ChessModelFullConv.PROFILE["default"]
+
+        # =============================================================================
+        # Build the conv_layers
+        # =============================================================================
+
+        conv_channels_out = full_conv_params.conv_out_channels
+        body_layers: list[nn.Module] = []
+        for layer_idx in range(len(conv_channels_out)):
+            in_channels = input_channels if layer_idx == 0 else conv_channels_out[layer_idx - 1]
+            out_channels = conv_channels_out[layer_idx]
+            body_layers.append(nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1))
+            body_layers.append(nn.BatchNorm2d(out_channels))
+            body_layers.append(nn.ReLU())
+
+        # res_block_sizes = full_conv_params.conv_out_channels
+        # res_block_counts = [1 for _ in res_block_sizes]  # Three residual blocks per conv layer
+        # body_layers: list[nn.Module] = []
+        # for layer_idx in range(len(res_block_sizes)):
+        #     in_channels = input_channels if layer_idx == 0 else res_block_sizes[layer_idx - 1]
+        #     out_channels = res_block_sizes[layer_idx]
+
+        #     # Initial conv layer to change number of channels
+        #     body_layers.append(nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, bias=False))
+        #     body_layers.append(nn.BatchNorm2d(out_channels))
+        #     body_layers.append(nn.ReLU())
+
+        #     # Add the specified number of residual blocks
+        #     for _ in range(res_block_counts[layer_idx]):
+        #         body_layers.append(ChessModelResNet_ResidualBlock(out_channels))
+
+        self.body_layers = nn.Sequential(
+            *body_layers,
+        )
+
+        # =============================================================================
+        # Build the classification head (move prediction))
+        # =============================================================================
+
+        self.cls_head = nn.Sequential(
+            nn.Conv2d(full_conv_params.conv_out_channels[-1], full_conv_params.cls_head_conv_width, kernel_size=1),
+            nn.BatchNorm2d(full_conv_params.cls_head_conv_width),
+            nn.ReLU(),
+            nn.Dropout(full_conv_params.cls_head_dropout),
+            nn.Flatten(),
+            nn.Linear(full_conv_params.cls_head_conv_width * board_size * board_size, output_width),
+        )
+
+        # =============================================================================
+        # Build the regression head (eval prediction)
+        # =============================================================================
+
+        self.reg_head = torch.nn.Sequential(
+            nn.Conv2d(full_conv_params.conv_out_channels[-1], full_conv_params.reg_head_conv_width, kernel_size=1),
+            nn.BatchNorm2d(full_conv_params.reg_head_conv_width),
+            nn.ReLU(),
+            nn.Dropout(full_conv_params.reg_head_dropout),
+            nn.Flatten(),
+            torch.nn.Linear(full_conv_params.reg_head_conv_width * board_size * board_size, 1),
+        )
+
+        # Initialize weights
+        # nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
+        # nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='leaky_relu')
+        # nn.init.xavier_uniform_(self.fc1.weight)
+        # nn.init.xavier_uniform_(self.fc2.weight)
+
+    def forward(self, x):
+        x = x.to(torch.float32)
+
+        # the conv layers
+        features = self.body_layers(x)
+
+        # the classification head
+        move_logits = self.cls_head(features)
+
+        # the regression head
+        eval_pred = self.reg_head(features)
+
+        # return both predictions
+        return move_logits, eval_pred
+
+
+# =============================================================================
+# =============================================================================
 # ChessModelConv2d
 # =============================================================================
 # =============================================================================
@@ -176,15 +322,6 @@ class ChessModelConv2d(ChessModel):
             nn.Linear(conv2d_params.cls_head_size, output_width),
         )
 
-        # self.cls_head = nn.Sequential(
-        #     nn.Conv2d(conv_channels_out[-1], conv2d_params.cls_head_size, kernel_size=1),
-        #     nn.BatchNorm2d(conv2d_params.cls_head_size),
-        #     nn.ReLU(),
-        #     nn.Dropout(conv2d_params.cls_head_dropout),
-        #     nn.Flatten(),
-        #     nn.Linear(conv2d_params.cls_head_size * board_size * board_size, output_width),
-        # )
-
         # =============================================================================
         # Build the regression head (eval prediction)
         # =============================================================================
@@ -197,15 +334,6 @@ class ChessModelConv2d(ChessModel):
             torch.nn.Linear(conv2d_params.reg_head_size, 1),
         )
 
-        # self.reg_head = torch.nn.Sequential(
-        #     nn.Conv2d(conv_channels_out[-1], conv2d_params.reg_head_size, kernel_size=1),
-        #     nn.BatchNorm2d(conv2d_params.reg_head_size),
-        #     nn.ReLU(),
-        #     nn.Dropout(conv2d_params.reg_head_dropout),
-        #     nn.Flatten(),
-        #     torch.nn.Linear(conv2d_params.reg_head_size * board_size * board_size, 1),
-        # )
-
         # Initialize weights
         # nn.init.kaiming_uniform_(self.conv_1.weight, nonlinearity='leaky_relu')
         # nn.init.kaiming_uniform_(self.conv_2.weight, nonlinearity='leaky_relu')
@@ -213,14 +341,18 @@ class ChessModelConv2d(ChessModel):
         # nn.init.xavier_uniform_(self.fc2.weight)
 
     def forward(self, x):
-        # x shape: (batch_size, 21, 8, 8)
         x = x.to(torch.float32)
 
+        # the conv layers
         features = self.conv_layers(x)
 
+        # the classification head
         move_logits = self.cls_head(features)
+
+        # the regression head
         eval_pred = self.reg_head(features)
 
+        # return both predictions
         return move_logits, eval_pred
 
 
@@ -366,12 +498,11 @@ class ChessModelResNet(ChessModel):
         # Build the classification head (move prediction))
         # =============================================================================
 
-        flat_features = res_block_sizes[-1] * 8 * 8
-
         # classification head (move prediction)
         self.cls_head = nn.Sequential(
             # fully connected layers
-            nn.Linear(flat_features, resnet_params.cls_head_size),
+            nn.Linear(res_block_sizes[-1] * 8 * 8, resnet_params.cls_head_size),
+            nn.BatchNorm1d(resnet_params.cls_head_size),
             nn.ReLU(),
             nn.Dropout(resnet_params.cls_head_dropout),
             # Final classifier layer
@@ -383,7 +514,7 @@ class ChessModelResNet(ChessModel):
         # =============================================================================
 
         self.reg_head = torch.nn.Sequential(
-            torch.nn.Linear(flat_features, resnet_params.reg_head_size),
+            torch.nn.Linear(res_block_sizes[-1] * 8 * 8, resnet_params.reg_head_size),
             nn.BatchNorm1d(resnet_params.reg_head_size),
             torch.nn.ReLU(),
             nn.Dropout(resnet_params.reg_head_dropout),

@@ -144,3 +144,6 @@ layers (e.g. list of class indexes)
   - consider using Conv2D layers for board representation instead of flattening the board into a 1D vector.
   - **NOTE**: this is the motivation behind AlphaZero output encoding: they picked a much larger representation the output (8x8x73 planes aka 4672 cells) to be able to use Conv2D layers.
   If you picked list of classes, it would have been 1968 classes (All legal move in chess, independantly of the position), which is not spatial anymore.
+- there is a critical mass in the quantity of data
+  - if you use a given model architecture, there is a minimum quantity of data you need to train it properly.
+  - below that threshold, the model will not learn well, no matter what you do.

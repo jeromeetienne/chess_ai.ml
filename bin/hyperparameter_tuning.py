@@ -13,7 +13,7 @@ import optunahub
 
 # local imports
 from bin.train import TrainCommand
-from src.libs.chess_model import ChessModelParams, ChessModelConv2dParams, ChessModelResnetParams
+from src.libs.chess_model import ChessModelParams, ChessModelConv2dParams, ChessModelFullConvParams, ChessModelResnetParams
 from src.utils.model_utils import ModelUtils
 
 __dirname__ = os.path.dirname(os.path.abspath(__file__))
@@ -39,13 +39,13 @@ class HyperParameterTuning:
         # get time in the form YYYYMMDD_HHMMSS
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         study_name = f"chess_ai.ml_{timestamp}_fc{self._max_file_count}_me{self._max_epoch_count}_tc{self._trial_count}"
-        module = optunahub.load_module(package="samplers/auto_sampler")
+        # module = optunahub.load_module(package="samplers/auto_sampler")
         # create study
         study = optuna.create_study(
             study_name=study_name,
             direction="maximize",
             storage=f'sqlite:///{os.path.abspath(os.path.join(model_path, "optuna_study.db"))}',
-            sampler=module.AutoSampler(),
+            # sampler=module.AutoSampler(),
         )
 
         print(f"Using sampler: {study.sampler}")
@@ -90,14 +90,15 @@ class HyperParameterTuning:
         train_test_split_ratio: float | None = None
         early_stopping_patience: int | None = None
         early_stopping_threshold: float | None = None
-        scheduler_patience: int | None = None
-        scheduler_threshold: float | None = None
+        lr_scheduler_patience: int | None = None
+        lr_scheduler_threshold: float | None = None
 
         # =============================================================================
         # Set the value which won't be tuned
+        # - uncomment the variables below to fix their values
         # =============================================================================
 
-        if False:
+        if True:
             if self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D:
                 model_params = ChessModelConv2dParams(
                     conv_out_channels=[16, 32, 64],
@@ -105,6 +106,14 @@ class HyperParameterTuning:
                     reg_head_size=32,
                     cls_head_dropout=0.1,
                     reg_head_dropout=0.5,
+                )
+            elif self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_FULL_CONV:
+                model_params = ChessModelFullConvParams(
+                    conv_out_channels=[64, 128, 256],
+                    cls_head_conv_width=3,
+                    reg_head_conv_width=1,
+                    cls_head_dropout=0.0,
+                    reg_head_dropout=0.3,
                 )
             elif self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
                 model_params = ChessModelResnetParams(
@@ -122,8 +131,8 @@ class HyperParameterTuning:
         train_test_split_ratio = 0.7
         early_stopping_patience = 10
         early_stopping_threshold = 0.01
-        scheduler_patience = 3
-        scheduler_threshold = 0.1
+        # lr_scheduler_patience = 3
+        # lr_scheduler_threshold = 0.1
 
         # =============================================================================
         # Configure how each hyperparameter is suggested
@@ -143,6 +152,24 @@ class HyperParameterTuning:
                     cls_head_dropout=trial.suggest_categorical("cls_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
                     reg_head_dropout=trial.suggest_categorical("reg_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
                 )
+            elif self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_FULL_CONV:
+                # set model params
+                model_params = ChessModelFullConvParams(
+                    # conv_out_channels=HyperParameterTuning.suggest_categorical_listlist_int(
+                    #     trial,
+                    #     "conv_out_channels",
+                    #     [[16, 32, 64], [32, 64, 128], [64, 128, 256]],
+                    # ),
+                    conv_out_channels=[64, 128, 256],
+                    # cls_head_conv_width=trial.suggest_categorical("cls_head_conv_width", [1, 2, 3, 4, 5]),
+                    cls_head_conv_width=3,
+                    # reg_head_conv_width=trial.suggest_categorical("reg_head_conv_width", [1, 2, 3, 4, 5]),
+                    reg_head_conv_width=1,
+                    # cls_head_dropout=trial.suggest_categorical("cls_head_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
+                    cls_head_dropout=0.0,
+                    # reg_head_dropout=trial.suggest_categorical("reg_head_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
+                    reg_head_dropout=0.3,
+                )
             elif self._model_name == ModelUtils.MODEL_NAME.CHESS_MODEL_RESNET:
                 # set model params
                 model_params = ChessModelResnetParams(
@@ -155,9 +182,9 @@ class HyperParameterTuning:
                     # reg_head_size=trial.suggest_categorical("reg_head_size", [32, 64, 128]),
                     reg_head_size=32,
                     cls_head_dropout=trial.suggest_categorical("cls_head_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
-                    # cls_head_dropout=0.1,
+                    # cls_head_dropout=0.0,
                     reg_head_dropout=trial.suggest_categorical("reg_head_dropout", [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]),
-                    # reg_head_dropout=0.1,
+                    # reg_head_dropout=0.3,
                 )
             else:
                 raise ValueError(f"Unsupported model name: {self._model_name}")
@@ -172,16 +199,16 @@ class HyperParameterTuning:
             early_stopping_patience = trial.suggest_int("early_stopping_patience", 5, 20)
         if early_stopping_threshold is None:
             early_stopping_threshold = trial.suggest_float("early_stopping_threshold", 0.001, 0.1, log=True)
-        if scheduler_patience is None:
-            scheduler_patience = trial.suggest_categorical("scheduler_patience", [2, 3, 4, 5, 7, 10])
-        if scheduler_threshold is None:
-            scheduler_threshold = trial.suggest_float("scheduler_threshold", 0.001, 0.5, log=True)
+        if lr_scheduler_patience is None:
+            lr_scheduler_patience = trial.suggest_categorical("scheduler_patience", [2, 3, 4, 5, 7, 10])
+        if lr_scheduler_threshold is None:
+            lr_scheduler_threshold = trial.suggest_float("scheduler_threshold", 0.001, 0.5, log=True)
 
         # =============================================================================
         #
         # =============================================================================
 
-        print(model_params)
+        # print(model_params)
 
         # Store the suggested hyperparameters as user attributes for later reference
         trial.set_user_attr("model_params", dataclasses.asdict(model_params))
@@ -190,8 +217,8 @@ class HyperParameterTuning:
         trial.set_user_attr("train_test_split_ratio", train_test_split_ratio)
         trial.set_user_attr("early_stopping_patience", early_stopping_patience)
         trial.set_user_attr("early_stopping_threshold", early_stopping_threshold)
-        trial.set_user_attr("scheduler_patience", scheduler_patience)
-        trial.set_user_attr("scheduler_threshold", scheduler_threshold)
+        trial.set_user_attr("lr_scheduler_patience", lr_scheduler_patience)
+        trial.set_user_attr("lr_scheduler_threshold", lr_scheduler_threshold)
         # add fixed parameters
         trial.set_user_attr("max_file_count", self._max_file_count)
         trial.set_user_attr("max_epoch_count", self._max_epoch_count)
@@ -210,8 +237,8 @@ class HyperParameterTuning:
             train_test_split_ratio=train_test_split_ratio,
             early_stopping_patience=early_stopping_patience,
             early_stopping_threshold=early_stopping_threshold,
-            scheduler_patience=scheduler_patience,
-            scheduler_threshold=scheduler_threshold,
+            lr_scheduler_patience=lr_scheduler_patience,
+            lr_scheduler_threshold=lr_scheduler_threshold,
             # fixed parameters
             model_name=self._model_name,
             max_file_count=self._max_file_count,
@@ -251,7 +278,7 @@ if __name__ == "__main__":
         "--model_name",
         "-mn",
         type=str,
-        default=ModelUtils.MODEL_NAME.CHESS_MODEL_CONV2D,
+        default=ModelUtils.MODEL_NAME.CHESS_MODEL_FULL_CONV,
         choices=ModelUtils.get_supported_models(),
         help="Model architecture to use",
     )
