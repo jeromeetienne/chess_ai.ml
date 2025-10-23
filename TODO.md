@@ -1,6 +1,8 @@
 # TODO
 
 - init_weight function doesnt seems to make any difference
+- how to include the speed of computation in the hyperparameter tuning ?
+  - e.g. a model which is too slow is not good
 - set vscode settings.json with tensorboard log directory
     // Specify the log directory for TensorBoard
     "tensorBoard.logDirectory": "${workspaceFolder}/output/tensorboard_logs"
@@ -10,8 +12,14 @@
   - log model graph
   - log histograms of weights and biases
   - log images of input data
+- wrong loss calculation for regression
+  - huber loss have a delta which depends on the scale of the output
+  - <https://gemini.google.com/app/e75d5538e3da0251>
 - check the accuracy calculation for the whole model
   - how to handle the dual head model
+  - <https://gemini.google.com/app/e75d5538e3da0251>
+  - likely n issue in the regression accuracy calculation. should be 'higher is better' not 'lower is better'
+    - normalize it between 0 and 1, and then do (1 - normalized MAE)
 - see about the reg+cls layer with convnet in them like alpha-zero
   - tried on convnet, did work very well
   - define a new model architecture with those heads
