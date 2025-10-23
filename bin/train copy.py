@@ -103,10 +103,10 @@ class TrainCommand:
             print(f"- Max epoch count: {max_epoch_count}")
             print(f"- Batch size: {batch_size}")
             print(f"- Learning rate: {learning_rate}")
-            print(f"- Lr scheduler patience: {lr_scheduler_patience}")
-            print(f"- Lr scheduler threshold: {lr_scheduler_threshold}")
             print(f"- Early stopping patience: {early_stopping_patience}")
             print(f"- Early stopping threshold: {early_stopping_threshold}")
+            print(f"- Scheduler patience: {lr_scheduler_patience}")
+            print(f"- Scheduler threshold: {lr_scheduler_threshold}")
             print(f"- Train/test split ratio: {train_test_split_ratio}")
             print(f"- Max file count: {max_file_count if max_file_count > 0 else 'No limit'}")
             print(f"- Reuse existing model: {reuse_existing_model}")
@@ -156,10 +156,6 @@ class TrainCommand:
         valid_dataloader = torch.utils.data.DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
         test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-        # Check for GPU
-        device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
-        # print(f"Pytorch computes on {device} device")
-
         # =============================================================================
         # Create the model
         # =============================================================================
@@ -170,15 +166,18 @@ class TrainCommand:
             if verbose:
                 print(f"Loading existing model weights from {model_path}")
             ModelUtils.load_weights(model, model_folder_path)
-        else:
-            if verbose:
-                print("Initializing model weights to sensible defaults")
-            WeightInitializer.init_weights(model)
+        # else:
+        #     if verbose:
+        #         print("Initializing model weights to sensible defaults")
+        #     WeightInitializer.init_weights(model)
 
+        # Check for GPU
+        device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"  # type: ignore
         model = model.to(device)
 
         # Add the model graph to tensorboard
-        tensorboard_writer.add_graph(model, torch.zeros((1, *BoardEncoding.get_input_shape())).to(device))
+        fake_input_tensor = torch.zeros((1, *BoardEncoding.get_input_shape())).to(device)
+        tensorboard_writer.add_graph(model, fake_input_tensor)
 
         # =============================================================================
         # Setup training components: loss functions, optimizer, scheduler, early stopper
@@ -217,7 +216,7 @@ class TrainCommand:
 
         # initial loss weights - To tune based on the losses observed during training
         loss_cls_weight = 0.05
-        loss_reg_weight = 2 - loss_cls_weight
+        loss_reg_weight = 2.0 - loss_cls_weight
         # loss_cls_weight = 0.5
         # loss_reg_weight = 2 - loss_cls_weight
 
@@ -271,6 +270,14 @@ class TrainCommand:
             valid_cls_losses.append(valid_cls_loss)
             valid_reg_losses.append(valid_reg_loss)
 
+            # Log losses to tensorboard
+            tensorboard_writer.add_scalar("Loss/Train_Total", train_loss, epoch_index + 1)
+            tensorboard_writer.add_scalar("Loss/Train_Cls", train_cls_loss, epoch_index + 1)
+            tensorboard_writer.add_scalar("Loss/Train_Reg", train_reg_loss, epoch_index + 1)
+            tensorboard_writer.add_scalar("Loss/Valid_Total", valid_loss, epoch_index + 1)
+            tensorboard_writer.add_scalar("Loss/Valid_Cls", valid_cls_loss, epoch_index + 1)
+            tensorboard_writer.add_scalar("Loss/Valid_Reg", valid_reg_loss, epoch_index + 1)
+
             # Check for early stopping
             must_stop, must_save = early_stopper.step(valid_loss)
 
@@ -297,11 +304,11 @@ class TrainCommand:
                 TrainCommand.save_training_report(train_dataset, validation_dataset, test_dataset, num_classes, epoch_index, valid_loss, model, model_params)
 
                 # Now test the model on the test set
-                move_mean_accuracy, eval_mean_mae = TrainCommand.evaluate_model(model, test_dataloader, device)
-                model_accuracy = loss_cls_weight * move_mean_accuracy + loss_reg_weight * eval_mean_mae
+                model_cls_accuracy, model_reg_mae = TrainCommand.evaluate_model(model, test_dataloader, device)
+                model_accuracy = loss_cls_weight * model_cls_accuracy + loss_reg_weight * model_reg_mae
                 if verbose:
                     print(
-                        f"Test dataset: classification accuracy: {move_mean_accuracy*100:.2f}% - regression MAE: {eval_mean_mae:.4f} - weighted sum: {model_accuracy:.4f}"
+                        f"Test dataset: classification accuracy: {model_cls_accuracy*100.0:.2f}% - regression MAE: {model_reg_mae:.4f} - weighted sum: {model_accuracy:.4f}"
                     )
 
             # honor must_stop: Stop training if no improvement for 'patience' epochs
@@ -620,6 +627,7 @@ class TrainCommand:
                 # total_mae += mae
                 # total_samples += evals_tensor.size(0)
 
+        # FIXME what is this *100 ?!?!?
         move_mean_accuracy = move_accuracy_correct / move_accuracy_count
         eval_mean_mae = eval_mae_sum / eval_mae_count
 
