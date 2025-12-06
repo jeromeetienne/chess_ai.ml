@@ -108,6 +108,10 @@ build_dataset_outcome_250: ## build dataset with 250 files
 	./bin/build_boards_moves.py -fc 250
 	./bin/build_evals_outcome.py -fc 250
 
+build_dataset_outcome_300: ## build dataset with 300 files
+	./bin/build_boards_moves.py -fc 300
+	./bin/build_evals_outcome.py -fc 300
+
 ###############################################################################
 #   train targets
 #
