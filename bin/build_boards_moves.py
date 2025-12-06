@@ -2,20 +2,15 @@
 
 # stdlib imports
 import argparse
-import json
 import os
 import time
 
 # pip imports
 import chess
-import chess.pgn
 import chess.polyglot
-import torch
 
 
 # local imports
-from src.libs.chess_extra import ChessExtra
-from src.encoding.board_encoding import BoardEncoding
 from src.utils.dataset_utils import DatasetUtils
 from src.utils.pgn_utils import PGNUtils
 
